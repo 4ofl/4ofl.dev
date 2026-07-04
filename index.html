@@ -4,22 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>4ofl.dev</title>
-  <meta name="description" content="4ofl.dev — Aby Mathew's systems and infrastructure lab." />
-  <meta name="theme-color" content="#070304" />
+  <meta name="description" content="4ofl.dev — Aby Mathew's personal systems lab." />
+  <meta name="theme-color" content="#080203" />
 
   <style>
     :root {
-      --bg: #070304;
-      --panel: #11080a;
-      --panel-2: #170b0e;
-      --text: #f3eeee;
-      --muted: #a89598;
-      --faint: #66565a;
-      --red: #d01832;
-      --red-soft: rgba(208, 24, 50, 0.18);
+      --bg: #080203;
+      --panel: #120608;
+      --panel-soft: #18080b;
+      --text: #f4eeee;
+      --muted: #a99398;
+      --faint: #6b555a;
+      --red: #d71735;
+      --red-dark: #7d0c1d;
       --line: rgba(255, 255, 255, 0.08);
-      --line-red: rgba(208, 24, 50, 0.34);
-      --shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+      --red-line: rgba(215, 23, 53, 0.35);
     }
 
     * {
@@ -28,15 +27,19 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       min-height: 100vh;
       background:
-        radial-gradient(circle at 50% -10%, rgba(208, 24, 50, 0.18), transparent 36%),
-        radial-gradient(circle at 90% 85%, rgba(208, 24, 50, 0.10), transparent 30%),
-        linear-gradient(180deg, #090405 0%, var(--bg) 100%);
+        radial-gradient(circle at 20% 0%, rgba(215, 23, 53, 0.16), transparent 34%),
+        radial-gradient(circle at 90% 90%, rgba(215, 23, 53, 0.10), transparent 30%),
+        linear-gradient(180deg, #0c0305, var(--bg));
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.6;
+      line-height: 1.55;
     }
 
     a {
@@ -54,23 +57,24 @@
 
     header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 28px 0;
+      align-items: center;
+      padding: 30px 0;
     }
 
     .brand {
-      font-size: 15px;
-      letter-spacing: 0.18em;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--text);
     }
 
     nav {
       display: flex;
       gap: 18px;
-      font-size: 14px;
       color: var(--muted);
+      font-size: 14px;
     }
 
     nav a {
@@ -83,178 +87,185 @@
 
     main {
       flex: 1;
-      display: grid;
-      place-items: center;
-      padding: 58px 0;
+      display: flex;
+      align-items: center;
+      padding: 54px 0 70px;
     }
 
     .hero {
       width: 100%;
     }
 
-    .eyebrow {
-      width: fit-content;
-      border: 1px solid var(--line-red);
-      background: var(--red-soft);
-      color: #ffb7c0;
-      padding: 7px 11px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      font-size: clamp(56px, 13vw, 132px);
-      line-height: 0.86;
-      letter-spacing: -0.09em;
-      font-weight: 850;
-    }
-
-    .slash {
-      color: var(--red);
-      text-shadow: 0 0 30px rgba(208, 24, 50, 0.45);
-    }
-
-    .subtitle {
-      max-width: 690px;
-      margin-top: 28px;
-      color: var(--muted);
-      font-size: clamp(17px, 2vw, 21px);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 34px;
-    }
-
-    .btn {
+    .label {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 0 16px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.035);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 650;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      border-color: var(--line-red);
-      background: rgba(208, 24, 50, 0.10);
-    }
-
-    .btn.primary {
-      border-color: rgba(208, 24, 50, 0.65);
-      background: var(--red);
-      color: white;
-      box-shadow: 0 18px 48px rgba(208, 24, 50, 0.22);
-    }
-
-    .project {
-      margin-top: 52px;
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      background:
-        linear-gradient(135deg, rgba(208, 24, 50, 0.10), transparent 32%),
-        rgba(17, 8, 10, 0.78);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .project-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.18);
-    }
-
-    .project-name {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .project-name span {
-      color: var(--red);
+      gap: 9px;
+      margin-bottom: 22px;
+      color: #ffb8c1;
       font-size: 12px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
       font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
     }
 
-    .project-name strong {
-      font-size: 20px;
-      letter-spacing: -0.04em;
-    }
-
-    .status {
-      color: #ffb7c0;
-      border: 1px solid var(--line-red);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      background: rgba(208, 24, 50, 0.10);
-      white-space: nowrap;
-    }
-
-    .project-body {
-      padding: 22px 20px;
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 24px;
-    }
-
-    .project-body p {
-      color: var(--muted);
-      font-size: 15px;
-      max-width: 560px;
-    }
-
-    .list {
-      display: grid;
-      gap: 9px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .item {
-      display: flex;
-      gap: 9px;
-      align-items: center;
-    }
-
-    .item::before {
+    .label::before {
       content: "";
       width: 7px;
       height: 7px;
       border-radius: 50%;
       background: var(--red);
-      box-shadow: 0 0 16px rgba(208, 24, 50, 0.75);
+      box-shadow: 0 0 18px rgba(215, 23, 53, 0.9);
+    }
+
+    h1 {
+      max-width: 780px;
+      font-size: clamp(64px, 13vw, 140px);
+      line-height: 0.82;
+      letter-spacing: -0.095em;
+      font-weight: 900;
+    }
+
+    .red {
+      color: var(--red);
+      text-shadow: 0 0 34px rgba(215, 23, 53, 0.32);
+    }
+
+    .intro {
+      max-width: 650px;
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 43px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .link:hover {
+      transform: translateY(-2px);
+      border-color: var(--red-line);
+      background: rgba(215, 23, 53, 0.10);
+    }
+
+    .projects {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 56px;
+    }
+
+    .project {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(215, 23, 53, 0.12), transparent 34%),
+        rgba(18, 6, 8, 0.88);
+      overflow: hidden;
+      min-height: 300px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .project:hover {
+      transform: translateY(-4px);
+      border-color: var(--red-line);
+    }
+
+    .project-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.18);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .project-kicker {
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .project-title {
+      font-size: 25px;
+      font-weight: 850;
+      letter-spacing: -0.055em;
+    }
+
+    .status {
+      flex: 0 0 auto;
+      border: 1px solid var(--red-line);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(215, 23, 53, 0.10);
+      color: #ffb8c1;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .project-body {
+      padding: 20px;
+    }
+
+    .project-body p {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    .points {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .point {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .point::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 14px rgba(215, 23, 53, 0.8);
       flex: 0 0 auto;
     }
 
     footer {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 20px;
       padding: 26px 0;
+      border-top: 1px solid var(--line);
       color: var(--faint);
       font-size: 13px;
-      border-top: 1px solid var(--line);
     }
 
     .footer-links {
@@ -269,20 +280,19 @@
 
     @media (max-width: 760px) {
       header {
-        align-items: flex-start;
-        gap: 16px;
+        display: block;
       }
 
       nav {
-        gap: 12px;
+        margin-top: 16px;
       }
 
       main {
-        place-items: start;
-        padding: 44px 0;
+        align-items: flex-start;
+        padding-top: 42px;
       }
 
-      .project-body {
+      .projects {
         grid-template-columns: 1fr;
       }
 
@@ -293,24 +303,15 @@
     }
 
     @media (max-width: 520px) {
-      header {
-        display: block;
-      }
-
-      nav {
-        margin-top: 14px;
-      }
-
-      .actions {
+      .links {
         flex-direction: column;
       }
 
-      .btn {
+      .link {
         width: 100%;
       }
 
-      .project-top {
-        align-items: flex-start;
+      .project-head {
         flex-direction: column;
       }
     }
@@ -321,8 +322,9 @@
   <div class="page">
     <header>
       <a class="brand" href="#">4ofl.dev</a>
+
       <nav>
-        <a href="#mailforge">Mailforge</a>
+        <a href="#projects">Projects</a>
         <a href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
         <a href="mailto:hi@4ofl.dev">Mail</a>
       </nav>
@@ -330,42 +332,68 @@
 
     <main>
       <section class="hero">
-        <div class="eyebrow">Personal Systems Lab</div>
+        <div class="label">Personal Systems Lab</div>
 
-        <h1>4ofl<span class="slash">.</span>dev</h1>
+        <h1>4ofl<span class="red">.</span>dev</h1>
 
-        <p class="subtitle">
-          Aby Mathew’s small corner for internet infrastructure, Linux systems, and self-hosted experiments.
+        <p class="intro">
+          Aby Mathew’s space for internet infrastructure, Linux systems, DNS, mail servers, and self-hosted experiments.
         </p>
 
-        <div class="actions">
-          <a class="btn primary" href="#mailforge">View Project</a>
-          <a class="btn" href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
+        <div class="links">
+          <a class="link" href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="link" href="mailto:hi@4ofl.dev">Mail</a>
         </div>
 
-        <article class="project" id="mailforge">
-          <div class="project-top">
-            <div class="project-name">
-              <span>Active Project</span>
-              <strong>Mailforge</strong>
+        <div class="projects" id="projects">
+          <article class="project">
+            <div class="project-head">
+              <div>
+                <div class="project-kicker">Project 01</div>
+                <div class="project-title">4ofl.dev</div>
+              </div>
+              <div class="status">In Progress</div>
             </div>
-            <div class="status">Self-Hosted Mail Infrastructure</div>
-          </div>
 
-          <div class="project-body">
-            <p>
-              Mailforge is a Docker-based custom-domain mail infrastructure project for 4ofl.dev, focused on SMTP, IMAP, TLS, DNS authentication, backups, monitoring, and relay fallback for cloud port restrictions.
-            </p>
+            <div class="project-body">
+              <p>
+                A minimal personal domain and systems lab for hosting projects, experiments, documentation, and infrastructure notes.
+              </p>
 
-            <div class="list">
-              <div class="item">Stalwart Mail Server</div>
-              <div class="item">Cloudflare DNS</div>
-              <div class="item">SPF, DKIM, DMARC</div>
-              <div class="item">SMTP Relay Fallback</div>
-              <div class="item">Backups And Health Checks</div>
+              <div class="points">
+                <div class="point">Portfolio Landing Page</div>
+                <div class="point">Project Index</div>
+                <div class="point">Custom Domain Setup</div>
+                <div class="point">VPS-Hosted Web Stack</div>
+                <div class="point">Future Docs And Status Pages</div>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
+
+          <article class="project">
+            <div class="project-head">
+              <div>
+                <div class="project-kicker">Project 02</div>
+                <div class="project-title">Mailforge</div>
+              </div>
+              <div class="status">In Progress</div>
+            </div>
+
+            <div class="project-body">
+              <p>
+                A self-hosted custom-domain mail infrastructure project for learning real-world SMTP, IMAP, DNS authentication, TLS, backups, and monitoring.
+              </p>
+
+              <div class="points">
+                <div class="point">Stalwart Mail Server</div>
+                <div class="point">SPF, DKIM, And DMARC</div>
+                <div class="point">IMAP And SMTP Submission</div>
+                <div class="point">SMTP Relay Fallback</div>
+                <div class="point">Backups And Health Checks</div>
+              </div>
+            </div>
+          </article>
+        </div>
       </section>
     </main>
 
