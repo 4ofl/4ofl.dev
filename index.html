@@ -4,21 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>4ofl.dev</title>
-  <meta name="description" content="4ofl.dev — Aby Mathew's personal systems lab." />
-  <meta name="theme-color" content="#080203" />
+  <meta name="description" content="Infrastructure & Systems" />
+  <meta name="theme-color" content="#000000" />
 
   <style>
     :root {
-      --bg: #080203;
-      --panel: #120608;
-      --panel-soft: #18080b;
-      --text: #f4eeee;
-      --muted: #a99398;
-      --faint: #6b555a;
-      --red: #d71735;
-      --red-dark: #7d0c1d;
-      --line: rgba(255, 255, 255, 0.08);
-      --red-line: rgba(215, 23, 53, 0.35);
+      --bg: #030303;
+      --text: #e0e0e0;
+      --muted: #666666;
+      --accent: #5e0b15;
+      --grid: rgba(255, 255, 255, 0.03);
+      --card-bg: rgba(10, 10, 10, 0.6);
+      --border: rgba(255, 255, 255, 0.05);
     }
 
     * {
@@ -27,383 +24,260 @@
       padding: 0;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(215, 23, 53, 0.16), transparent 34%),
-        radial-gradient(circle at 90% 90%, rgba(215, 23, 53, 0.10), transparent 30%),
-        linear-gradient(180deg, #0c0305, var(--bg));
+      background-color: var(--bg);
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.55;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      width: min(980px, calc(100% - 34px));
-      margin: 0 auto;
+      font-family: "Courier New", Courier, monospace;
+      line-height: 1.6;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* Interactive Grid Background */
+    #grid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      background-image: 
+        linear-gradient(to right, var(--grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Ambient Mouse Glow */
+    #glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(94, 11, 21, 0.15) 0%, transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      transition: opacity 0.3s ease;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 100px 24px;
+      position: relative;
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 30px 0;
-    }
-
-    .brand {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--text);
-    }
-
-    nav {
-      display: flex;
-      gap: 18px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    nav a {
-      transition: color 0.2s ease;
-    }
-
-    nav a:hover {
-      color: var(--text);
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      padding: 54px 0 70px;
-    }
-
-    .hero {
-      width: 100%;
-    }
-
-    .label {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      margin-bottom: 22px;
-      color: #ffb8c1;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .label::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 18px rgba(215, 23, 53, 0.9);
+      margin-bottom: 80px;
+      animation: fadeUp 1s ease-out;
     }
 
     h1 {
-      max-width: 780px;
-      font-size: clamp(64px, 13vw, 140px);
-      line-height: 0.82;
-      letter-spacing: -0.095em;
-      font-weight: 900;
+      font-family: "Times New Roman", Times, serif;
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: normal;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+      color: #ffffff;
+      text-transform: lowercase;
     }
 
-    .red {
-      color: var(--red);
-      text-shadow: 0 0 34px rgba(215, 23, 53, 0.32);
-    }
-
-    .intro {
-      max-width: 650px;
-      margin-top: 28px;
+    .subtitle {
+      font-size: 0.85rem;
       color: var(--muted);
-      font-size: clamp(17px, 2vw, 21px);
-    }
-
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
-    }
-
-    .link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 43px;
-      padding: 0 16px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.035);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 700;
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .link:hover {
-      transform: translateY(-2px);
-      border-color: var(--red-line);
-      background: rgba(215, 23, 53, 0.10);
-    }
-
-    .projects {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-top: 56px;
-    }
-
-    .project {
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      background:
-        linear-gradient(135deg, rgba(215, 23, 53, 0.12), transparent 34%),
-        rgba(18, 6, 8, 0.88);
-      overflow: hidden;
-      min-height: 300px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .project:hover {
-      transform: translateY(-4px);
-      border-color: var(--red-line);
-    }
-
-    .project-head {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(0, 0, 0, 0.18);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .project-kicker {
-      color: var(--red);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-bottom: 4px;
     }
 
-    .project-title {
-      font-size: 25px;
-      font-weight: 850;
-      letter-spacing: -0.055em;
-    }
-
-    .status {
-      flex: 0 0 auto;
-      border: 1px solid var(--red-line);
-      border-radius: 999px;
-      padding: 6px 10px;
-      background: rgba(215, 23, 53, 0.10);
-      color: #ffb8c1;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .project-body {
-      padding: 20px;
-    }
-
-    .project-body p {
-      color: var(--muted);
-      font-size: 15px;
-      margin-bottom: 20px;
-    }
-
-    .points {
+    .grid-layout {
       display: grid;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
     }
 
-    .point {
+    /* JS Hover Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.4s ease, transform 0.4s ease;
+      animation: fadeUp 1s ease-out forwards;
+      opacity: 0;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+
+    .card:hover {
+      border-color: rgba(94, 11, 21, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: var(--y, 0);
+      left: var(--x, 0);
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card-title {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 1.8rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+      font-weight: normal;
+    }
+
+    .card-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      color: #999;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .point::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--red);
-      box-shadow: 0 0 14px rgba(215, 23, 53, 0.8);
-      flex: 0 0 auto;
+    .tag::before {
+      content: "—";
+      color: var(--accent);
     }
 
     footer {
+      margin-top: 100px;
+      font-size: 0.75rem;
+      color: var(--muted);
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      padding: 26px 0;
-      border-top: 1px solid var(--line);
-      color: var(--faint);
-      font-size: 13px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      opacity: 0;
+      animation: fadeUp 1s ease-out forwards;
+      animation-delay: 0.4s;
     }
 
-    .footer-links {
-      display: flex;
-      gap: 14px;
+    footer a {
       color: var(--muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
     }
 
-    .footer-links a:hover {
-      color: var(--text);
+    footer a:hover {
+      color: #ffffff;
     }
 
-    @media (max-width: 760px) {
-      header {
-        display: block;
-      }
-
-      nav {
-        margin-top: 16px;
-      }
-
-      main {
-        align-items: flex-start;
-        padding-top: 42px;
-      }
-
-      .projects {
-        grid-template-columns: 1fr;
-      }
-
+    @media (max-width: 600px) {
       footer {
         flex-direction: column;
-        align-items: flex-start;
+        gap: 16px;
+        align-items: center;
       }
     }
 
-    @media (max-width: 520px) {
-      .links {
-        flex-direction: column;
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-
-      .link {
-        width: 100%;
-      }
-
-      .project-head {
-        flex-direction: column;
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   </style>
 </head>
-
 <body>
-  <div class="page">
-    <header>
-      <a class="brand" href="#">4ofl.dev</a>
 
-      <nav>
-        <a href="#projects">Projects</a>
-        <a href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="mailto:hi@4ofl.dev">Mail</a>
-      </nav>
+  <div id="grid-canvas"></div>
+  <div id="glow"></div>
+
+  <main class="container">
+    <header>
+      <h1>4ofl.dev</h1>
+      <div class="subtitle">System Deployment & Infrastructure</div>
     </header>
 
-    <main>
-      <section class="hero">
-        <div class="label">Personal Systems Lab</div>
-
-        <h1>4ofl<span class="red">.</span>dev</h1>
-
-        <p class="intro">
-          Aby Mathew’s space for internet infrastructure, Linux systems, DNS, mail servers, and self-hosted experiments.
-        </p>
-
-        <div class="links">
-          <a class="link" href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
-          <a class="link" href="mailto:hi@4ofl.dev">Mail</a>
+    <div class="grid-layout">
+      
+      <article class="card">
+        <h2 class="card-title">4ofl.dev</h2>
+        <p class="card-desc">Minimalist domain architecture. Hosting projects, documentation, and operational logs.</p>
+        <div class="tags">
+          <span class="tag">VPS-Hosted Web Stack</span>
+          <span class="tag">Custom Domain Configuration</span>
+          <span class="tag">Status & Documentation</span>
         </div>
+      </article>
 
-        <div class="projects" id="projects">
-          <article class="project">
-            <div class="project-head">
-              <div>
-                <div class="project-kicker">Project 01</div>
-                <div class="project-title">4ofl.dev</div>
-              </div>
-              <div class="status">In Progress</div>
-            </div>
-
-            <div class="project-body">
-              <p>
-                A minimal personal domain and systems lab for hosting projects, experiments, documentation, and infrastructure notes.
-              </p>
-
-              <div class="points">
-                <div class="point">Portfolio Landing Page</div>
-                <div class="point">Project Index</div>
-                <div class="point">Custom Domain Setup</div>
-                <div class="point">VPS-Hosted Web Stack</div>
-                <div class="point">Future Docs And Status Pages</div>
-              </div>
-            </div>
-          </article>
-
-          <article class="project">
-            <div class="project-head">
-              <div>
-                <div class="project-kicker">Project 02</div>
-                <div class="project-title">Mailforge</div>
-              </div>
-              <div class="status">In Progress</div>
-            </div>
-
-            <div class="project-body">
-              <p>
-                A self-hosted custom-domain mail infrastructure project for learning real-world SMTP, IMAP, DNS authentication, TLS, backups, and monitoring.
-              </p>
-
-              <div class="points">
-                <div class="point">Stalwart Mail Server</div>
-                <div class="point">SPF, DKIM, And DMARC</div>
-                <div class="point">IMAP And SMTP Submission</div>
-                <div class="point">SMTP Relay Fallback</div>
-                <div class="point">Backups And Health Checks</div>
-              </div>
-            </div>
-          </article>
+      <article class="card">
+        <h2 class="card-title">Mailforge</h2>
+        <p class="card-desc">Self-hosted custom-domain mail infrastructure built on Stalwart.</p>
+        <div class="tags">
+          <span class="tag">SMTP & IMAP Submission</span>
+          <span class="tag">SPF, DKIM, DMARC</span>
+          <span class="tag">Relay Fallback & TLS</span>
         </div>
-      </section>
-    </main>
+      </article>
+
+    </div>
 
     <footer>
-      <span>Aby Mathew · 4ofl.dev</span>
-      <div class="footer-links">
-        <a href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="mailto:hi@4ofl.dev">Mail</a>
+      <span>ABY MATHEW</span>
+      <div>
+        <a href="https://github.com/4ofl" target="_blank">GITHUB</a> &nbsp;&middot;&nbsp; 
+        <a href="https://linkedin.com/in/abyperhaps" target="_blank">LINKEDIN</a> &nbsp;&middot;&nbsp; 
+        <a href="mailto:abyperhaps@gmail.com">MAIL</a>
       </div>
     </footer>
-  </div>
+  </main>
+
+  <script>
+    // Global ambient glow tracking
+    const glow = document.getElementById('glow');
+    
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    // Card-specific dynamic lighting
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        card.style.setProperty('--x', `${x}px`);
+        card.style.setProperty('--y', `${y}px`);
+      });
+    });
+  </script>
 </body>
 </html>
