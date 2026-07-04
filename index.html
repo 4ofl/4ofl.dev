@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4ofl.dev</title>
+  <meta name="description" content="4ofl.dev — Aby Mathew's systems and infrastructure lab." />
+  <meta name="theme-color" content="#070304" />
+
+  <style>
+    :root {
+      --bg: #070304;
+      --panel: #11080a;
+      --panel-2: #170b0e;
+      --text: #f3eeee;
+      --muted: #a89598;
+      --faint: #66565a;
+      --red: #d01832;
+      --red-soft: rgba(208, 24, 50, 0.18);
+      --line: rgba(255, 255, 255, 0.08);
+      --line-red: rgba(208, 24, 50, 0.34);
+      --shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(208, 24, 50, 0.18), transparent 36%),
+        radial-gradient(circle at 90% 85%, rgba(208, 24, 50, 0.10), transparent 30%),
+        linear-gradient(180deg, #090405 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(980px, calc(100% - 34px));
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+    }
+
+    .brand {
+      font-size: 15px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 18px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    nav a {
+      transition: color 0.2s ease;
+    }
+
+    nav a:hover {
+      color: var(--text);
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 58px 0;
+    }
+
+    .hero {
+      width: 100%;
+    }
+
+    .eyebrow {
+      width: fit-content;
+      border: 1px solid var(--line-red);
+      background: var(--red-soft);
+      color: #ffb7c0;
+      padding: 7px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(56px, 13vw, 132px);
+      line-height: 0.86;
+      letter-spacing: -0.09em;
+      font-weight: 850;
+    }
+
+    .slash {
+      color: var(--red);
+      text-shadow: 0 0 30px rgba(208, 24, 50, 0.45);
+    }
+
+    .subtitle {
+      max-width: 690px;
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 650;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-red);
+      background: rgba(208, 24, 50, 0.10);
+    }
+
+    .btn.primary {
+      border-color: rgba(208, 24, 50, 0.65);
+      background: var(--red);
+      color: white;
+      box-shadow: 0 18px 48px rgba(208, 24, 50, 0.22);
+    }
+
+    .project {
+      margin-top: 52px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        linear-gradient(135deg, rgba(208, 24, 50, 0.10), transparent 32%),
+        rgba(17, 8, 10, 0.78);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .project-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .project-name {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .project-name span {
+      color: var(--red);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .project-name strong {
+      font-size: 20px;
+      letter-spacing: -0.04em;
+    }
+
+    .status {
+      color: #ffb7c0;
+      border: 1px solid var(--line-red);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: rgba(208, 24, 50, 0.10);
+      white-space: nowrap;
+    }
+
+    .project-body {
+      padding: 22px 20px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+
+    .project-body p {
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 560px;
+    }
+
+    .list {
+      display: grid;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .item {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .item::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 16px rgba(208, 24, 50, 0.75);
+      flex: 0 0 auto;
+    }
+
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 26px 0;
+      color: var(--faint);
+      font-size: 13px;
+      border-top: 1px solid var(--line);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 14px;
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    @media (max-width: 760px) {
+      header {
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      nav {
+        gap: 12px;
+      }
+
+      main {
+        place-items: start;
+        padding: 44px 0;
+      }
+
+      .project-body {
+        grid-template-columns: 1fr;
+      }
+
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @media (max-width: 520px) {
+      header {
+        display: block;
+      }
+
+      nav {
+        margin-top: 14px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .project-top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <a class="brand" href="#">4ofl.dev</a>
+      <nav>
+        <a href="#mailforge">Mailforge</a>
+        <a href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="mailto:hi@4ofl.dev">Mail</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Personal Systems Lab</div>
+
+        <h1>4ofl<span class="slash">.</span>dev</h1>
+
+        <p class="subtitle">
+          Aby Mathew’s small corner for internet infrastructure, Linux systems, and self-hosted experiments.
+        </p>
+
+        <div class="actions">
+          <a class="btn primary" href="#mailforge">View Project</a>
+          <a class="btn" href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+
+        <article class="project" id="mailforge">
+          <div class="project-top">
+            <div class="project-name">
+              <span>Active Project</span>
+              <strong>Mailforge</strong>
+            </div>
+            <div class="status">Self-Hosted Mail Infrastructure</div>
+          </div>
+
+          <div class="project-body">
+            <p>
+              Mailforge is a Docker-based custom-domain mail infrastructure project for 4ofl.dev, focused on SMTP, IMAP, TLS, DNS authentication, backups, monitoring, and relay fallback for cloud port restrictions.
+            </p>
+
+            <div class="list">
+              <div class="item">Stalwart Mail Server</div>
+              <div class="item">Cloudflare DNS</div>
+              <div class="item">SPF, DKIM, DMARC</div>
+              <div class="item">SMTP Relay Fallback</div>
+              <div class="item">Backups And Health Checks</div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer>
+      <span>Aby Mathew · 4ofl.dev</span>
+      <div class="footer-links">
+        <a href="https://github.com/4ofl" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="mailto:hi@4ofl.dev">Mail</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
