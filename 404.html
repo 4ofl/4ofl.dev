@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>404 | 4ofl.dev</title>
+  <meta name="description" content="Page not found." />
+  <meta name="theme-color" content="#000000" />
+
+  <style>
+    :root {
+      --bg: #030303;
+      --text: #e0e0e0;
+      --muted: #666666;
+      --accent: #5e0b15;
+      --grid: rgba(255, 255, 255, 0.03);
+      --card-bg: rgba(10, 10, 10, 0.6);
+      --border: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: "Courier New", Courier, monospace;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: crosshair;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #grid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
+      background-image:
+        linear-gradient(to right, var(--grid) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    #glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(94, 11, 21, 0.15) 0%, transparent 60%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      transition: opacity 0.3s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+      padding: 40px 24px;
+      animation: fadeUp 1s ease-out;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: clamp(32px, 6vw, 56px);
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.4s ease, transform 0.4s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(94, 11, 21, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: var(--y, 0);
+      left: var(--x, 0);
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .code {
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: "Times New Roman", Times, serif;
+      font-size: clamp(4rem, 16vw, 8rem);
+      font-weight: normal;
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      color: #ffffff;
+      margin-bottom: 22px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 30px;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #999;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .home-link::before {
+      content: "—";
+      color: var(--accent);
+    }
+
+    .home-link:hover {
+      color: #ffffff;
+      transform: translateX(2px);
+    }
+
+    footer {
+      margin-top: 24px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #ffffff;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        align-items: flex-start;
+      }
+
+      .container {
+        padding-top: 90px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="grid-canvas"></div>
+  <div id="glow"></div>
+
+  <main class="container">
+    <section class="card">
+      <div class="code">error 404</div>
+      <h1>lost.</h1>
+      <p class="subtitle">
+        this route does not exist in the current deployment. either the page moved, broke, or never survived production.
+      </p>
+
+      <a class="home-link" href="/">return home</a>
+    </section>
+
+    <footer>
+      <span>ABY MATHEW</span>
+      <div>
+        <a href="/">4OFL.DEV</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const glow = document.getElementById('glow');
+
+    document.addEventListener('mousemove', (e) => {
+      glow.style.left = e.clientX + 'px';
+      glow.style.top = e.clientY + 'px';
+    });
+
+    const card = document.querySelector('.card');
+
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      card.style.setProperty('--x', `${x}px`);
+      card.style.setProperty('--y', `${y}px`);
+    });
+  </script>
+</body>
+</html>
