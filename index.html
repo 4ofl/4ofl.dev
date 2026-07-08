@@ -1,283 +1,256 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>4ofl.dev</title>
-  <meta name="description" content="Infrastructure & Systems" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Aby Mathew's project space." />
+  <meta name="theme-color" content="#0b0907" />
+
+  <meta property="og:title" content="4ofl.dev" />
+  <meta property="og:description" content="Projects, experiments, and notes by Aby Mathew." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://4ofl.dev" />
+  <meta property="og:site_name" content="4ofl.dev" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="4ofl.dev" />
+  <meta name="twitter:description" content="Projects, experiments, and notes by Aby Mathew." />
 
   <style>
     :root {
-      --bg: #030303;
-      --text: #e0e0e0;
-      --muted: #666666;
-      --accent: #5e0b15;
-      --grid: rgba(255, 255, 255, 0.03);
-      --card-bg: rgba(10, 10, 10, 0.6);
-      --border: rgba(255, 255, 255, 0.05);
+      --bg: #0b0907;
+      --text: #f5eee4;
+      --muted: #a89b8b;
+      --line: rgba(245, 238, 228, 0.14);
+      --button: #f5eee4;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html,
+    body {
       margin: 0;
-      padding: 0;
+      min-height: 100%;
+      background: var(--bg);
     }
 
     body {
-      background-color: var(--bg);
       color: var(--text);
-      font-family: "Courier New", Courier, monospace;
-      line-height: 1.6;
-      min-height: 100vh;
-      overflow-x: hidden;
-      cursor: crosshair;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(245, 238, 228, 0.06), transparent 28%),
+        linear-gradient(135deg, #0b0907 0%, #120d09 48%, #060504 100%);
     }
 
-    /* Interactive Grid Background */
-    #grid-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -2;
-      background-image: 
-        linear-gradient(to right, var(--grid) 1px, transparent 1px),
-        linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-      background-size: 50px 50px;
-    }
-
-    /* Ambient Mouse Glow */
-    #glow {
-      position: fixed;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(94, 11, 21, 0.15) 0%, transparent 60%);
-      border-radius: 50%;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      transition: opacity 0.3s ease;
-    }
-
-    .container {
-      max-width: 900px;
+    .page {
+      width: min(1040px, calc(100% - 40px));
+      min-height: 100svh;
       margin: 0 auto;
-      padding: 100px 24px;
-      position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
-    header {
-      margin-bottom: 80px;
-      animation: fadeUp 1s ease-out;
+    nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      color: var(--text);
+      font-weight: 750;
+      letter-spacing: -0.04em;
+    }
+
+    .links {
+      display: flex;
+      gap: 18px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .links a {
+      color: var(--muted);
+    }
+
+    .links a:hover {
+      color: var(--text);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 48px 0 76px;
+    }
+
+    .hero {
+      width: 100%;
     }
 
     h1 {
-      font-family: "Times New Roman", Times, serif;
-      font-size: clamp(3rem, 8vw, 5rem);
-      font-weight: normal;
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
-      color: #ffffff;
-      text-transform: lowercase;
+      margin: 0;
+      font-size: clamp(3rem, 9vw, 7.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.085em;
+      font-weight: 820;
     }
 
-    .subtitle {
-      font-size: 0.85rem;
+    p {
+      margin: 28px 0 0;
+      max-width: 620px;
       color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+      font-size: clamp(1rem, 1.7vw, 1.2rem);
+      line-height: 1.75;
     }
 
-    .grid-layout {
+    .projects {
+      margin-top: 48px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      gap: 18px;
+      max-width: 720px;
     }
 
-    /* JS Hover Cards */
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 30px;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      transition: border-color 0.4s ease, transform 0.4s ease;
-      animation: fadeUp 1s ease-out forwards;
-      opacity: 0;
-    }
-
-    .card:nth-child(1) { animation-delay: 0.1s; }
-    .card:nth-child(2) { animation-delay: 0.2s; }
-
-    .card:hover {
-      border-color: rgba(94, 11, 21, 0.6);
-      transform: translateY(-2px);
-    }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      top: var(--y, 0);
-      left: var(--x, 0);
-      width: 250px;
-      height: 250px;
-      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
-      transform: translate(-50%, -50%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .card:hover::before {
-      opacity: 1;
-    }
-
-    .card-title {
-      font-family: "Times New Roman", Times, serif;
-      font-size: 1.8rem;
-      color: #ffffff;
-      margin-bottom: 12px;
-      font-weight: normal;
-    }
-
-    .card-desc {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-
-    .tags {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .tag {
-      font-size: 0.75rem;
-      color: #999;
-      display: flex;
+    .project {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
       align-items: center;
-      gap: 8px;
+      padding: 20px 0;
+      border-top: 1px solid var(--line);
     }
 
-    .tag::before {
-      content: "—";
-      color: var(--accent);
+    .project:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .project h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: -0.03em;
+    }
+
+    .project p {
+      margin: 8px 0 0;
+      font-size: 0.96rem;
+      line-height: 1.6;
+    }
+
+    .button {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 15px;
+      border-radius: 999px;
+      border: 1px solid var(--button);
+      background: var(--button);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 720;
+      white-space: nowrap;
     }
 
     footer {
-      margin-top: 100px;
-      font-size: 0.75rem;
-      color: var(--muted);
+      height: 64px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      border-top: 1px solid var(--border);
-      padding-top: 24px;
-      opacity: 0;
-      animation: fadeUp 1s ease-out forwards;
-      animation-delay: 0.4s;
+      color: rgba(245, 238, 228, 0.42);
+      font-size: 13px;
+      flex-shrink: 0;
     }
 
-    footer a {
-      color: var(--muted);
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
+    @media (max-width: 680px) {
+      .page {
+        width: min(100% - 28px, 1040px);
+      }
 
-    footer a:hover {
-      color: #ffffff;
-    }
+      nav {
+        height: 64px;
+      }
 
-    @media (max-width: 600px) {
+      .links {
+        gap: 12px;
+      }
+
+      main {
+        padding: 52px 0 48px;
+      }
+
+      h1 {
+        font-size: clamp(2.7rem, 15vw, 4.7rem);
+      }
+
+      .project {
+        grid-template-columns: 1fr;
+      }
+
+      .button {
+        width: fit-content;
+      }
+
       footer {
+        height: auto;
+        padding: 22px 0;
+        gap: 10px;
         flex-direction: column;
-        gap: 16px;
-        align-items: center;
-      }
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+        align-items: flex-start;
       }
     }
   </style>
 </head>
+
 <body>
+  <div class="page">
+    <nav>
+      <div class="brand">4ofl.dev</div>
 
-  <div id="grid-canvas"></div>
-  <div id="glow"></div>
+      <div class="links">
+        <a href="https://4ofl.dev/github" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://4ofl.dev/linkedin" target="_blank" rel="noreferrer">LinkedIn</a>
+        <a href="mailto:aby@4ofl.dev">Mail</a>
+      </div>
+    </nav>
 
-  <main class="container">
-    <header>
-      <h1>Aby | 4ofl</h1>
-      <div class="subtitle">System Deployment & Infrastructure</div>
-    </header>
+    <main>
+      <section class="hero">
+        <h1>4ofl.dev</h1>
 
-    <div class="grid-layout">
-      
-      <article class="card">
-        <h2 class="card-title">4ofl.dev</h2>
-        <p class="card-desc">Minimalist domain architecture. Hosting projects, documentation, and operational logs.</p>
-        <div class="tags">
-          <span class="tag">VPS-Hosted Web Stack</span>
-          <span class="tag">Custom Domain Configuration</span>
-          <span class="tag">Status & Documentation</span>
+        <p>
+          A small space for projects, experiments, and things I am building while learning.
+        </p>
+
+        <div class="projects">
+          <article class="project">
+            <div>
+              <h2>CiteCamp</h2>
+              <p>A RAG-based assistant for querying curated academic documents.</p>
+            </div>
+
+            <a class="button" href="https://citecamp.4ofl.dev">
+              Open
+            </a>
+          </article>
         </div>
-      </article>
-
-      <article class="card">
-        <h2 class="card-title">Mailstead</h2>
-        <p class="card-desc">Self-hosted custom-domain mail infrastructure built on Stalwart.</p>
-        <div class="tags">
-          <span class="tag">SMTP & IMAP Submission</span>
-          <span class="tag">SPF, DKIM, DMARC</span>
-          <span class="tag">Relay Fallback & TLS</span>
-        </div>
-      </article>
-
-    </div>
+      </section>
+    </main>
 
     <footer>
-      <span>ABY MATHEW</span>
-      <div>
-        <a href="https://4ofl.dev/github" target="_blank">GITHUB</a> &nbsp;&middot;&nbsp; 
-        <a href="https://4ofl.dev/linkedin" target="_blank">LINKEDIN</a> &nbsp;&middot;&nbsp; 
-        <a href="mailto:aby@4ofl.dev">MAIL</a>
-      </div>
+      <span>Aby Mathew</span>
+      <span>Kerala, India</span>
     </footer>
-  </main>
-
-  <script>
-    // Global ambient glow tracking
-    const glow = document.getElementById('glow');
-    
-    document.addEventListener('mousemove', (e) => {
-      glow.style.left = e.clientX + 'px';
-      glow.style.top = e.clientY + 'px';
-    });
-
-    // Card-specific dynamic lighting
-    const cards = document.querySelectorAll('.card');
-    
-    cards.forEach(card => {
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        card.style.setProperty('--x', `${x}px`);
-        card.style.setProperty('--y', `${y}px`);
-      });
-    });
-  </script>
+  </div>
 </body>
 </html>
