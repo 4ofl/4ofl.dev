@@ -23,6 +23,10 @@
 
     * {
       box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     html,
@@ -36,10 +40,21 @@
 
     body {
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+
       background:
-        radial-gradient(circle at 20% 20%, rgba(245, 238, 228, 0.06), transparent 28%),
-        linear-gradient(135deg, #0b0907 0%, #120d09 48%, #060504 100%);
+        radial-gradient(
+          circle at 20% 20%,
+          rgba(245, 238, 228, 0.06),
+          transparent 28%
+        ),
+        linear-gradient(
+          135deg,
+          #0b0907 0%,
+          #120d09 48%,
+          #060504 100%
+        );
     }
 
     main {
@@ -52,9 +67,9 @@
     }
 
     .code {
+      margin-bottom: 18px;
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 18px;
     }
 
     h1 {
@@ -87,6 +102,19 @@
       text-decoration: none;
       font-size: 14px;
       font-weight: 720;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        transform 160ms ease,
+        opacity 160ms ease;
+    }
+
+    a:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+
+    a:active {
+      transform: translateY(0);
     }
 
     @media (max-width: 680px) {
@@ -100,6 +128,7 @@
 <body>
   <main>
     <div class="code">404</div>
+
     <h1>lost.</h1>
 
     <p>
