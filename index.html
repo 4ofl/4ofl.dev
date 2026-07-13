@@ -34,6 +34,10 @@
 
     * {
       box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     html,
@@ -45,10 +49,21 @@
 
     body {
       color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
+        BlinkMacSystemFont, "Segoe UI", sans-serif;
+
       background:
-        radial-gradient(circle at 20% 20%, rgba(245, 238, 228, 0.06), transparent 28%),
-        linear-gradient(135deg, #0b0907 0%, #120d09 48%, #060504 100%);
+        radial-gradient(
+          circle at 20% 20%,
+          rgba(245, 238, 228, 0.06),
+          transparent 28%
+        ),
+        linear-gradient(
+          135deg,
+          #0b0907 0%,
+          #120d09 48%,
+          #060504 100%
+        );
     }
 
     .page {
@@ -83,10 +98,12 @@
     a {
       color: inherit;
       text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .links a {
       color: var(--muted);
+      transition: color 160ms ease;
     }
 
     .links a:hover {
@@ -158,13 +175,25 @@
       align-items: center;
       justify-content: center;
       padding: 0 15px;
-      border-radius: 999px;
       border: 1px solid var(--button);
+      border-radius: 999px;
       background: var(--button);
       color: var(--bg);
       font-size: 14px;
       font-weight: 720;
       white-space: nowrap;
+      transition:
+        transform 160ms ease,
+        opacity 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+
+    .button:active {
+      transform: translateY(0);
     }
 
     footer {
@@ -223,9 +252,25 @@
       <div class="brand">4ofl.dev</div>
 
       <div class="links">
-        <a href="https://4ofl.dev/github" target="_blank" rel="noreferrer">GitHub</a>
-        <a href="https://4ofl.dev/linkedin" target="_blank" rel="noreferrer">LinkedIn</a>
-        <a href="mailto:aby@4ofl.dev">Mail</a>
+        <a
+          href="https://4ofl.dev/github"
+          target="_blank"
+          rel="noreferrer"
+        >
+          GitHub
+        </a>
+
+        <a
+          href="https://4ofl.dev/linkedin"
+          target="_blank"
+          rel="noreferrer"
+        >
+          LinkedIn
+        </a>
+
+        <a href="mailto:aby@4ofl.dev">
+          Mail
+        </a>
       </div>
     </nav>
 
@@ -234,17 +279,23 @@
         <h1>Aby</h1>
 
         <p>
-          A small space for projects, experiments, and things I am building while learning.
+          Projects and stuff I’m working on.
         </p>
 
         <div class="projects">
           <article class="project">
             <div>
               <h2>CiteCamp</h2>
-              <p>A RAG-based assistant for querying curated academic documents.</p>
+
+              <p>
+                A RAG-based assistant for querying curated academic documents.
+              </p>
             </div>
 
-            <a class="button" href="https://citecamp.4ofl.dev">
+            <a
+              class="button"
+              href="https://citecamp.4ofl.dev"
+            >
               Open
             </a>
           </article>
