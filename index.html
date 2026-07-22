@@ -1,312 +1,66 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0b0a">
   <title>Aby | 4ofl.dev</title>
-  <meta name="description" content="4's project space." />
-  <meta name="theme-color" content="#0b0907" />
-
-  <meta property="og:title" content="4ofl.dev" />
-  <meta property="og:description" content="Projects and experiments by 4." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://4ofl.dev" />
-  <meta property="og:site_name" content="4ofl.dev" />
-
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="4ofl.dev" />
-  <meta name="twitter:description" content="Projects and experiments by 4." />
-
+  <meta name="description" content="software, infrastructure, and internet experiments by aby mathew.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #0b0907;
-      --text: #f5eee4;
-      --muted: #a89b8b;
-      --line: rgba(245, 238, 228, 0.14);
-      --button: #f5eee4;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-    }
-
-    body {
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-      background:
-        radial-gradient(
-          circle at 20% 20%,
-          rgba(245, 238, 228, 0.06),
-          transparent 28%
-        ),
-        linear-gradient(
-          135deg,
-          #0b0907 0%,
-          #120d09 48%,
-          #060504 100%
-        );
-    }
-
-    .page {
-      width: min(1040px, calc(100% - 40px));
-      min-height: 100svh;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    nav {
-      height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .brand {
-      color: var(--text);
-      font-weight: 750;
-      letter-spacing: -0.04em;
-    }
-
-    .links {
-      display: flex;
-      gap: 18px;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .links a {
-      color: var(--muted);
-      transition: color 160ms ease;
-    }
-
-    .links a:hover {
-      color: var(--text);
-    }
-
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      padding: 48px 0 76px;
-    }
-
-    .hero {
-      width: 100%;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(3rem, 9vw, 7.5rem);
-      line-height: 0.9;
-      letter-spacing: -0.085em;
-      font-weight: 820;
-    }
-
-    p {
-      margin: 28px 0 0;
-      max-width: 620px;
-      color: var(--muted);
-      font-size: clamp(1rem, 1.7vw, 1.2rem);
-      line-height: 1.75;
-    }
-
-    .projects {
-      margin-top: 48px;
-      display: grid;
-      gap: 18px;
-      max-width: 720px;
-    }
-
-    .project {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 18px;
-      align-items: center;
-      padding: 20px 0;
-      border-top: 1px solid var(--line);
-    }
-
-    .project:last-child {
-      border-bottom: 1px solid var(--line);
-    }
-
-    .project h2 {
-      margin: 0;
-      font-size: 1.15rem;
-      letter-spacing: -0.03em;
-    }
-
-    .project p {
-      margin: 8px 0 0;
-      font-size: 0.96rem;
-      line-height: 1.6;
-    }
-
-    .button {
-      min-height: 42px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 15px;
-      border: 1px solid var(--button);
-      border-radius: 999px;
-      background: var(--button);
-      color: var(--bg);
-      font-size: 14px;
-      font-weight: 720;
-      white-space: nowrap;
-      transition:
-        transform 160ms ease,
-        opacity 160ms ease;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-      opacity: 0.9;
-    }
-
-    .button:active {
-      transform: translateY(0);
-    }
-
-    footer {
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: rgba(245, 238, 228, 0.42);
-      font-size: 13px;
-      flex-shrink: 0;
-    }
-
-    @media (max-width: 680px) {
-      .page {
-        width: min(100% - 28px, 1040px);
-      }
-
-      nav {
-        height: 64px;
-      }
-
-      .links {
-        gap: 12px;
-      }
-
-      main {
-        padding: 52px 0 48px;
-      }
-
-      h1 {
-        font-size: clamp(2.7rem, 15vw, 4.7rem);
-      }
-
-      .project {
-        grid-template-columns: 1fr;
-      }
-
-      .button {
-        width: fit-content;
-      }
-
-      footer {
-        height: auto;
-        padding: 22px 0;
-        gap: 10px;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
+    :root{--bg:#0b0b0a;--text:#f2f0e9;--muted:#8f8d84;--line:rgba(242,240,233,.14);--accent:#d9ff63;--x:60%;--y:20%}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;background:radial-gradient(600px at var(--x) var(--y),rgba(217,255,99,.08),transparent 45%),var(--bg);background-attachment:fixed;color:var(--text);font-family:"Instrument Sans",system-ui,sans-serif}
+    body:after{content:"";position:fixed;inset:0;z-index:99;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    a{color:inherit;text-decoration:none}.shell{width:min(1440px,100%);margin:auto;padding:22px clamp(18px,4vw,64px) 0}
+    .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding-bottom:18px;border-bottom:1px solid var(--line);font:400 11px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.12em}.brand{font-size:14px;font-weight:500;text-transform:lowercase;letter-spacing:-.04em}.brand i{display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px rgba(217,255,99,.6)}.topbar .center{color:var(--muted)}.topbar .right{justify-self:end;display:flex;gap:18px}.topbar a:hover{color:var(--accent)}
+    .hero{min-height:72vh;display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(40px,8vw,120px);align-items:end;padding:clamp(80px,13vw,170px) 0 50px}.eyebrow{margin-bottom:22px;color:var(--muted);font:400 11px/1.4 "DM Mono",monospace;letter-spacing:.14em;text-transform:uppercase}h1{margin:0;max-width:950px;font-size:clamp(66px,10.4vw,164px);line-height:.82;letter-spacing:-.075em;font-weight:650;font-stretch:82%}h1 .slash{display:inline-block;color:var(--accent);transform:rotate(-7deg) translateY(-.03em);font-style:italic}.hero-copy{align-self:end;max-width:430px;padding-bottom:12px}.hero-copy p{margin:0 0 28px;color:#c8c6be;font-size:clamp(19px,2vw,27px);line-height:1.32;letter-spacing:-.025em}.currently{display:grid;grid-template-columns:auto 1fr;gap:14px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font:400 11px/1.6 "DM Mono",monospace;text-transform:uppercase;letter-spacing:.08em}.currently strong{color:var(--accent);font-weight:500}
+    .section-head{display:flex;justify-content:space-between;align-items:end;padding:30px 0 18px;border-top:1px solid var(--line);font:400 11px/1.4 "DM Mono",monospace;text-transform:uppercase;letter-spacing:.12em}.section-head span:last-child{color:var(--muted)}.projects{border-top:1px solid var(--line)}
+    .project{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:56px minmax(0,1fr) minmax(200px,.55fr) 72px;align-items:center;gap:20px;min-height:122px;border-bottom:1px solid var(--line);transition:padding .35s cubic-bezier(.16,1,.3,1),background .25s ease}.project:before{content:"";position:absolute;inset:0;z-index:-1;background:var(--accent);transform:translateY(102%);transition:transform .45s cubic-bezier(.16,1,.3,1)}.project:hover{color:#080807;padding-left:18px;padding-right:18px}.project:hover:before{transform:translateY(0)}.project:hover .meta,.project:hover .index,.project:hover .arrow{color:rgba(8,8,7,.68)}.index{color:var(--muted);font:400 11px "DM Mono",monospace}.project h2{margin:0;font-size:clamp(32px,4.2vw,66px);line-height:.95;letter-spacing:-.055em;font-weight:580;text-transform:lowercase}.meta{color:var(--muted);font:400 11px/1.55 "DM Mono",monospace;text-transform:uppercase;letter-spacing:.08em}.meta strong{display:block;margin-bottom:4px;font-weight:500}.arrow{justify-self:end;color:var(--muted);font-size:32px;transform:rotate(-35deg);transition:transform .3s ease}.project:hover .arrow{transform:rotate(0)}
+    .project-preview{position:fixed;right:5vw;top:50%;z-index:30;width:min(330px,28vw);aspect-ratio:4/3;overflow:hidden;pointer-events:none;opacity:0;transform:translateY(-50%) scale(.94);border:1px solid rgba(255,255,255,.18);background:#161613;box-shadow:0 26px 90px rgba(0,0,0,.5);transition:opacity .25s ease,transform .35s cubic-bezier(.16,1,.3,1)}.project-preview.active{opacity:1;transform:translateY(-50%) scale(1)}.preview-inner{width:100%;height:100%;padding:24px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(130deg,rgba(217,255,99,.12),transparent 48%),repeating-linear-gradient(90deg,transparent 0 31px,rgba(255,255,255,.04) 32px),#11110f}.preview-inner small{color:var(--muted);font:400 10px "DM Mono",monospace;letter-spacing:.13em;text-transform:uppercase}.preview-inner b{font-size:clamp(38px,4vw,62px);letter-spacing:-.07em;line-height:.9;text-transform:lowercase}
+    .about{display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(40px,9vw,150px);padding:110px 0;border-bottom:1px solid var(--line)}.about h3{margin:0;color:var(--muted);font:400 11px "DM Mono",monospace;text-transform:uppercase;letter-spacing:.12em}.about p{margin:0;max-width:820px;font-size:clamp(28px,4vw,58px);line-height:1.02;letter-spacing:-.045em}.about em{color:var(--accent);font-style:normal}
+    footer{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:end;padding-top:36px;color:var(--muted);font:400 11px/1.5 "DM Mono",monospace;text-transform:uppercase;letter-spacing:.1em}footer nav{display:flex;gap:20px;flex-wrap:wrap}footer a:hover{color:var(--text)}.huge-mark{margin-top:100px;color:#121210;font-size:clamp(100px,26vw,390px);line-height:.65;letter-spacing:-.11em;font-weight:700;user-select:none;white-space:nowrap}
+    @media(max-width:820px){.topbar{grid-template-columns:1fr auto}.topbar .center{display:none}.hero{grid-template-columns:1fr;min-height:auto;align-items:start}.hero-copy{padding-bottom:0}.project{grid-template-columns:38px 1fr 36px;min-height:105px}.project .meta{grid-column:2;margin-top:-10px}.arrow{grid-column:3;grid-row:1/span 2}.project-preview{display:none}.about{grid-template-columns:1fr;padding:80px 0}footer{grid-template-columns:1fr}.huge-mark{margin-top:70px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
 </head>
-
 <body>
-  <div class="page">
-    <nav>
-      <div class="brand">4ofl.dev</div>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#"><i></i>4ofl.dev</a>
+      <div class="center">aby mathew · internet lab · kerala</div>
+      <nav class="right"><a href="#work">work</a></nav>
+    </header>
 
-      <div class="links">
-        <a
-          href="https://4ofl.dev/github"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub
-        </a>
-
-        <a
-          href="https://4ofl.dev/linkedin"
-          target="_blank"
-          rel="noreferrer"
-        >
-          LinkedIn
-        </a>
-
-        <a href="mailto:aby@4ofl.dev">
-          Mail
-        </a>
+    <section class="hero">
+      <div><div class="eyebrow">software & infrastructure / 2026</div><h1>things with<br>a <span class="slash">pulse.</span></h1></div>
+      <div class="hero-copy">
+        <p>i’m aby. i build practical software, run servers, and make small internet tools.</p>
+        <div class="currently"><strong>currently</strong><span>building citecamp, repdock, and studying bca.</span></div>
       </div>
-    </nav>
+    </section>
 
-    <main>
-      <section class="hero">
-        <h1>Aby</h1>
+    <section id="work">
+      <div class="section-head"><span>selected systems</span><span>01—05</span></div>
+      <div class="projects">
+        <a class="project" href="#" data-name="citecamp" data-status="building"><span class="index">01</span><h2>citecamp</h2><span class="meta"><strong>academic search engine</strong>search official college documents with traceable citations.</span><span class="arrow">↗</span></a>
+        <a class="project" href="#" data-name="june" data-status="private"><span class="index">02</span><h2>june</h2><span class="meta"><strong>discord utility</strong>a private, user-installed discord application.</span><span class="arrow">↗</span></a>
+        <a class="project" href="#" data-name="mailstead" data-status="operating"><span class="index">03</span><h2>mailstead</h2><span class="meta"><strong>mail infrastructure</strong>a self-hosted mail server with standard security protocols.</span><span class="arrow">↗</span></a>
+        <a class="project" href="#" data-name="mxprobe" data-status="planned"><span class="index">04</span><h2>mxprobe</h2><span class="meta"><strong>mail diagnostics</strong>a simple tool for checking dns records and email health.</span><span class="arrow">↗</span></a>
+        <a class="project" href="#" data-name="repdock" data-status="building"><span class="index">05</span><h2>repdock</h2><span class="meta"><strong>gym management software</strong>billing and attendance system for a local gym.</span><span class="arrow">↗</span></a>
+      </div>
+    </section>
 
-        <p>
-          Projects and stuff I’m working on.
-        </p>
+    <section class="about"><h3>000</h3><p>build things that feel <em>obvious only after they exist.</em></p></section>
+    <footer><nav><a href="#">github ↗</a><a href="#">linkedin ↗</a><a href="mailto:hello@4ofl.dev">hello@4ofl.dev ↗</a></nav><div style="text-align: right;">aby mathew<br>kerala, india · 2026</div></footer>
+    <div class="huge-mark">4ofl</div></main>
 
-        <div class="projects">
-          <article class="project">
-            <div>
-              <h2>CiteCamp</h2>
-
-              <p>
-                A RAG-based assistant for querying curated academic documents.
-              </p>
-            </div>
-
-            <a
-              class="button"
-              href="https://citecamp.4ofl.dev"
-            >
-              Open
-            </a>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <span>Aby Mathew</span>
-      <span>Kerala, India</span>
-    </footer>
-  </div>
+  <aside class="project-preview" id="projectPreview" aria-hidden="true"><div class="preview-inner"><small id="previewStatus">building</small><b id="previewName">citecamp</b></div></aside>
+  <script>
+    const root=document.documentElement;window.addEventListener('pointermove',e=>{root.style.setProperty('--x',`${e.clientX}px`);root.style.setProperty('--y',`${e.clientY}px`)});
+    const preview=document.getElementById('projectPreview'),previewName=document.getElementById('previewName'),previewStatus=document.getElementById('previewStatus');
+    document.querySelectorAll('.project').forEach(project=>{project.addEventListener('mouseenter',()=>{previewName.textContent=project.dataset.name;previewStatus.textContent=project.dataset.status;preview.classList.add('active')});project.addEventListener('mouseleave',()=>preview.classList.remove('active'));project.addEventListener('click',e=>e.preventDefault())});
+  </script>
 </body>
 </html>
