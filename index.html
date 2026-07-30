@@ -1,312 +1,665 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Software, infrastructure, and web systems by Aby Mathew.">
+  <meta name="theme-color" content="#efede7">
 
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <title>Aby | 4ofl.dev</title>
-  <meta name="description" content="4's project space." />
-  <meta name="theme-color" content="#0b0907" />
-
-  <meta property="og:title" content="4ofl.dev" />
-  <meta property="og:description" content="Projects and experiments by 4." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://4ofl.dev" />
-  <meta property="og:site_name" content="4ofl.dev" />
-
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="4ofl.dev" />
-  <meta name="twitter:description" content="Projects and experiments by 4." />
+  <title>Aby Mathew — 4ofl.dev</title>
 
   <style>
     :root {
-      --bg: #0b0907;
-      --text: #f5eee4;
-      --muted: #a89b8b;
-      --line: rgba(245, 238, 228, 0.14);
-      --button: #f5eee4;
+      --bg: #efede7;
+      --ink: #121212;
+      --muted: #6d6a64;
+      --line: rgba(18, 18, 18, 0.17);
+      --accent: #2857ff;
+      --max: 1220px;
     }
 
     * {
       box-sizing: border-box;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
     }
 
-    html,
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      min-height: 100%;
+      min-width: 320px;
+      color: var(--ink);
       background: var(--bg);
-    }
-
-    body {
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system,
-        BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-      background:
-        radial-gradient(
-          circle at 20% 20%,
-          rgba(245, 238, 228, 0.06),
-          transparent 28%
-        ),
-        linear-gradient(
-          135deg,
-          #0b0907 0%,
-          #120d09 48%,
-          #060504 100%
-        );
-    }
-
-    .page {
-      width: min(1040px, calc(100% - 40px));
-      min-height: 100svh;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    nav {
-      height: 76px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .brand {
-      color: var(--text);
-      font-weight: 750;
-      letter-spacing: -0.04em;
-    }
-
-    .links {
-      display: flex;
-      gap: 18px;
+      font-family:
+        Arial,
+        Helvetica,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     a {
       color: inherit;
       text-decoration: none;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .links a {
-      color: var(--muted);
-      transition: color 160ms ease;
+    ::selection {
+      color: white;
+      background: var(--accent);
     }
 
-    .links a:hover {
-      color: var(--text);
+    .cursor-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
     }
 
-    main {
-      flex: 1;
+    .shell {
+      width: min(var(--max), calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      min-height: 72px;
       display: flex;
       align-items: center;
-      padding: 48px 0 76px;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: -0.045em;
+    }
+
+    .nav {
+      display: flex;
+      gap: 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .nav a {
+      position: relative;
+      padding: 7px 0;
+    }
+
+    .nav a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 2px;
+      height: 1px;
+      background: var(--accent);
+      transition: right 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--ink);
+    }
+
+    .nav a:hover::after {
+      right: 0;
     }
 
     .hero {
-      width: 100%;
+      min-height: 72svh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.28fr) minmax(280px, 0.72fr);
+      align-items: end;
+      gap: clamp(52px, 9vw, 132px);
+      padding: clamp(92px, 13vw, 160px) 0 76px;
+    }
+
+    .location {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(3rem, 9vw, 7.5rem);
-      line-height: 0.9;
-      letter-spacing: -0.085em;
-      font-weight: 820;
+      max-width: 900px;
+      font-size: clamp(5rem, 11vw, 10.5rem);
+      line-height: 0.8;
+      letter-spacing: -0.09em;
+      font-weight: 900;
     }
 
-    p {
-      margin: 28px 0 0;
-      max-width: 620px;
+    .hero-side {
+      padding-bottom: 8px;
+    }
+
+    .hero-copy {
+      margin: 0;
+      max-width: 430px;
+      font-size: clamp(1.2rem, 2vw, 1.58rem);
+      line-height: 1.42;
+      letter-spacing: -0.028em;
+    }
+
+    .current {
+      margin-top: 30px;
+      padding-top: 17px;
+      border-top: 1px solid var(--line);
       color: var(--muted);
-      font-size: clamp(1rem, 1.7vw, 1.2rem);
-      line-height: 1.75;
+      font-size: 0.84rem;
+      line-height: 1.65;
     }
 
-    .projects {
-      margin-top: 48px;
-      display: grid;
-      gap: 18px;
-      max-width: 720px;
+    .current strong {
+      color: var(--ink);
+      font-weight: 700;
     }
 
-    .project {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 18px;
-      align-items: center;
-      padding: 20px 0;
+    .section {
+      padding: 88px 0;
       border-top: 1px solid var(--line);
     }
 
-    .project:last-child {
-      border-bottom: 1px solid var(--line);
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 34px;
     }
 
-    .project h2 {
+    .section-kicker {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .section-title {
       margin: 0;
-      font-size: 1.15rem;
-      letter-spacing: -0.03em;
+      font-size: clamp(2.8rem, 5vw, 5.6rem);
+      line-height: 0.92;
+      letter-spacing: -0.067em;
+      font-weight: 900;
     }
 
-    .project p {
-      margin: 8px 0 0;
-      font-size: 0.96rem;
-      line-height: 1.6;
+    .section-note {
+      color: var(--muted);
+      font-size: 0.78rem;
     }
 
-    .button {
-      min-height: 42px;
+    .projects {
+      border-top: 1px solid var(--line);
+    }
+
+    .project {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr) auto;
+      align-items: center;
+      gap: 32px;
+      min-height: 132px;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      transition: padding 220ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .project::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 260ms cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .project:hover {
+      padding-inline: 14px;
+    }
+
+    .project:hover::before {
+      width: 100%;
+    }
+
+    .project h3 {
+      margin: 0;
+      font-size: clamp(2rem, 4.1vw, 4.35rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    .project-meta {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.65;
+    }
+
+    .project-status {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .project-arrow {
+      color: var(--accent);
+      font-size: 1.75rem;
+      transition: transform 180ms ease;
+    }
+
+    .project:hover .project-arrow {
+      transform: translate(4px, -4px);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(210px, 0.62fr) minmax(0, 1.38fr);
+      gap: clamp(48px, 10vw, 150px);
+    }
+
+    .about-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.85;
+    }
+
+    .about-copy {
+      margin: 0;
+      max-width: 830px;
+      font-size: clamp(1.9rem, 3.7vw, 4rem);
+      line-height: 1.06;
+      letter-spacing: -0.055em;
+      text-transform: lowercase;
+    }
+
+    .about-copy strong {
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .contact {
+      padding: 100px 0 62px;
+      border-top: 1px solid var(--line);
+    }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 36px;
+    }
+
+    .contact h2 {
+      margin: 0;
+      font-size: clamp(3.4rem, 8vw, 8.6rem);
+      line-height: 0.87;
+      letter-spacing: -0.08em;
+    }
+
+    .contact-link {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      padding: 0 15px;
-      border: 1px solid var(--button);
-      border-radius: 999px;
-      background: var(--button);
-      color: var(--bg);
-      font-size: 14px;
-      font-weight: 720;
-      white-space: nowrap;
-      transition:
-        transform 160ms ease,
-        opacity 160ms ease;
+      gap: 10px;
+      padding-bottom: 7px;
+      border-bottom: 2px solid var(--accent);
+      font-weight: 800;
     }
 
-    .button:hover {
-      transform: translateY(-2px);
-      opacity: 0.9;
-    }
-
-    .button:active {
-      transform: translateY(0);
-    }
-
-    footer {
-      height: 64px;
+    .footer {
+      min-height: 82px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      color: rgba(245, 238, 228, 0.42);
-      font-size: 13px;
-      flex-shrink: 0;
+      gap: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.78rem;
     }
 
-    @media (max-width: 680px) {
-      .page {
-        width: min(100% - 28px, 1040px);
+    .footer-links {
+      display: flex;
+      gap: 18px;
+    }
+
+    .footer a:hover {
+      color: var(--ink);
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
       }
 
-      nav {
-        height: 64px;
-      }
-
-      .links {
-        gap: 12px;
-      }
-
-      main {
-        padding: 52px 0 48px;
-      }
-
-      h1 {
-        font-size: clamp(2.7rem, 15vw, 4.7rem);
+      .hero-side {
+        max-width: 620px;
       }
 
       .project {
+        grid-template-columns: 1fr auto;
+      }
+
+      .project-meta {
+        grid-column: 1 / 2;
+      }
+
+      .project-arrow {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .shell {
+        width: min(100% - 28px, var(--max));
+      }
+
+      .topbar {
+        min-height: 64px;
+      }
+
+      .nav {
+        gap: 13px;
+      }
+
+      .hero {
+        padding: 72px 0 66px;
+      }
+
+      h1 {
+        font-size: clamp(4.2rem, 23vw, 7.2rem);
+      }
+
+      .section {
+        padding: 72px 0;
+      }
+
+      .section-head,
+      .about-grid,
+      .contact-row {
+        display: grid;
         grid-template-columns: 1fr;
       }
 
-      .button {
+      .section-note {
+        display: none;
+      }
+
+      .project {
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+      }
+
+      .project:hover {
+        padding-inline: 0;
+      }
+
+      .contact-link {
         width: fit-content;
       }
 
-      footer {
-        height: auto;
-        padding: 22px 0;
-        gap: 10px;
-        flex-direction: column;
+      .footer {
         align-items: flex-start;
+        flex-direction: column;
+        padding: 24px 0;
+      }
+    }
+
+    @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+      .cursor-canvas {
+        display: none;
+      }
+
+      * {
+        transition: none !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
-    <nav>
-      <div class="brand">4ofl.dev</div>
+  <canvas class="cursor-canvas" id="cursor-canvas" aria-hidden="true"></canvas>
 
-      <div class="links">
-        <a
-          href="https://4ofl.dev/github"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub
-        </a>
+  <header class="shell topbar">
+    <a class="brand" href="#top">4ofl.dev</a>
 
-        <a
-          href="https://4ofl.dev/linkedin"
-          target="_blank"
-          rel="noreferrer"
-        >
-          LinkedIn
-        </a>
-
-        <a href="mailto:aby@4ofl.dev">
-          Mail
-        </a>
-      </div>
+    <nav class="nav" aria-label="Primary navigation">
+      <a href="#projects">Work</a>
+      <a href="#about">About</a>
     </nav>
+  </header>
 
-    <main>
-      <section class="hero">
-        <h1>Aby</h1>
+  <main id="top">
+    <section class="shell hero">
+      <div>
+        <p class="location">Kerala, India</p>
+        <h1>Aby<br>Mathew</h1>
+      </div>
 
-        <p>
-          Projects and stuff I’m working on.
+      <div class="hero-side">
+        <p class="hero-copy">
+          Software, infrastructure, and systems for the web.
         </p>
 
-        <div class="projects">
-          <article class="project">
-            <div>
-              <h2>CiteCamp</h2>
-
-              <p>
-                A RAG-based assistant for querying curated academic documents.
-              </p>
-            </div>
-
-            <a
-              class="button"
-              href="https://citecamp.4ofl.dev"
-            >
-              Open
-            </a>
-          </article>
+        <div class="current">
+          Planning <strong>CiteCamp</strong> and building
+          <strong>June</strong> and <strong>Johns Fitness</strong>.
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
 
-    <footer>
-      <span>Aby Mathew</span>
-      <span>Kerala, India</span>
-    </footer>
-  </div>
+    <section class="shell section" id="projects">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Selected work</p>
+          <h2 class="section-title">Projects.</h2>
+        </div>
+
+        <span class="section-note">Three listed</span>
+      </div>
+
+      <div class="projects">
+        <article class="project">
+          <h3>CiteCamp</h3>
+
+          <div class="project-meta">
+            <span class="project-status">Planning</span>
+            Academic document assistant<br>
+            MGU and college resources
+          </div>
+        </article>
+
+        <a class="project" href="https://june.4ofl.dev">
+          <h3>June</h3>
+
+          <div class="project-meta">
+            <span class="project-status">Building</span>
+            Discord user application<br>
+            Tools and utilities
+          </div>
+
+          <span class="project-arrow" aria-hidden="true">↗</span>
+        </a>
+
+        <article class="project">
+          <h3>Johns Fitness</h3>
+
+          <div class="project-meta">
+            <span class="project-status">Building</span>
+            Gym management system<br>
+            Offline-first and biometric
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="shell section" id="about">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">About</p>
+          <h2 class="section-title">Not quite a résumé.</h2>
+        </div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-meta">
+          Kerala, India<br>
+          Computer applications<br>
+          Software and infrastructure
+        </div>
+
+        <p class="about-copy">
+          i like building software that is
+          <strong>useful, weirdly specific, and actually deployed.</strong>
+          currently studying computer applications.
+        </p>
+      </div>
+    </section>
+
+    <section class="shell contact">
+      <div class="contact-row">
+        <h2>Got something<br>interesting?</h2>
+
+        <a class="contact-link" href="mailto:aby@4ofl.dev">
+          aby@4ofl.dev
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell footer">
+    <span>© 2026 Aby Mathew</span>
+
+    <div class="footer-links">
+      <a href="https://4ofl.dev/github">GitHub</a>
+      <a href="https://4ofl.dev/linkedin">LinkedIn</a>
+      <a href="https://4ofl.dev/discord">Discord</a>
+    </div>
+  </footer>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("cursor-canvas");
+      const context = canvas.getContext("2d");
+      const particles = Array.from({ length: 4 }, (_, index) => ({
+        x: innerWidth / 2,
+        y: innerHeight / 2,
+        vx: 0,
+        vy: 0,
+        lag: 0.17 - index * 0.025
+      }));
+
+      const pointer = {
+        x: innerWidth / 2,
+        y: innerHeight / 2,
+        lastMove: performance.now()
+      };
+
+      let width = 0;
+      let height = 0;
+      let ratio = 1;
+
+      const resize = () => {
+        ratio = Math.min(devicePixelRatio || 1, 2);
+        width = innerWidth;
+        height = innerHeight;
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      };
+
+      resize();
+      addEventListener("resize", resize);
+
+      addEventListener("pointermove", (event) => {
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        pointer.lastMove = performance.now();
+      }, { passive: true });
+
+      const markOffsets = [
+        [-8, -9],
+        [-8, 0],
+        [1, 0],
+        [1, 10]
+      ];
+
+      const drawMark = (opacity) => {
+        context.save();
+        context.globalAlpha = opacity;
+        context.strokeStyle = "#2857ff";
+        context.lineWidth = 1.35;
+        context.lineCap = "square";
+
+        const p0 = particles[0];
+        const p1 = particles[1];
+        const p2 = particles[2];
+        const p3 = particles[3];
+
+        context.beginPath();
+        context.moveTo(p0.x, p0.y);
+        context.lineTo(p1.x, p1.y);
+        context.lineTo(p2.x, p2.y);
+        context.moveTo(p2.x, p2.y);
+        context.lineTo(p3.x, p3.y);
+        context.stroke();
+        context.restore();
+      };
+
+      const frame = (time) => {
+        context.clearRect(0, 0, width, height);
+
+        const idle = time - pointer.lastMove > 520;
+        const settle = Math.min(1, Math.max(0, (time - pointer.lastMove - 520) / 360));
+
+        particles.forEach((particle, index) => {
+          const offset = idle ? markOffsets[index] : [0, 0];
+          const targetX = pointer.x + offset[0];
+          const targetY = pointer.y + offset[1];
+
+          particle.vx += (targetX - particle.x) * particle.lag;
+          particle.vy += (targetY - particle.y) * particle.lag;
+          particle.vx *= 0.72;
+          particle.vy *= 0.72;
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+
+          context.fillStyle = index === 0 ? "#2857ff" : "#121212";
+          context.fillRect(
+            Math.round(particle.x) - 1.5,
+            Math.round(particle.y) - 1.5,
+            3,
+            3
+          );
+        });
+
+        if (idle) {
+          drawMark(settle * 0.85);
+        }
+
+        requestAnimationFrame(frame);
+      };
+
+      requestAnimationFrame(frame);
+    })();
+  </script>
 </body>
 </html>
