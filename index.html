@@ -24,6 +24,7 @@
 
     html {
       scroll-behavior: smooth;
+      scroll-padding-top: 32px;
     }
 
     body {
@@ -515,9 +516,7 @@
         </div>
 
         <p class="about-copy">
-          i like building software that is
-          <strong>useful, weirdly specific, and actually deployed.</strong>
-          currently studying computer applications.
+          i build the things i keep looking for.
         </p>
       </div>
     </section>
@@ -546,6 +545,56 @@
 
   <script>
     (() => {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      );
+
+      const easeOutQuart = (progress) =>
+        1 - Math.pow(1 - progress, 4);
+
+      const scrollToTarget = (target) => {
+        const start = window.scrollY;
+        const targetY =
+          target === document.documentElement
+            ? 0
+            : target.getBoundingClientRect().top + window.scrollY - 24;
+        const distance = targetY - start;
+
+        if (prefersReducedMotion.matches || Math.abs(distance) < 2) {
+          window.scrollTo(0, targetY);
+          return;
+        }
+
+        const duration = Math.min(850, Math.max(440, Math.abs(distance) * 0.42));
+        const startedAt = performance.now();
+
+        const step = (now) => {
+          const progress = Math.min(1, (now - startedAt) / duration);
+          window.scrollTo(0, start + distance * easeOutQuart(progress));
+
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          }
+        };
+
+        requestAnimationFrame(step);
+      };
+
+      document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        link.addEventListener("click", (event) => {
+          const selector = link.getAttribute("href");
+          const target =
+            selector === "#top"
+              ? document.documentElement
+              : document.querySelector(selector);
+
+          if (!target) return;
+
+          event.preventDefault();
+          scrollToTarget(target);
+        });
+      });
+
       const canvas = document.getElementById("cursor-canvas");
       const context = canvas.getContext("2d");
       const particles = Array.from({ length: 4 }, (_, index) => ({
