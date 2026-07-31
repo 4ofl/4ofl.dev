@@ -38,7 +38,16 @@
       --muted: #6d6a64;
       --line: rgba(18, 18, 18, 0.17);
       --accent: #2857ff;
+      --hero-mark: rgba(40, 87, 255, 0.055);
       --max: 1220px;
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0f0f0e;
+      --ink: #f0eee8;
+      --muted: #9e9a90;
+      --line: rgba(240, 238, 232, 0.15);
+      --hero-mark: rgba(40, 87, 255, 0.11);
     }
 
     * {
@@ -160,7 +169,7 @@
       z-index: -1;
       right: clamp(-74px, -4vw, -28px);
       bottom: -0.1em;
-      color: rgba(40, 87, 255, 0.055);
+      color: var(--hero-mark);
       font-size: clamp(30rem, 49vw, 46rem);
       font-weight: 900;
       line-height: 0.72;
@@ -199,6 +208,14 @@
       color: var(--accent);
       letter-spacing: -0.01em;
       text-transform: none;
+    }
+
+    .hero-n {
+      display: inline-block;
+      margin-inline: 0.015em 0.07em;
+      font-size: 1.24em;
+      line-height: 0.8;
+      vertical-align: -0.035em;
     }
 
     .current {
@@ -523,7 +540,7 @@
 
       <div class="hero-side">
         <p class="hero-copy">
-          building things <span class="fancy-italic">n</span> breaking others.
+          building things <span class="fancy-italic hero-n">’n</span> breaking others.
         </p>
 
         <div class="current">
@@ -623,6 +640,56 @@
 
   <script>
     (() => {
+      const root = document.documentElement;
+      const themeColor = document.querySelector('meta[name="theme-color"]');
+      const storageKey = "4ofl-theme";
+
+      const applyTheme = (theme, persist = true) => {
+        root.dataset.theme = theme;
+        themeColor?.setAttribute(
+          "content",
+          theme === "dark" ? "#0f0f0e" : "#efede7"
+        );
+
+        if (persist) {
+          try {
+            localStorage.setItem(storageKey, theme);
+          } catch (_) {}
+        }
+
+        document.dispatchEvent(new CustomEvent("themechange"));
+      };
+
+      try {
+        const savedTheme = localStorage.getItem(storageKey);
+        if (savedTheme === "dark" || savedTheme === "light") {
+          applyTheme(savedTheme, false);
+        }
+      } catch (_) {}
+
+      addEventListener("keydown", (event) => {
+        const target = event.target;
+        const isTyping =
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+
+        if (
+          isTyping ||
+          event.repeat ||
+          event.ctrlKey ||
+          event.metaKey ||
+          event.altKey ||
+          event.key.toLowerCase() !== "d"
+        ) {
+          return;
+        }
+
+        applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
+      });
+    })();
+
+    (() => {
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       );
@@ -681,6 +748,18 @@
 
       const canvas = document.getElementById("cursor-canvas");
       const context = canvas.getContext("2d");
+      let accentColor = "#2857ff";
+      let inkColor = "#121212";
+
+      const syncCanvasColors = () => {
+        const styles = getComputedStyle(document.documentElement);
+        accentColor = styles.getPropertyValue("--accent").trim() || "#2857ff";
+        inkColor = styles.getPropertyValue("--ink").trim() || "#121212";
+      };
+
+      syncCanvasColors();
+      document.addEventListener("themechange", syncCanvasColors);
+
       const particles = Array.from({ length: 4 }, (_, index) => ({
         x: innerWidth / 2,
         y: innerHeight / 2,
@@ -729,7 +808,7 @@
       const drawMark = (opacity) => {
         context.save();
         context.globalAlpha = opacity;
-        context.strokeStyle = "#2857ff";
+        context.strokeStyle = accentColor;
         context.lineWidth = 1.35;
         context.lineCap = "square";
 
@@ -766,7 +845,7 @@
           particle.x += particle.vx;
           particle.y += particle.vy;
 
-          context.fillStyle = index === 0 ? "#2857ff" : "#121212";
+          context.fillStyle = index === 0 ? accentColor : inkColor;
           context.fillRect(
             Math.round(particle.x) - 1.5,
             Math.round(particle.y) - 1.5,
