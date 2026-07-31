@@ -10,6 +10,10 @@
   <link rel="canonical" href="https://4ofl.dev/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
+
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="4ofl.dev">
   <meta property="og:url" content="https://4ofl.dev/">
@@ -186,6 +190,15 @@
       line-height: 1.42;
       letter-spacing: -0.028em;
       font-weight: 600;
+    }
+
+    .fancy-italic {
+      font-family: "Newsreader", Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+      text-transform: none;
     }
 
     .current {
@@ -510,7 +523,7 @@
 
       <div class="hero-side">
         <p class="hero-copy">
-          building things n breaking others.
+          building things <span class="fancy-italic">n</span> breaking others.
         </p>
 
         <div class="current">
@@ -581,14 +594,14 @@
         </div>
 
         <p class="about-copy">
-          i <strong>build</strong> the things i <strong>keep looking for</strong>.
+          i <strong>build</strong> the things i <span class="fancy-italic">keep looking for</span>.
         </p>
       </div>
     </section>
 
     <section class="shell contact">
       <div class="contact-row">
-        <h2>Got something<br><strong>interesting</strong>?</h2>
+        <h2>Got something<br><span class="fancy-italic">interesting?</span></h2>
 
         <a class="contact-link" href="mailto:aby@4ofl.dev">
           aby@4ofl.dev
