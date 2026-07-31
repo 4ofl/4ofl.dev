@@ -140,12 +140,30 @@
     }
 
     .hero {
+      position: relative;
       min-height: 72svh;
       display: grid;
       grid-template-columns: minmax(0, 1.28fr) minmax(280px, 0.72fr);
       align-items: end;
       gap: clamp(52px, 9vw, 132px);
       padding: clamp(92px, 13vw, 160px) 0 76px;
+      isolation: isolate;
+    }
+
+    .hero::after {
+      content: "4";
+      position: absolute;
+      z-index: -1;
+      right: clamp(-74px, -4vw, -28px);
+      bottom: -0.1em;
+      color: rgba(40, 87, 255, 0.055);
+      font-size: clamp(30rem, 49vw, 46rem);
+      font-weight: 900;
+      line-height: 0.72;
+      letter-spacing: -0.12em;
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
 
     .location {
@@ -378,6 +396,13 @@
         min-height: auto;
       }
 
+      .hero::after {
+        right: -36px;
+        bottom: 0.04em;
+        font-size: clamp(24rem, 72vw, 34rem);
+        opacity: 0.78;
+      }
+
       .hero-side {
         max-width: 620px;
       }
@@ -411,6 +436,13 @@
 
       .hero {
         padding: 72px 0 66px;
+      }
+
+      .hero::after {
+        right: -18px;
+        bottom: 0.34em;
+        font-size: 19rem;
+        opacity: 0.5;
       }
 
       h1 {
