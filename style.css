@@ -553,26 +553,6 @@
 }
 
 
-/* Skip Link */
-.skip-link {
-  position: absolute;
-  top: -60px;
-  left: 0;
-  background: var(--accent);
-  color: white;
-  padding: 12px 24px;
-  z-index: 999;
-  font-weight: bold;
-  text-decoration: none;
-  border-bottom-right-radius: 8px;
-  transition: top 200ms ease;
-}
-
-.skip-link:focus {
-  top: 0;
-  outline: none;
-}
-
 /* Theme Toggle Button */
 .theme-toggle {
   background: none;

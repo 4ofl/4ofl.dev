@@ -92,8 +92,6 @@
       };
 
       document.querySelectorAll('a[href^="#"]').forEach((link) => {
-        if (link.classList.contains("skip-link")) return;
-
         link.addEventListener("click", (event) => {
           const selector = link.getAttribute("href");
           const target =
