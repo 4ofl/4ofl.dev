@@ -54,6 +54,10 @@
       outline-offset: 5px;
     }
 
+    main:focus {
+      outline: none;
+    }
+
     ::selection {
       color: white;
       background: var(--accent);
@@ -90,6 +94,7 @@
 
     .nav {
       display: flex;
+      align-items: center;
       gap: 20px;
       color: var(--muted);
       font-size: 0.82rem;
@@ -546,3 +551,53 @@
     right: 20px;
   }
 }
+
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  background: var(--accent);
+  color: white;
+  padding: 12px 24px;
+  z-index: 999;
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom-right-radius: 8px;
+  transition: top 200ms ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: none;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 200ms ease;
+  border-radius: 6px;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  background: var(--line);
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+html[data-theme="dark"] .sun-icon { display: block; }
+html[data-theme="dark"] .moon-icon { display: none; }
+html:not([data-theme="dark"]) .sun-icon { display: none; }
+html:not([data-theme="dark"]) .moon-icon { display: block; }

@@ -19,6 +19,13 @@
         document.dispatchEvent(new CustomEvent("themechange"));
       };
 
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", () => {
+          applyTheme(root.dataset.theme === "dark" ? "light" : "dark");
+        });
+      }
+
       try {
         const savedTheme = localStorage.getItem(storageKey);
         if (savedTheme === "dark" || savedTheme === "light") {
@@ -85,6 +92,8 @@
       };
 
       document.querySelectorAll('a[href^="#"]').forEach((link) => {
+        if (link.classList.contains("skip-link")) return;
+
         link.addEventListener("click", (event) => {
           const selector = link.getAttribute("href");
           const target =
