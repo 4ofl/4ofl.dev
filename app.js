@@ -238,7 +238,7 @@
 
     const CACHE = "4ofl-recent";
     try {
-      const cached = JSON.parse(sessionStorage.getItem(CACHE) || "null");
+      const cached = JSON.parse(localStorage.getItem(CACHE) || "null");
       if (cached) {
         render(cached);
         if (Date.now() - cached.t < 2 * 60 * 1000) {
@@ -249,25 +249,32 @@
 
     const json = (res) => (res.ok ? res.json() : Promise.reject());
 
+    const fetchPublic = () =>
+      fetch("https://api.github.com/users/4ofl/events/public?per_page=30", {
+        headers: { Accept: "application/vnd.github+json" }
+      })
+        .then(json)
+        .then((events) => {
+          const push = events.find((e) => e.type === "PushEvent");
+          if (!push) return Promise.reject();
+          return { repo: push.repo.name, at: push.created_at };
+        });
+
     const request = RECENT_URL
       ? fetch(RECENT_URL)
           .then(json)
-          .then((d) => ({ repo: d.name ? `4ofl/${d.name}` : null, at: d.at }))
-      : fetch("https://api.github.com/users/4ofl/events/public?per_page=30", {
-          headers: { Accept: "application/vnd.github+json" }
-        })
-          .then(json)
-          .then((events) => {
-            const push = events.find((e) => e.type === "PushEvent");
-            if (!push) return Promise.reject();
-            return { repo: push.repo.name, at: push.created_at };
-          });
+          .then((d) => {
+            if (!d.at) return Promise.reject();
+            return { repo: d.name ? `4ofl/${d.name}` : null, at: d.at };
+          })
+          .catch(() => fetchPublic())
+      : fetchPublic();
 
     request
       .then((d) => {
         const data = { ...d, t: Date.now() };
         try {
-          sessionStorage.setItem(CACHE, JSON.stringify(data));
+          localStorage.setItem(CACHE, JSON.stringify(data));
         } catch (_) {}
         render(data);
       })
