@@ -6,13 +6,21 @@
   <meta name="description" content="Building things n breaking others. Software, infrastructure, and projects by Aby Mathew.">
   <meta name="author" content="Aby Mathew">
   <meta name="theme-color" content="#efede7">
+  <script>
+    try {
+      var s = localStorage.getItem("4ofl-theme");
+      var t = s === "dark" || s === "light" ? s : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = t;
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "dark" ? "#0f0f0e" : "#efede7");
+    } catch (e) {}
+  </script>
 
   <link rel="canonical" href="https://4ofl.dev/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700;800;900&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="4ofl.dev">
@@ -37,7 +45,7 @@
     "name": "Aby Mathew",
     "url": "https://4ofl.dev/",
     "sameAs": [
-      "https://4ofl.dev/github",
+      "https://github.com/4ofl",
       "https://4ofl.dev/linkedin",
       "https://4ofl.dev/discord"
     ],
@@ -57,6 +65,7 @@
     <a class="brand" href="#top">4ofl.dev</a>
 
     <nav class="nav" aria-label="Primary navigation">
+      <span class="topbar-clock"><i class="pulse" aria-hidden="true"></i><span id="clock">Kerala · IST</span></span>
       <a href="#projects">Work</a>
       <a href="#about">About</a>
       <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
@@ -69,12 +78,12 @@
   <main id="top" tabindex="-1">
     <section class="shell hero">
       <div>
-        <h1>Aby<br>Mathew</h1>
+        <h1 aria-label="Aby Mathew"><span class="line" style="--i:0" aria-hidden="true"><span>Aby</span></span><span class="line" style="--i:1" aria-hidden="true"><span>Mathew</span></span></h1>
       </div>
 
       <div class="hero-side">
         <p class="hero-copy">
-          building things <span class="fancy-italic hero-n">’n</span> breaking others.
+          building things <span class="fancy-italic hero-n">’n</span> <span class="glitch" data-text="breaking">breaking</span> others.
         </p>
 
         <div class="current">
@@ -93,7 +102,7 @@
       </div>
 
       <div class="projects">
-        <article class="project">
+        <article class="project" data-tags="RAG,Academic,MGU documents">
           <h3><a href="https://citecamp.4ofl.dev" target="_blank" rel="noopener noreferrer" class="project-link">CiteCamp</a></h3>
 
           <div class="project-meta">
@@ -105,11 +114,11 @@
           <span class="project-arrow" aria-hidden="true">↗</span>
         </article>
 
-        <article class="project">
+        <article class="project" data-tags="Discord,Utilities,Personal + server">
           <h3><a href="https://june.4ofl.dev" target="_blank" rel="noopener noreferrer" class="project-link">June</a></h3>
 
           <div class="project-meta">
-            <span class="project-status">Running</span>
+            <span class="project-status"><i class="pulse" aria-hidden="true"></i>Running</span>
             Bespoke Discord application<br>
             Personal and server utilities
           </div>
@@ -117,11 +126,11 @@
           <span class="project-arrow" aria-hidden="true">↗</span>
         </article>
 
-        <article class="project">
+        <article class="project" data-tags="Offline-first,Biometrics,Payments,Attendance">
           <h3><a href="https://github.com/4ofl/johnsfitness-edge" target="_blank" rel="noopener noreferrer" class="project-link">Johns Fitness</a></h3>
 
           <div class="project-meta">
-            <span class="project-status">Running · Architecture</span>
+            <span class="project-status"><i class="pulse" aria-hidden="true"></i>Running · Architecture</span>
             Offline-first gym management<br>
             Memberships, payments, biometrics, and attendance
           </div>
@@ -144,6 +153,7 @@
           Kerala, India<br>
           Computer applications<br>
           Software and infrastructure
+          <span class="recent" id="recent" hidden></span>
         </div>
 
         <p class="about-copy">
@@ -156,10 +166,13 @@
       <div class="contact-row">
         <h2>Got something<br><span class="fancy-italic">interesting</span>?</h2>
 
-        <a class="contact-link" href="mailto:aby@4ofl.dev">
-          aby@4ofl.dev
-          <span aria-hidden="true">↗</span>
-        </a>
+        <div class="contact-actions">
+          <a class="contact-link" href="mailto:aby@4ofl.dev">
+            aby@4ofl.dev
+            <span aria-hidden="true">↗</span>
+          </a>
+          <button type="button" class="copy-btn" id="copy-email" aria-live="polite">copy</button>
+        </div>
       </div>
     </section>
   </main>
@@ -171,6 +184,7 @@
       <a href="https://4ofl.dev/github" target="_blank" rel="noopener noreferrer">GitHub</a>
       <a href="https://4ofl.dev/linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       <a href="https://4ofl.dev/discord" target="_blank" rel="noopener noreferrer">Discord</a>
+      <button type="button" class="term-hint" id="term-open" aria-label="Open terminal">&gt;_</button>
     </div>
   </footer>
 
