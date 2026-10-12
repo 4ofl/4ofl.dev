@@ -220,7 +220,7 @@
 
     // Set to your Cloudflare Worker URL to include private repos (see worker.js).
     // Leave empty to fall back to public GitHub activity only.
-    const RECENT_URL = "worker-round-credit-5733.abyperhaps.workers.dev";
+    const RECENT_URL = "https://worker-round-credit-5733.abyperhaps.workers.dev";
 
     const render = ({ repo, at }) => {
       if (repo) {
