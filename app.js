@@ -239,9 +239,11 @@
     const CACHE = "4ofl-recent";
     try {
       const cached = JSON.parse(sessionStorage.getItem(CACHE) || "null");
-      if (cached && Date.now() - cached.t < 30 * 60 * 1000) {
+      if (cached) {
         render(cached);
-        return;
+        if (Date.now() - cached.t < 2 * 60 * 1000) {
+          return;
+        }
       }
     } catch (_) {}
 
