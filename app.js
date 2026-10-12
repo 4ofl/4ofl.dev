@@ -218,13 +218,21 @@
       return `${Math.round(s / 86400)}d ago`;
     };
 
+    // Set to your Cloudflare Worker URL to include private repos (see worker.js).
+    // Leave empty to fall back to public GitHub activity only.
+    const RECENT_URL = "";
+
     const render = ({ repo, at }) => {
-      const link = document.createElement("a");
-      link.href = `https://github.com/${repo}`;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = repo.split("/")[1] || repo;
-      slot.replaceChildren("Last push: ", link, ` · ${ago(at)}`);
+      if (repo) {
+        const link = document.createElement("a");
+        link.href = `https://github.com/${repo}`;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = repo.split("/")[1] || repo;
+        slot.replaceChildren("Last push: ", link, ` · ${ago(at)}`);
+      } else {
+        slot.replaceChildren(`Last push: a private repo · ${ago(at)}`);
+      }
       slot.hidden = false;
     };
 
@@ -237,14 +245,25 @@
       }
     } catch (_) {}
 
-    fetch("https://api.github.com/users/4ofl/events/public?per_page=30", {
-      headers: { Accept: "application/vnd.github+json" }
-    })
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((events) => {
-        const push = events.find((e) => e.type === "PushEvent");
-        if (!push) return;
-        const data = { repo: push.repo.name, at: push.created_at, t: Date.now() };
+    const json = (res) => (res.ok ? res.json() : Promise.reject());
+
+    const request = RECENT_URL
+      ? fetch(RECENT_URL)
+          .then(json)
+          .then((d) => ({ repo: d.name ? `4ofl/${d.name}` : null, at: d.at }))
+      : fetch("https://api.github.com/users/4ofl/events/public?per_page=30", {
+          headers: { Accept: "application/vnd.github+json" }
+        })
+          .then(json)
+          .then((events) => {
+            const push = events.find((e) => e.type === "PushEvent");
+            if (!push) return Promise.reject();
+            return { repo: push.repo.name, at: push.created_at };
+          });
+
+    request
+      .then((d) => {
+        const data = { ...d, t: Date.now() };
         try {
           sessionStorage.setItem(CACHE, JSON.stringify(data));
         } catch (_) {}
@@ -465,7 +484,6 @@
     if (el.closest(".term")) return "hidden";
     if (el.closest(".project")) return "project";
     if (el.closest("a, button, input, [role='button']")) return "link";
-    if (el.closest("p, h1, h2, h3, .about-meta, .current")) return "text";
     return "default";
   };
 
@@ -508,7 +526,6 @@
 
     const MARK = [[-8, -9], [-8, 0], [1, 0], [1, 10]];
     const CORNERS = [[-11, -11], [11, -11], [11, 11], [-11, 11]];
-    const CARET = [[0, -10], [0, -3], [0, 3], [0, 10]];
     const ZERO = [0, 0];
 
     const particles = Array.from({ length: 4 }, (_, i) => ({
@@ -561,13 +578,6 @@
       });
     };
 
-    const drawCaret = () => {
-      ctx.beginPath();
-      ctx.moveTo(particles[0].x, particles[0].y);
-      ctx.lineTo(particles[3].x, particles[3].y);
-      ctx.stroke();
-    };
-
     const frame = (time) => {
       ctx.clearRect(0, 0, width, height);
 
@@ -578,7 +588,7 @@
       const idle = time - pointer.lastMove > 520;
       const settle = Math.min(1, Math.max(0, (time - pointer.lastMove - 520) / 360));
       const offsets =
-        mode === "link" ? CORNERS : mode === "text" ? CARET : idle ? MARK : null;
+        mode === "link" ? CORNERS : idle ? MARK : null;
 
       particles.forEach((p, i) => {
         const o = offsets ? offsets[i] : ZERO;
@@ -605,8 +615,6 @@
 
         if (mode === "link") {
           drawBrackets();
-        } else if (mode === "text") {
-          drawCaret();
         } else if (idle) {
           ctx.globalAlpha = alpha * settle * 0.85;
           drawMark();
