@@ -1,50 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Page not found.">
-  <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#efede7">
-  <title>404 — 4ofl.dev</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 · retrieval failed · 4ofl</title>
+  <meta name="theme-color" content="#08080a" />
+  <meta name="description" content="404 - Page not found. This route does not exist in the 4ofl index." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-  <script>
-    try {
-      var s = localStorage.getItem("4ofl-theme");
-      var t = s === "dark" || s === "light" ? s : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      document.documentElement.dataset.theme = t;
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "dark" ? "#0f0f0e" : "#efede7");
-    } catch (e) {}
-  </script>
-
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700;800;900&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
-  <!-- absolute paths: the 404 page is served from any URL depth -->
-  <link rel="stylesheet" href="/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="/style.css" />
 </head>
-
 <body>
-  <canvas class="cursor-canvas" id="cursor-canvas" aria-hidden="true"></canvas>
+  <!-- Ambient background effects -->
+  <div class="spot" id="spot" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
 
-  <header class="shell topbar">
-    <a class="brand" href="/">4ofl.dev</a>
-    <nav class="nav" aria-label="Primary navigation">
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-    </nav>
-  </header>
+  <!-- Top bar -->
+  <div class="top-fade" style="opacity:1" aria-hidden="true"></div>
+  <a class="wordmark active" href="/" aria-label="Aby Mathew · 4ofl.dev home" data-tooltip="Go to 4ofl.dev home" style="opacity:1">
+    <span style="font-family:'Bricolage Grotesque', sans-serif; font-size:1.4rem; font-weight:800; letter-spacing:-0.04em; color:var(--bone)">4ofl<span style="color:var(--accent)">.dev</span></span>
+  </a>
 
-  <main class="shell notfound" id="top">
-    <div class="code">404</div>
-    <h1 aria-label="lost."><span class="line" aria-hidden="true"><span>lost.</span></span></h1>
-    <p>this page does not exist.</p>
-    <a class="back" href="/">home</a>
+  <!-- Build vs Break Mode Switcher -->
+  <button class="mode" id="modeBtn" aria-pressed="false" aria-label="Switch between build and break view" data-tooltip="Toggle Build / Break mode" data-tooltip-kbd="B">
+    <span>build</span><span>break</span>
+  </button>
+
+  <main class="notfound-body">
+    <div class="notfound-card">
+      <div class="notfound-badge">
+        <span class="pulse" aria-hidden="true"></span>
+        <span>retrieval exception · 404</span>
+      </div>
+
+      <div class="notfound-code">404</div>
+      <h1 class="notfound-title">lost in <i>retrieval</i>.</h1>
+      <p class="notfound-desc">
+        the clause or document you requested does not exist in this index. either the route was moved, or you dropped into an unpinned link.
+      </p>
+
+      <div class="break-note" style="margin-bottom:1.5rem">
+        zero documents matched this query across the local SQLite cluster and edge gateways. fail fast, don't guess.
+      </div>
+
+      <div class="notfound-terminal" aria-label="Error diagnostic output">
+        <div><span style="color:var(--bone)">&gt; GET</span> <span id="termPath" style="color:var(--accent)">/route</span> <span style="color:var(--mist)">HTTP/2.0</span></div>
+        <div>&gt; Host: 4ofl.dev</div>
+        <div class="term-err">&lt; 404 NOT_FOUND [clause_unresolved]</div>
+        <div>&lt; timestamp: <span id="termTime"></span></div>
+        <div>&lt; gateway: edge-bom1 (kerala, in) · 0 documents retrieved</div>
+      </div>
+
+      <div class="notfound-actions">
+        <a href="/" class="notfound-btn" data-tooltip="Return to homepage" data-tooltip-kbd="Esc">
+          ← return home
+        </a>
+        <button type="button" class="notfound-btn ghost" id="retryBtn" data-tooltip="Simulate route re-query">
+          retry route
+        </button>
+        <button type="button" class="notfound-btn ghost" id="copyUrlBtn" data-tooltip="Copy current URL">
+          copy path
+        </button>
+      </div>
+    </div>
+
+    <div class="notfound-foot">
+      <span>© 2026 aby mathew · </span>
+      <span id="clock">kerala</span>
+      <span> · press [esc] to go home</span>
+    </div>
   </main>
 
-  <script src="/app.js" defer></script>
+  <script src="/404.js" defer></script>
 </body>
 </html>

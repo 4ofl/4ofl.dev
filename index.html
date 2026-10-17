@@ -1,43 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Building things n breaking others. Software, infrastructure, and projects by Aby Mathew.">
-  <meta name="author" content="Aby Mathew">
-  <meta name="theme-color" content="#efede7">
-  <script>
-    try {
-      var s = localStorage.getItem("4ofl-theme");
-      var t = s === "dark" || s === "light" ? s : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-      document.documentElement.dataset.theme = t;
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", t === "dark" ? "#0f0f0e" : "#efede7");
-    } catch (e) {}
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>aby mathew · 4ofl</title>
+  <meta name="theme-color" content="#08080a" />
+  <meta name="description" content="Aby Mathew builds offline-first apps, retrieval systems and bots, then breaks them on purpose." />
+  <meta name="author" content="Aby Mathew" />
+  <link rel="canonical" href="https://4ofl.dev/" />
 
-  <link rel="canonical" href="https://4ofl.dev/">
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://4ofl.dev/" />
+  <meta property="og:site_name" content="4ofl.dev" />
+  <meta property="og:title" content="aby mathew · 4ofl" />
+  <meta property="og:description" content="Offline-first apps, retrieval systems and bots." />
+  <meta property="og:image" content="https://4ofl.dev/social-card.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600;700;800;900&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="aby mathew · 4ofl" />
+  <meta name="twitter:description" content="Offline-first apps, retrieval systems and bots." />
+  <meta name="twitter:image" content="https://4ofl.dev/social-card.png" />
 
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="4ofl.dev">
-  <meta property="og:url" content="https://4ofl.dev/">
-  <meta property="og:locale" content="en_US">
-  <meta property="og:title" content="Aby Mathew — 4ofl.dev">
-  <meta property="og:description" content="Building things n breaking others.">
-  <meta property="og:image" content="https://4ofl.dev/social-card.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Aby Mathew — 4ofl.dev">
-  <meta name="twitter:description" content="Building things n breaking others.">
-  <meta name="twitter:image" content="https://4ofl.dev/social-card.png">
-
+  <!-- Structured JSON-LD -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -46,154 +34,265 @@
     "url": "https://4ofl.dev/",
     "sameAs": [
       "https://github.com/4ofl",
-      "https://4ofl.dev/linkedin",
-      "https://4ofl.dev/discord"
+      "https://linkedin.com/in/abyperhaps",
+      "https://discord.com/users/1310480351008657420"
     ],
     "jobTitle": "Software Developer",
-    "description": "Building things n breaking others. Software, infrastructure, and projects by Aby Mathew."
+    "description": "Aby Mathew builds offline-first apps, retrieval systems and bots, then breaks them on purpose."
   }
   </script>
-  <title>Aby Mathew — 4ofl.dev</title>
 
-  <link rel="stylesheet" href="./style.css">
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="/favicon-16x16.png" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Fonts & Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
-  <canvas class="cursor-canvas" id="cursor-canvas" aria-hidden="true"></canvas>
+  <!-- Accessibility skip link -->
+  <a href="#work" class="skip-link">Skip to work</a>
 
-  <header class="shell topbar">
-    <a class="brand" href="#top">4ofl.dev</a>
+  <!-- Ambient canvas & background effects -->
+  <div class="spot" id="spot" aria-hidden="true"></div>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <canvas id="streamlines" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
 
-    <nav class="nav" aria-label="Primary navigation">
-      <span class="topbar-clock"><i class="pulse" aria-hidden="true"></i><span id="clock">Kerala · IST</span></span>
-      <a href="#projects">Work</a>
-      <a href="#about">About</a>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
-        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-    </nav>
-  </header>
+  <!-- Hero copy: visible immediately alongside the 3D 4 -->
+  <div class="name-reveal" id="nameReveal">
+    <div class="hero-eyebrow">
+      <span class="pulse" aria-hidden="true"></span>
+      <span>bca undergrad · kerala, in</span>
+    </div>
+    <h1 class="title-name">aby<br>mathew</h1>
+    <p class="title-sub">building things <i>’n</i> breaking others.</p>
+    <p class="break-note hero-break-note">half of learning systems is watching your own code catch fire at 2am and figuring out why.</p>
+  </div>
 
-  <main id="top" tabindex="-1">
-    <section class="shell hero">
-      <div>
-        <h1 aria-label="Aby Mathew"><span class="line" style="--i:0" aria-hidden="true"><span>Aby</span></span><span class="line" style="--i:1" aria-hidden="true"><span>Mathew</span></span></h1>
+  <!-- Top bar & docked logo -->
+  <div class="top-fade" id="topFade" aria-hidden="true"></div>
+  <button class="wordmark" id="wordmark" aria-label="Aby Mathew · Back to top" data-tooltip="Back to top" tabindex="-1">
+    <svg class="wordmark-svg" id="wordmarkSvg" viewBox="0 0 220 64" preserveAspectRatio="xMinYMid meet" aria-hidden="true"></svg>
+  </button>
+
+  <nav class="nav" aria-label="Primary navigation">
+    <a href="#work">work</a>
+    <a href="#about">about</a>
+    <a href="#contact">contact</a>
+  </nav>
+
+  <!-- Scroll guidance -->
+  <div class="scroll-hint" id="scrollHint" aria-hidden="true">
+    <span>scroll</span>
+  </div>
+
+  <!-- Build vs Break Mode Switcher -->
+  <button class="mode" id="modeBtn" aria-pressed="false" aria-label="Switch between build and break view" data-tooltip="Toggle Build / Break mode" data-tooltip-kbd="B">
+    <span>build</span><span>break</span>
+  </button>
+
+  <!-- Scroll choreo spacer -->
+  <div class="spacer" aria-hidden="true"></div>
+
+  <main>
+    <!-- Section 1: Selected Work -->
+    <section id="work">
+      <div class="section-kicker">
+        <span>selected work (03)</span>
+        <span>press [b] for post-mortems</span>
       </div>
 
-      <div class="hero-side">
-        <p class="hero-copy">
-          building things <span class="fancy-italic hero-n">’n</span> <span class="glitch" data-text="breaking">breaking</span> others.
-        </p>
+      <ul class="index" id="index">
 
-        <div class="current">
-          Planning <strong>CiteCamp</strong> and building
-          <strong>June</strong> and <strong>Johns Fitness</strong>.
-        </div>
-      </div>
+        <!-- 01: CiteCamp -->
+        <li class="row">
+          <button class="row-head" aria-expanded="false" aria-controls="p-cc">
+            <span class="row-name">citecamp</span>
+            <span class="row-meta">rag · academic ai</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="row-panel" id="p-cc" inert>
+            <div class="panel-inner">
+              <div class="panel-body">
+                <div class="panel-copy">
+                  <p>A RAG-based academic assistant. It indexes curated university and college documentation and answers questions from those documents, with the source next to every claim.</p>
+                  <div class="break-note">
+                    The first version happily invented fake exam rules whenever a PDF table split across two pages. Had to force strict citation pinning so if it can’t point to the exact clause, it refuses to guess.
+                  </div>
+                  <p class="stack">retrieval · curated documents · cited answers</p>
+                  <p class="links">
+                    <a href="https://citecamp.4ofl.dev" target="_blank" rel="noopener noreferrer" data-tooltip="Open CiteCamp assistant ↗">visit citecamp ↗</a>
+                  </p>
+                </div>
+                <div class="demo" id="demo-cc">
+                  <div class="chat" id="ccChat" aria-live="polite">
+                    <p class="empty">Ask a question to see retrieval and citations at work.</p>
+                  </div>
+                  <div class="chips" id="ccChips">
+                    <button class="chip" data-q="0" data-tooltip="Ask about exam attendance rule">attendance for exams?</button>
+                    <button class="chip" data-q="1" data-tooltip="Ask about official transcripts">get an official transcript?</button>
+                    <button class="chip" data-q="2" data-tooltip="Ask about paper re-evaluation">re-evaluate a paper?</button>
+                  </div>
+                  <p class="demo-note">interactive demo · sample university circulars</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- 02: Johns Fitness Edge -->
+        <li class="row">
+          <button class="row-head" aria-expanded="false" aria-controls="p-jfe">
+            <span class="row-name">johns fitness</span>
+            <span class="row-meta">offline-first · biometrics</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="row-panel" id="p-jfe" inert>
+            <div class="panel-inner">
+              <div class="panel-body">
+                <div class="panel-copy">
+                  <p>A gym system built to keep working when the internet doesn’t. Biometric hardware authenticates with zero latency, everything lands in local SQLite first, and a sync queue catches the cloud up later.</p>
+                  <div class="break-note">
+                    ISP lines drop constantly during the 6am peak rush. If the turnstile waits on a cloud webhook, 30 people get stuck outside sweating. Local WAL-mode SQLite opens the relay in 12ms and syncs whenever Wi-Fi comes back.
+                  </div>
+                  <p class="stack">sqlite · sync queue · biometric hardware</p>
+                  <p class="links">
+                    <a href="https://github.com/4ofl/johnsfitness-edge" target="_blank" rel="noopener noreferrer" data-tooltip="View source repository on GitHub ↗">source on github ↗</a>
+                  </p>
+                </div>
+                <div class="demo" id="demo-jfe">
+                  <div class="jfe-top">
+                    <button class="switch" id="jfeNet" role="switch" aria-checked="true" data-tooltip="Toggle network online/offline to test sync queue">
+                      <span class="dot"></span><span id="jfeNetLabel">network online</span>
+                    </button>
+                    <span class="queue">sync queue <b id="jfeQ">0</b></span>
+                  </div>
+                  <div class="scanner">
+                    <button class="fp" id="jfeFp" aria-label="Scan fingerprint" data-tooltip="Tap to simulate fingerprint scan"></button>
+                    <div class="res" aria-live="polite">
+                      <b id="jfeRes">ready</b><span id="jfeSub">tap the fingerprint</span>
+                    </div>
+                  </div>
+                  <ul class="log" id="jfeLog"></ul>
+                  <p class="demo-note">kill the network switch above, scan a few times, then reconnect</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <!-- 03: June -->
+        <li class="row">
+          <button class="row-head" aria-expanded="false" aria-controls="p-jn">
+            <span class="row-name">june</span>
+            <span class="row-meta">infrastructure · bots</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="row-panel" id="p-jn" inert>
+            <div class="panel-inner">
+              <div class="panel-body">
+                <div class="panel-copy">
+                  <p>A bespoke Discord application that handles server automation, personal utilities, and real-time state gateways.</p>
+                  <div class="break-note">
+                    Discord’s WebSocket gateway loves dropping into zombie connections without sending a close frame. Built a custom heartbeat state machine and persistent timer queue because I got tired of SSH-ing in between classes.
+                  </div>
+                  <p class="stack">discord · automation · state gateways</p>
+                  <p class="links">
+                    <a href="https://docs.june.4ofl.dev" target="_blank" rel="noopener noreferrer" data-tooltip="Read June documentation ↗">read the docs ↗</a>
+                  </p>
+                </div>
+                <div class="demo" id="demo-jn">
+                  <div class="term" id="jnTerm" aria-live="polite">
+                    <div class="out">june is online. run a command below or type your own.</div>
+                  </div>
+                  <div class="term-input-row">
+                    <span class="term-prompt">&gt;</span>
+                    <input type="text" class="term-input" id="jnInput" placeholder="type /help, /ping, /status..." autocomplete="off" spellcheck="false" aria-label="Terminal command prompt" />
+                  </div>
+                  <div class="chips" id="jnChips">
+                    <button class="chip" data-c="/ping" data-tooltip="Run /ping latency check">/ping</button>
+                    <button class="chip" data-c="/status" data-tooltip="Inspect bot gateway shard and uptime">/status</button>
+                    <button class="chip" data-c="/remind 5s stretch" data-tooltip="Set a 5-second asynchronous reminder">/remind 5s stretch</button>
+                  </div>
+                  <p class="demo-note">live gateway terminal simulation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+      </ul>
     </section>
 
-    <section class="shell section" id="projects">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">Selected work</p>
-          <h2 class="section-title">Projects.</h2>
-        </div>
-      </div>
-
-      <div class="projects">
-        <article class="project" data-tags="RAG,Academic,MGU documents">
-          <h3><a href="https://citecamp.4ofl.dev" target="_blank" rel="noopener noreferrer" class="project-link">CiteCamp</a></h3>
-
-          <div class="project-meta">
-            <span class="project-status">Planning</span>
-            RAG-based academic assistant<br>
-            Curated MGU and college documents
-          </div>
-
-          <span class="project-arrow" aria-hidden="true">↗</span>
-        </article>
-
-        <article class="project" data-tags="Discord,Utilities,Personal + server">
-          <h3><a href="https://june.4ofl.dev" target="_blank" rel="noopener noreferrer" class="project-link">June</a></h3>
-
-          <div class="project-meta">
-            <span class="project-status"><i class="pulse" aria-hidden="true"></i>Running</span>
-            Bespoke Discord application<br>
-            Personal and server utilities
-          </div>
-
-          <span class="project-arrow" aria-hidden="true">↗</span>
-        </article>
-
-        <article class="project" data-tags="Offline-first,Biometrics,Payments,Attendance">
-          <h3><a href="https://github.com/4ofl/johnsfitness-edge" target="_blank" rel="noopener noreferrer" class="project-link">Johns Fitness</a></h3>
-
-          <div class="project-meta">
-            <span class="project-status"><i class="pulse" aria-hidden="true"></i>Running · Architecture</span>
-            Offline-first gym management<br>
-            Memberships, payments, biometrics, and attendance
-          </div>
-
-          <span class="project-arrow" aria-hidden="true">↗</span>
-        </article>
-      </div>
-    </section>
-
-    <section class="shell section" id="about">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">About</p>
-          <h2 class="section-title">not quite a résumé.</h2>
-        </div>
-      </div>
-
+    <!-- Section 2: About + Bench Notes -->
+    <section id="about">
       <div class="about-grid">
-        <div class="about-meta">
-          Kerala, India<br>
-          Computer applications<br>
-          Software and infrastructure
-          <span class="recent" id="recent" hidden></span>
+        <div>
+          <p class="about-p" id="aboutP">aby. bca student, kerala. i build stuff that keeps working when the wifi dies, then spend way too long trying to kill it. currently learning ai and ml and pretending that’s under control.</p>
+          <p class="break-note">most of my favorite projects started because an existing tool annoyed me enough to write my own from scratch.</p>
         </div>
-
-        <p class="about-copy">
-          i <strong>build</strong> the things i <span class="fancy-italic">keep looking for</span>.
-        </p>
+        <div class="bench-notes">
+          <div class="bench-row">
+            <span class="bench-label">based</span>
+            <span class="bench-val">Changanassery, Kerala</span>
+          </div>
+          <div class="bench-row">
+            <span class="bench-label">workbench</span>
+            <span class="bench-val">Python, C, Node.js, SQLite, Docker, Linux</span>
+          </div>
+          <div class="bench-row">
+            <span class="bench-label">focus</span>
+            <span class="bench-val">Local-first software, RAG pipelines, edge AI</span>
+          </div>
+          <div class="bench-row">
+            <span class="bench-label">recent</span>
+            <span class="bench-val" id="recentPush">loading activity…</span>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="shell contact">
-      <div class="contact-row">
-        <h2>Got something<br><span class="fancy-italic">interesting</span>?</h2>
-
-        <div class="contact-actions">
-          <a class="contact-link" href="mailto:aby@4ofl.dev">
-            aby@4ofl.dev
-            <span aria-hidden="true">↗</span>
-          </a>
-          <button type="button" class="copy-btn" id="copy-email" aria-live="polite">copy</button>
-        </div>
+    <!-- Section 3: Contact & Links -->
+    <section id="contact">
+      <p class="contact-lead">Got something worth building, or breaking?</p>
+      <a class="mail" id="mail" href="mailto:aby@4ofl.dev" data-tooltip="Click to copy email address">aby@4ofl.dev</a>
+      <div class="mail-sub">
+        <span id="mailState" aria-live="polite">[click email to copy]</span>
+        <a href="https://github.com/4ofl" target="_blank" rel="noopener noreferrer" data-tooltip="Aby's GitHub profile ↗">github ↗</a>
+        <a href="https://linkedin.com/in/abyperhaps" target="_blank" rel="noopener noreferrer" data-tooltip="Aby's LinkedIn profile ↗">linkedin ↗</a>
+        <a href="https://discord.com/users/1310480351008657420" target="_blank" rel="noopener noreferrer" data-tooltip="Connect on Discord ↗">discord ↗</a>
+      </div>
+      <div class="foot">
+        <span>© 2026 aby mathew</span>
+        <span id="clock">kerala</span>
+        <span>4ofl.dev</span>
       </div>
     </section>
   </main>
 
-  <footer class="shell footer">
-    <span>© 2026 Aby Mathew</span>
-
-    <div class="footer-links">
-      <a href="https://4ofl.dev/github" target="_blank" rel="noopener noreferrer">GitHub</a>
-      <a href="https://4ofl.dev/linkedin" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-      <a href="https://4ofl.dev/discord" target="_blank" rel="noopener noreferrer">Discord</a>
-      <button type="button" class="term-hint" id="term-open" aria-label="Open terminal">&gt;_</button>
+  <!-- Floating cursor preview on row hover -->
+  <div class="peek" id="peek" aria-hidden="true">
+    <div class="peek-item" data-p="0">
+      <i class="sk a"></i><i class="sk b"></i><i class="sk c"></i><span class="cite">1</span>
     </div>
-  </footer>
+    <div class="peek-item" data-p="1" style="flex-direction:row;align-items:center;gap:1rem">
+      <div class="pk-ring"></div>
+      <span class="mono"><b>verified</b><br>12 ms · sqlite wal</span>
+    </div>
+    <div class="peek-item" data-p="2">
+      <span class="mono"><b>/ping</b></span>
+      <span class="mono">pong · gateway 32ms</span>
+    </div>
+  </div>
 
-  <a href="#top" id="scroll-top-btn" class="scroll-top-btn" aria-label="Back to top">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 19V5M5 12l7-7 7 7"/>
-    </svg>
-  </a>
-
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="./app.js" defer></script>
 </body>
 </html>
