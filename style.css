@@ -74,9 +74,15 @@ html.break .about-p {
   font-weight: 400;
 }
 
+html.break .title-name {
+  line-height: 0.94;
+}
+
 html.break .title-word-mask {
-  padding-right: 0.2em;
-  margin-right: -0.2em;
+  padding-right: 0.25em;
+  margin-right: -0.25em;
+  padding-bottom: 0.25em;
+  margin-bottom: 0;
 }
 
 html.break .row-name {
@@ -385,8 +391,10 @@ body.loaded .hero-eyebrow {
   display: inline-block;
   overflow: hidden;
   vertical-align: top;
-  padding-right: 0.22em;
-  margin-right: -0.22em;
+  padding-right: 0.25em;
+  margin-right: -0.25em;
+  padding-bottom: 0.22em;
+  margin-bottom: -0.22em;
 }
 
 .title-word {
