@@ -40,6 +40,18 @@
   const aboutP = $("#aboutP");
   const modeBtn = $("#modeBtn");
 
+  // Page load sequence & hero arrival trigger
+  const markLoaded = () => {
+    requestAnimationFrame(() => {
+      document.body.classList.add("loaded");
+    });
+  };
+  if (document.readyState === "loading") {
+    addEventListener("DOMContentLoaded", markLoaded);
+  } else {
+    markLoaded();
+  }
+
   let vw = innerWidth, vh = innerHeight;
   addEventListener("resize", () => {
     vw = fx.vw = innerWidth;
@@ -539,27 +551,56 @@
    * Contact Section: Email Click-to-Copy
    * ────────────────────────────────────────────────────────────────── */
   const mail = $("#mail");
-  const mailState = $("#mailState");
 
   if (mail) {
+    let copyTimeout;
+
+    const copyText = (txt) => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt).catch(() => fallbackCopy(txt));
+      } else {
+        fallbackCopy(txt);
+      }
+    };
+
+    const fallbackCopy = (txt) => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = txt;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      } catch (_) {}
+    };
+
     mail.addEventListener("pointermove", (e) => {
       const r = mail.getBoundingClientRect();
       mail.style.setProperty("--gx", (((e.clientX - r.left) / r.width) * 100).toFixed(1) + "%");
     });
 
-    mail.addEventListener("click", async (e) => {
+    mail.addEventListener("click", (e) => {
       e.preventDefault();
       const addr = mail.textContent.trim();
-      try {
-        await navigator.clipboard.writeText(addr);
-        if (mailState) mailState.textContent = "[copied to clipboard ✓]";
-      } catch {
-        location.href = "mailto:" + addr;
-        return;
-      }
-      setTimeout(() => {
-        if (mailState) mailState.textContent = "[click email to copy]";
+      copyText(addr);
+
+      mail.dataset.tooltip = "copied.";
+      tooltip.show(mail, "copied.");
+
+      clearTimeout(copyTimeout);
+      copyTimeout = setTimeout(() => {
+        mail.dataset.tooltip = "click to copy";
+        if (document.querySelector(".custom-tooltip.visible")) {
+          tooltip.show(mail, "click to copy");
+        }
       }, 2000);
+    });
+
+    mail.addEventListener("pointerleave", () => {
+      clearTimeout(copyTimeout);
+      mail.dataset.tooltip = "click to copy";
     });
   }
 
@@ -1220,17 +1261,23 @@
       }
 
       // Cursor raycasting for hover pointer on 3D "4"
-      if (mesh.visible && dockE < 0.2) {
+      if ((mesh.visible || wire.visible) && dockE < 0.28) {
         ndc.set((ptr.x / curVw) * 2 - 1, -(ptr.y / curVh) * 2 + 1);
         ray.setFromCamera(ndc, camera);
-        hovering = ray.intersectObject(mesh, false).length > 0;
+        hovering = (mesh.visible && ray.intersectObject(mesh, false).length > 0) ||
+                   (wire.visible && ray.intersectObject(wire, false).length > 0);
         document.body.style.cursor = hovering ? "pointer" : "";
       } else if (hovering) {
         hovering = false;
         document.body.style.cursor = "";
       }
 
-      renderer.render(scene, camera);
+      // Optimize: Only render WebGL when 3D geometry is in view
+      if (mesh.visible || wire.visible || refl.visible) {
+        renderer.render(scene, camera);
+      } else {
+        renderer.clear();
+      }
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);

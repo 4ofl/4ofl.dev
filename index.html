@@ -67,10 +67,12 @@
   <!-- Hero copy: visible immediately alongside the 3D 4 -->
   <div class="name-reveal" id="nameReveal">
     <div class="hero-eyebrow">
-      <span class="pulse" aria-hidden="true"></span>
       <span>bca undergrad · kerala, in</span>
     </div>
-    <h1 class="title-name">aby<br>mathew</h1>
+    <h1 class="title-name" aria-label="aby mathew">
+      <span class="title-word-mask"><span class="title-word">aby</span></span><br>
+      <span class="title-word-mask"><span class="title-word">mathew</span></span>
+    </h1>
     <p class="title-sub">building things <i>’n</i> breaking others.</p>
     <p class="break-note hero-break-note">half of learning systems is watching your own code catch fire at 2am and figuring out why.</p>
   </div>
@@ -104,14 +106,14 @@
     <!-- Section 1: Selected Work -->
     <section id="work">
       <div class="section-kicker">
-        <span>selected work (03)</span>
+        <span>selected work (01)</span>
         <span>press [b] for post-mortems</span>
       </div>
 
       <ul class="index" id="index">
 
         <!-- 01: CiteCamp -->
-        <li class="row">
+        <li class="row" data-index="01">
           <button class="row-head" aria-expanded="false" aria-controls="p-cc">
             <span class="row-name">citecamp</span>
             <span class="row-meta">rag · academic ai</span>
@@ -147,7 +149,7 @@
         </li>
 
         <!-- 02: Johns Fitness Edge -->
-        <li class="row">
+        <li class="row" data-index="02">
           <button class="row-head" aria-expanded="false" aria-controls="p-jfe">
             <span class="row-name">johns fitness</span>
             <span class="row-meta">offline-first · biometrics</span>
@@ -188,7 +190,7 @@
         </li>
 
         <!-- 03: June -->
-        <li class="row">
+        <li class="row" data-index="03">
           <button class="row-head" aria-expanded="false" aria-controls="p-jn">
             <span class="row-name">june</span>
             <span class="row-meta">infrastructure · bots</span>
@@ -232,9 +234,13 @@
 
     <!-- Section 2: About + Bench Notes -->
     <section id="about">
+      <div class="section-kicker">
+        <span>about (02)</span>
+        <span>developer · kerala, in</span>
+      </div>
       <div class="about-grid">
         <div>
-          <p class="about-p" id="aboutP">aby. bca student, kerala. i build stuff that keeps working when the wifi dies, then spend way too long trying to kill it. currently learning ai and ml and pretending that’s under control.</p>
+          <p class="about-p" id="aboutP">aby. bca undergrad from kerala. building software across systems programming, retrieval pipelines, and distributed gateways. interested in what happens under the hood when abstractions fail.</p>
           <p class="break-note">most of my favorite projects started because an existing tool annoyed me enough to write my own from scratch.</p>
         </div>
         <div class="bench-notes">
@@ -260,10 +266,14 @@
 
     <!-- Section 3: Contact & Links -->
     <section id="contact">
+      <div class="contact-divider" aria-hidden="true"></div>
+      <div class="section-kicker">
+        <span>contact (03)</span>
+        <span>open for experiments &amp; work</span>
+      </div>
       <p class="contact-lead">Got something worth building, or breaking?</p>
-      <a class="mail" id="mail" href="mailto:aby@4ofl.dev" data-tooltip="Click to copy email address">aby@4ofl.dev</a>
+      <a class="mail" id="mail" href="mailto:aby@4ofl.dev" data-tooltip="click to copy">aby@4ofl.dev</a>
       <div class="mail-sub">
-        <span id="mailState" aria-live="polite">[click email to copy]</span>
         <a href="https://github.com/4ofl" target="_blank" rel="noopener noreferrer" data-tooltip="Aby's GitHub profile ↗">github ↗</a>
         <a href="https://linkedin.com/in/abyperhaps" target="_blank" rel="noopener noreferrer" data-tooltip="Aby's LinkedIn profile ↗">linkedin ↗</a>
         <a href="https://discord.com/users/1310480351008657420" target="_blank" rel="noopener noreferrer" data-tooltip="Connect on Discord ↗">discord ↗</a>
