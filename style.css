@@ -200,6 +200,7 @@ html {
 }
 
 body {
+  position: relative;
   background: var(--ink);
   overflow-x: hidden;
   line-height: 1.5;
@@ -1784,3 +1785,103 @@ html[data-theme="dark"] .sun-icon { display: block; }
 html[data-theme="dark"] .moon-icon { display: none; }
 html:not([data-theme="dark"]) .sun-icon { display: none; }
 html:not([data-theme="dark"]) .moon-icon { display: block; }
+
+/* ───────── Slingshot & Ragdoll Engine ───────── */
+#slingshotCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 150;
+  pointer-events: none;
+  display: none;
+}
+
+html.break #slingshotCanvas {
+  display: block;
+}
+
+html.break,
+html.break * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+html.break .name-reveal,
+html.break .name-reveal * {
+  pointer-events: auto !important;
+}
+
+.rebuild-btn {
+  position: fixed;
+  bottom: 2rem;
+  left: clamp(1.25rem, 4vw, 3rem);
+  z-index: 160;
+  background: var(--ink);
+  color: var(--accent);
+  border: 1px dashed var(--accent);
+  border-radius: 999px;
+  padding: 0.55rem 1.15rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  opacity: 0;
+  transform: translateY(12px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s, background 0.2s, color 0.2s;
+  box-shadow: 0 4px 18px rgba(0, 82, 204, 0.15);
+}
+
+.rebuild-btn.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.rebuild-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-style: solid;
+}
+
+/* Physics Active Element Styling - Absolute Page Coordinates */
+.ragdoll-active {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  z-index: 140 !important;
+  cursor: grab !important;
+  user-select: none !important;
+  will-change: transform !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  pointer-events: auto !important;
+}
+
+.ragdoll-active:active {
+  cursor: grabbing !important;
+}
+
+.ragdoll-pulling {
+  cursor: grabbing !important;
+  user-select: none !important;
+  will-change: transform !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ragdoll-placeholder {
+  pointer-events: none !important;
+  visibility: hidden !important;
+}

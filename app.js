@@ -74,6 +74,7 @@
       fx.kick = (fx.kick || 0) + 1;
       const themeMeta = $('meta[name="theme-color"]');
       if (themeMeta) themeMeta.setAttribute("content", on ? "#f5f7fb" : "#08080a");
+      if (!on && window.__rebuildAllRagdolls) window.__rebuildAllRagdolls();
     };
 
     if (reduce || !document.startViewTransition) {
@@ -1089,7 +1090,9 @@
       const sc = worldH / H0;
 
       // 1. Placement and tilt
-      mesh.position.set((fx.x - curVw / 2) * upp, (curVh / 2 - fx.y) * upp, 0);
+      const target4X = fx.overrideX != null ? fx.overrideX : fx.x;
+      const target4Y = fx.overrideY != null ? fx.overrideY : fx.y;
+      mesh.position.set((target4X - curVw / 2) * upp, (curVh / 2 - target4Y) * upp, 0);
 
       let tx, ty;
       if (gyroOn) {
@@ -1112,10 +1115,16 @@
 
       const float = reduce ? 0 : Math.sin(t * 0.9) * 0.04;
       const dockBoost = 1 + dockE * 0.6;
-      mesh.rotation.x = tilt.y * 0.26 * dockBoost + float;
-      const baseRotY = rad(-14) * (1 - dockE) + tilt.x * 0.42 * dockBoost + spin;
-      mesh.rotation.y = lerp(baseRotY, 0, clamp01(dockE / 0.35));
-      mesh.rotation.z = 0;
+      if (fx.overrideRotZ != null) {
+        mesh.rotation.x = fx.overrideRotX || 0;
+        mesh.rotation.y = fx.overrideRotY || 0;
+        mesh.rotation.z = fx.overrideRotZ;
+      } else {
+        mesh.rotation.x = tilt.y * 0.26 * dockBoost + float;
+        const baseRotY = rad(-14) * (1 - dockE) + tilt.x * 0.42 * dockBoost + spin;
+        mesh.rotation.y = lerp(baseRotY, 0, clamp01(dockE / 0.35));
+        mesh.rotation.z = 0;
+      }
 
       // 2. Top-to-bottom dissolve
       const A0 = 0.02, A1 = 0.28, B0 = 0.07, B1 = 0.38;
@@ -1287,4 +1296,739 @@
     }
     requestAnimationFrame(frame);
   })();
+
+  /* ──────────────────────────────────────────────────────────────────
+   * Slingshot & Freefall Ragdoll Engine (Break Mode)
+   * ────────────────────────────────────────────────────────────────── */
+  (() => {
+    if (!window.Matter) return;
+    const { Engine, World, Bodies, Body } = Matter;
+
+    const slingCanvas = document.getElementById("slingshotCanvas");
+    if (!slingCanvas) return;
+    const sctx = slingCanvas.getContext("2d");
+    const rebuildBtn = document.getElementById("rebuildBtn");
+
+    // Gentler, floatier gravity for cinematic bounces and slow-motion arcs
+    const engine = Engine.create({
+      gravity: { x: 0, y: 0.65, scale: 0.0006 }
+    });
+    const world = engine.world;
+
+    let ragdollList = [];
+    let fourBody = null;
+    let fourOriginalPos = null;
+    let walls = [];
+    let particles = [];
+
+    function getWorldBounds() {
+      return {
+        w: window.innerWidth,
+        h: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight, window.innerHeight)
+      };
+    }
+
+    function setupWalls() {
+      walls.forEach((w) => World.remove(world, w));
+      walls = [];
+      const { w: curW, h: curH } = getWorldBounds();
+      const thickness = 300;
+
+      // Entire site enclosure:
+      // Ceiling: bottom at y = 0 (top of page). Nothing can escape above the page!
+      const ceiling = Bodies.rectangle(curW / 2, -thickness / 2, curW * 2, thickness, {
+        isStatic: true,
+        restitution: 0.8,
+        friction: 0.1
+      });
+      // Floor: top at y = curH (bottom of page). Falls all the way to the site bottom!
+      const floor = Bodies.rectangle(curW / 2, curH + thickness / 2, curW * 2, thickness, {
+        isStatic: true,
+        restitution: 0.78,
+        friction: 0.25
+      });
+      // Left wall: right at x = 0
+      const leftWall = Bodies.rectangle(-thickness / 2, curH / 2, thickness, curH * 2, {
+        isStatic: true,
+        restitution: 0.8,
+        friction: 0.1
+      });
+      // Right wall: left at x = curW
+      const rightWall = Bodies.rectangle(curW + thickness / 2, curH / 2, thickness, curH * 2, {
+        isStatic: true,
+        restitution: 0.8,
+        friction: 0.1
+      });
+
+      walls = [ceiling, floor, leftWall, rightWall];
+      World.add(world, walls);
+    }
+
+    function resizeSlingCanvas() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      slingCanvas.width = window.innerWidth * dpr;
+      slingCanvas.height = window.innerHeight * dpr;
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      setupWalls();
+    }
+    window.addEventListener("resize", resizeSlingCanvas, { passive: true });
+    resizeSlingCanvas();
+
+    // Interaction state
+    let targetEl = null;
+    let isTargetFour = false;
+    let startX = 0, startY = 0;
+    let anchorPageX = 0, anchorPageY = 0;
+    let anchorScreenX = 0, anchorScreenY = 0;
+    let currentX = 0, currentY = 0;
+    let isDragging = false;
+    let targetRect = null;
+    let activePointerId = null;
+
+    // Check if pointer is over the 3D 4
+    function isOverFour(clientX, clientY) {
+      if (!root.classList.contains("break")) return false;
+      const fourScreenX = fourBody
+        ? fourBody.position.x - window.scrollX
+        : (fx.overrideX != null ? fx.overrideX : fx.x);
+      const fourScreenY = fourBody
+        ? fourBody.position.y - window.scrollY
+        : (fx.overrideY != null ? fx.overrideY : fx.y);
+      const fourRadius = fx.s * 0.38;
+      const dist = Math.hypot(clientX - fourScreenX, clientY - fourScreenY);
+      return dist <= fourRadius;
+    }
+
+    // Identify target element: ONLY single leaf element, NEVER group/card/row
+    function getSlingTarget(e) {
+      if (!root.classList.contains("break")) return null;
+
+      const raw = document.elementFromPoint(e.clientX, e.clientY);
+      if (!raw) return null;
+      if (raw.closest("#modeBtn, #rebuildBtn, #slingshotCanvas, .custom-tooltip")) {
+        return null;
+      }
+
+      // 1. If clicking an already detached active ragdoll, pick it up to throw again
+      const activeRagdoll = raw.closest(".ragdoll-active");
+      if (activeRagdoll) return { el: activeRagdoll };
+
+      // 2. Strict individual leaf elements (NO multi containers, NO row-heads!)
+      const leaf = raw.closest(
+        ".row-name, .row-meta, .plus, .title-word, .hero-eyebrow span, .hero-break-note, .chip, .tag, .about-p .w, .bench-row span, .links a, .mail-sub a, .section-kicker span, .nav a, a"
+      );
+      if (leaf && !leaf.closest("#modeBtn, #rebuildBtn")) {
+        return { el: leaf };
+      }
+
+      // 3. If clicking near the 3D Four
+      if (isOverFour(e.clientX, e.clientY)) {
+        return { isFour: true };
+      }
+
+      // 4. Any small inline leaf text
+      if (raw.tagName === "SPAN" || raw.tagName === "A" || raw.tagName === "I") {
+        if (!raw.closest("#modeBtn, #rebuildBtn, .row-head, .row, .name-reveal")) {
+          return { el: raw };
+        }
+      }
+
+      return null;
+    }
+
+    window.addEventListener("pointerdown", (e) => {
+      if (!root.classList.contains("break")) return;
+      if (e.button !== 0) return;
+
+      const target = getSlingTarget(e);
+      if (!target) return;
+
+      activePointerId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      currentX = e.clientX;
+      currentY = e.clientY;
+      isDragging = false;
+
+      if (target.isFour) {
+        isTargetFour = true;
+        targetEl = null;
+        if (fourBody) {
+          anchorPageX = fourBody.position.x;
+          anchorPageY = fourBody.position.y;
+        } else {
+          anchorPageX = (fx.overrideX != null ? fx.overrideX : fx.x) + window.scrollX;
+          anchorPageY = (fx.overrideY != null ? fx.overrideY : fx.y) + window.scrollY;
+        }
+        anchorScreenX = anchorPageX - window.scrollX;
+        anchorScreenY = anchorPageY - window.scrollY;
+        const fourR = fx.s * 0.35;
+        targetRect = { width: fourR * 2, height: fourR * 2 };
+        if (!fourOriginalPos) {
+          fourOriginalPos = { x: fx.x + window.scrollX, y: fx.y + window.scrollY };
+        }
+      } else {
+        isTargetFour = false;
+        targetEl = target.el;
+        const r = targetEl.getBoundingClientRect();
+        targetRect = r;
+        anchorScreenX = r.left + r.width / 2;
+        anchorScreenY = r.top + r.height / 2;
+        anchorPageX = r.left + window.scrollX + r.width / 2;
+        anchorPageY = r.top + window.scrollY + r.height / 2;
+      }
+    }, { passive: true });
+
+    window.addEventListener("pointermove", (e) => {
+      if ((!targetEl && !isTargetFour) || (activePointerId != null && e.pointerId !== activePointerId)) return;
+
+      currentX = e.clientX;
+      currentY = e.clientY;
+      const dx = currentX - startX;
+      const dy = currentY - startY;
+      const dist = Math.hypot(dx, dy);
+
+      if (!isDragging && dist > 7) {
+        isDragging = true;
+        if (targetEl) targetEl.classList.add("ragdoll-pulling");
+      }
+
+      if (isDragging) {
+        const pullFactor = 0.38;
+        if (isTargetFour) {
+          const dragPageX = anchorPageX + dx * pullFactor;
+          const dragPageY = anchorPageY + dy * pullFactor;
+          fx.overrideX = dragPageX - window.scrollX;
+          fx.overrideY = dragPageY - window.scrollY;
+          fx.overrideRotZ = dx * 0.0015;
+        } else if (targetEl) {
+          targetEl.style.transform = `translate3d(${(dx * pullFactor).toFixed(1)}px, ${(dy * pullFactor).toFixed(1)}px, 0)`;
+        }
+
+        drawSlingshot(anchorScreenX, anchorScreenY, currentX, currentY, targetRect, isTargetFour);
+      }
+    });
+
+    function drawSlingshot(ax, ay, cx, cy, r, isFour) {
+      sctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      const dx = cx - ax;
+      const dy = cy - ay;
+      const pullDist = Math.hypot(dx, dy);
+
+      const bandWidth = isFour ? 3.5 : Math.max(1.5, 3.2 - pullDist * 0.005);
+      const spanW = isFour ? (r.width * 0.35) : (r.width * 0.35);
+
+      // Rubber bands
+      sctx.beginPath();
+      sctx.moveTo(ax - spanW, ay);
+      sctx.lineTo(cx, cy);
+      sctx.lineTo(ax + spanW, ay);
+      sctx.strokeStyle = "rgba(0, 82, 204, 0.85)";
+      sctx.lineWidth = bandWidth;
+      sctx.lineCap = "round";
+      sctx.lineJoin = "round";
+      sctx.stroke();
+
+      // Slingshot pouch
+      sctx.beginPath();
+      sctx.arc(cx, cy, isFour ? 6.5 : 4.5, 0, Math.PI * 2);
+      sctx.fillStyle = "#0052cc";
+      sctx.fill();
+
+      // Trajectory dots (matching new gentle, bouncy physics)
+      const launchPower = isFour ? 0.13 : 0.11;
+      const vx = -dx * launchPower;
+      const vy = -dy * launchPower;
+
+      let px = ax;
+      let py = ay;
+      let curVx = vx;
+      let curVy = vy;
+      const g = 0.38;
+      const numDots = 16;
+      const screenH = window.innerHeight;
+      const screenW = window.innerWidth;
+
+      for (let i = 0; i < numDots; i++) {
+        px += curVx * 1.5;
+        py += curVy * 1.5;
+        curVy += g * 1.5;
+
+        // Bounce trajectory off walls
+        if (px < 0) { px = -px; curVx = -curVx * 0.75; }
+        if (px > screenW) { px = screenW * 2 - px; curVx = -curVx * 0.75; }
+        if (py < 0) { py = -py; curVy = -curVy * 0.75; }
+
+        const dotAlpha = 0.9 * (1 - i / numDots);
+        const dotRadius = Math.max(1.5, (isFour ? 4.5 : 3.5) * (1 - i / numDots));
+
+        sctx.beginPath();
+        sctx.arc(px, py, dotRadius, 0, Math.PI * 2);
+        sctx.fillStyle = `rgba(0, 82, 204, ${dotAlpha.toFixed(2)})`;
+        sctx.fill();
+      }
+    }
+
+    function spawnDebris(pageX, pageY, count = 8) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const spd = 1.5 + Math.random() * 3.5;
+        particles.push({
+          x: pageX,
+          y: pageY,
+          vx: Math.cos(angle) * spd,
+          vy: Math.sin(angle) * spd - 1.5,
+          life: 1.0,
+          size: 2 + Math.random() * 3
+        });
+      }
+    }
+
+    // Launch the 3D Four
+    function launchFour(axScreen, ayScreen, cxScreen, cyScreen) {
+      const dx = cxScreen - axScreen;
+      const dy = cyScreen - ayScreen;
+
+      const blockClick = (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        window.removeEventListener("click", blockClick, true);
+      };
+      window.addEventListener("click", blockClick, true);
+
+      const fourRadius = fx.s * 0.28;
+      const spawnPageX = anchorPageX + dx * 0.35;
+      const spawnPageY = anchorPageY + dy * 0.35;
+
+      if (!fourBody) {
+        fourBody = Bodies.circle(spawnPageX, spawnPageY, fourRadius, {
+          restitution: 0.78,
+          friction: 0.15,
+          frictionAir: 0.015,
+          density: 0.015
+        });
+        World.add(world, fourBody);
+      } else {
+        Body.setPosition(fourBody, { x: spawnPageX, y: spawnPageY });
+      }
+
+      // Smooth, gentle launch speed
+      Body.setVelocity(fourBody, { x: -dx * 0.13, y: -dy * 0.13 });
+      Body.setAngularVelocity(fourBody, -dx * 0.0006 + (Math.random() - 0.5) * 0.04);
+
+      spawnDebris(spawnPageX, spawnPageY, 12);
+      if (rebuildBtn) rebuildBtn.classList.add("active");
+    }
+
+    // Detach and smash a stationary leaf element into physics
+    function smashElement(el, hitVx, hitVy) {
+      if (el.classList.contains("ragdoll-active") || el.classList.contains("ragdoll-placeholder")) return;
+
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+
+      const pageLeft = r.left + window.scrollX;
+      const pageTop = r.top + window.scrollY;
+      const pageCenterX = pageLeft + r.width / 2;
+      const pageCenterY = pageTop + r.height / 2;
+
+      const ph = document.createElement("span");
+      ph.className = "ragdoll-placeholder";
+      ph.style.width = `${r.width}px`;
+      ph.style.height = `${r.height}px`;
+      const cs = window.getComputedStyle(el);
+      ph.style.display = cs.display === "inline" ? "inline-block" : cs.display;
+      ph.style.margin = cs.margin;
+      ph.style.verticalAlign = cs.verticalAlign;
+      el.parentNode.insertBefore(ph, el);
+
+      // Move el to document.body to avoid any parent overflow clipping or transforms
+      document.body.appendChild(el);
+      el.style.width = `${r.width}px`;
+      el.style.height = `${r.height}px`;
+      el.classList.remove("ragdoll-pulling");
+      el.classList.add("ragdoll-active");
+
+      const body = Bodies.rectangle(pageCenterX, pageCenterY, r.width, r.height, {
+        restitution: 0.78,
+        friction: 0.15,
+        frictionAir: 0.016,
+        density: 0.002
+      });
+
+      Body.setVelocity(body, {
+        x: hitVx + (Math.random() - 0.5) * 2,
+        y: hitVy - Math.random() * 2
+      });
+      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.08);
+
+      World.add(world, body);
+      ragdollList.push({ el, placeholder: ph, body, w: r.width, h: r.height });
+      spawnDebris(pageCenterX, pageCenterY, 6);
+
+      if (rebuildBtn) rebuildBtn.classList.add("active");
+    }
+
+    // Launch a dragged individual element
+    function launchElement(el, pageX, pageY, dx, dy, r) {
+      const blockClick = (ev) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        window.removeEventListener("click", blockClick, true);
+      };
+      window.addEventListener("click", blockClick, true);
+
+      const existingIdx = ragdollList.findIndex((item) => item.el === el);
+      if (existingIdx !== -1) {
+        const item = ragdollList[existingIdx];
+        Body.setPosition(item.body, { x: pageX + dx * 0.35, y: pageY + dy * 0.35 });
+        Body.setVelocity(item.body, { x: -dx * 0.11, y: -dy * 0.11 });
+        Body.setAngularVelocity(item.body, (Math.random() - 0.5) * 0.06 - dx * 0.0006);
+        return;
+      }
+
+      const ph = document.createElement("span");
+      ph.className = "ragdoll-placeholder";
+      ph.style.width = `${r.width}px`;
+      ph.style.height = `${r.height}px`;
+      const cs = window.getComputedStyle(el);
+      ph.style.display = cs.display === "inline" ? "inline-block" : cs.display;
+      ph.style.margin = cs.margin;
+      ph.style.verticalAlign = cs.verticalAlign;
+      el.parentNode.insertBefore(ph, el);
+
+      // Move el to document.body for global page physics without overflow clipping
+      document.body.appendChild(el);
+      el.style.width = `${r.width}px`;
+      el.style.height = `${r.height}px`;
+      el.classList.remove("ragdoll-pulling");
+      el.classList.add("ragdoll-active");
+
+      const spawnPageX = pageX + dx * 0.35;
+      const spawnPageY = pageY + dy * 0.35;
+      const body = Bodies.rectangle(spawnPageX, spawnPageY, r.width, r.height, {
+        restitution: 0.78,
+        friction: 0.15,
+        frictionAir: 0.016,
+        density: 0.002
+      });
+
+      Body.setVelocity(body, { x: -dx * 0.11, y: -dy * 0.11 });
+      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.06 - dx * 0.0006);
+
+      World.add(world, body);
+      ragdollList.push({ el, placeholder: ph, body, w: r.width, h: r.height });
+      spawnDebris(spawnPageX, spawnPageY, 6);
+
+      if (rebuildBtn) rebuildBtn.classList.add("active");
+    }
+
+    window.addEventListener("pointerup", () => {
+      if (!targetEl && !isTargetFour) return;
+      sctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+      if (isDragging) {
+        if (isTargetFour) {
+          launchFour(anchorScreenX, anchorScreenY, currentX, currentY);
+        } else if (targetEl) {
+          launchElement(targetEl, anchorPageX, anchorPageY, currentX - startX, currentY - startY, targetRect);
+        }
+      } else {
+        if (isTargetFour) {
+          fx.overrideX = null;
+          fx.overrideY = null;
+          fx.overrideRotZ = null;
+        } else if (targetEl) {
+          targetEl.classList.remove("ragdoll-pulling");
+          targetEl.style.transform = "";
+        }
+      }
+
+      targetEl = null;
+      isTargetFour = false;
+      activePointerId = null;
+      isDragging = false;
+    });
+
+    window.addEventListener("pointercancel", () => {
+      sctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (isTargetFour) {
+        fx.overrideX = null;
+        fx.overrideY = null;
+        fx.overrideRotZ = null;
+      } else if (targetEl) {
+        targetEl.classList.remove("ragdoll-pulling");
+        targetEl.style.transform = "";
+      }
+      targetEl = null;
+      isTargetFour = false;
+      isDragging = false;
+      activePointerId = null;
+    });
+
+    // Check destruction collisions: fast moving bodies smashing into stationary individual leaves
+    function checkDestructionCollisions() {
+      const fastBodies = [];
+      if (fourBody) {
+        const fSpeed = Math.hypot(fourBody.velocity.x, fourBody.velocity.y);
+        if (fSpeed > 1.2) {
+          fastBodies.push({
+            x: fourBody.position.x,
+            y: fourBody.position.y,
+            r: fx.s * 0.28,
+            vx: fourBody.velocity.x,
+            vy: fourBody.velocity.y
+          });
+        }
+      }
+
+      for (let i = 0; i < ragdollList.length; i++) {
+        const item = ragdollList[i];
+        const spd = Math.hypot(item.body.velocity.x, item.body.velocity.y);
+        if (spd > 1.4) {
+          fastBodies.push({
+            x: item.body.position.x,
+            y: item.body.position.y,
+            r: Math.max(item.w, item.h) * 0.5,
+            vx: item.body.velocity.x,
+            vy: item.body.velocity.y
+          });
+        }
+      }
+
+      if (fastBodies.length === 0) return;
+
+      // Find candidates that can be knocked loose (ONLY individual leaves)
+      const candidates = $$(
+        ".row-name, .row-meta, .plus, .title-word, .hero-eyebrow span, .hero-break-note, .chip, .tag, .about-p .w, .bench-row span, .links a, .mail-sub a, .section-kicker span, .nav a"
+      ).filter(
+        (el) =>
+          !el.classList.contains("ragdoll-active") &&
+          !el.classList.contains("ragdoll-placeholder") &&
+          !el.closest(".ragdoll-active")
+      );
+
+      for (let c = 0; c < candidates.length; c++) {
+        const cand = candidates[c];
+        const cr = cand.getBoundingClientRect();
+        if (cr.width === 0 || cr.height === 0) continue;
+
+        const candPageLeft = cr.left + window.scrollX;
+        const candPageTop = cr.top + window.scrollY;
+        const candPageRight = candPageLeft + cr.width;
+        const candPageBottom = candPageTop + cr.height;
+
+        for (let b = 0; b < fastBodies.length; b++) {
+          const fb = fastBodies[b];
+          if (
+            fb.x + fb.r > candPageLeft &&
+            fb.x - fb.r < candPageRight &&
+            fb.y + fb.r > candPageTop &&
+            fb.y - fb.r < candPageBottom
+          ) {
+            smashElement(cand, fb.vx * 0.7, fb.vy * 0.7 - 1.8);
+            break;
+          }
+        }
+      }
+    }
+
+    function physicsTick() {
+      const { w: worldW, h: worldH } = getWorldBounds();
+
+      if (ragdollList.length > 0 || fourBody || particles.length > 0) {
+        Engine.update(engine, 1000 / 60);
+
+        // Update Big Four position and rotation in PAGE coordinates
+        if (fourBody) {
+          const fourRadius = fx.s * 0.28;
+          const fPos = fourBody.position;
+          const fVel = fourBody.velocity;
+          let clamped = false;
+          let nx = fPos.x, ny = fPos.y, nvx = fVel.x, nvy = fVel.y;
+
+          // Enforce site boundaries: never above top of page (y=0), never below bottom of page (y=worldH)
+          if (nx - fourRadius < 0) {
+            nx = fourRadius;
+            nvx = Math.abs(fVel.x) * 0.78;
+            clamped = true;
+          } else if (nx + fourRadius > worldW) {
+            nx = worldW - fourRadius;
+            nvx = -Math.abs(fVel.x) * 0.78;
+            clamped = true;
+          }
+          if (ny - fourRadius < 0) {
+            ny = fourRadius;
+            nvy = Math.abs(fVel.y) * 0.78;
+            clamped = true;
+          } else if (ny + fourRadius > worldH) {
+            ny = worldH - fourRadius;
+            nvy = -Math.abs(fVel.y) * 0.65;
+            clamped = true;
+          }
+
+          if (clamped) {
+            Body.setPosition(fourBody, { x: nx, y: ny });
+            Body.setVelocity(fourBody, { x: nvx, y: nvy });
+          }
+
+          // Convert page position to screen position for Three.js
+          fx.overrideX = fourBody.position.x - window.scrollX;
+          fx.overrideY = fourBody.position.y - window.scrollY;
+          fx.overrideRotZ = fourBody.angle;
+          fx.overrideRotX = Math.sin(fourBody.angle * 1.5) * 0.35;
+          fx.overrideRotY = Math.cos(fourBody.angle * 1.5) * 0.35;
+        }
+
+        // Update ragdoll items in PAGE coordinates
+        for (let i = 0; i < ragdollList.length; i++) {
+          const item = ragdollList[i];
+          const halfW = item.w / 2;
+          const halfH = item.h / 2;
+          const pos = item.body.position;
+          const vel = item.body.velocity;
+          let clamped = false;
+          let nx = pos.x, ny = pos.y, nvx = vel.x, nvy = vel.y;
+
+          if (nx - halfW < 0) {
+            nx = halfW;
+            nvx = Math.abs(vel.x) * 0.78;
+            clamped = true;
+          } else if (nx + halfW > worldW) {
+            nx = worldW - halfW;
+            nvx = -Math.abs(vel.x) * 0.78;
+            clamped = true;
+          }
+          if (ny - halfH < 0) {
+            ny = halfH;
+            nvy = Math.abs(vel.y) * 0.78;
+            clamped = true;
+          } else if (ny + halfH > worldH) {
+            ny = worldH - halfH;
+            nvy = -Math.abs(vel.y) * 0.65;
+            clamped = true;
+          }
+
+          if (clamped) {
+            Body.setPosition(item.body, { x: nx, y: ny });
+            Body.setVelocity(item.body, { x: nvx, y: nvy });
+          }
+
+          const angle = item.body.angle;
+          item.el.style.transform = `translate3d(${(item.body.position.x - halfW).toFixed(1)}px, ${(item.body.position.y - halfH).toFixed(1)}px, 0) rotate(${angle.toFixed(3)}rad)`;
+        }
+
+        // Check for collisions and domino destruction
+        checkDestructionCollisions();
+
+        // Update and render debris particles (rendered relative to viewport scroll)
+        if (particles.length > 0) {
+          sctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+          for (let p = particles.length - 1; p >= 0; p--) {
+            const pt = particles[p];
+            pt.x += pt.vx;
+            pt.y += pt.vy;
+            pt.vy += 0.2;
+            pt.life -= 0.025;
+            if (pt.life <= 0) {
+              particles.splice(p, 1);
+              continue;
+            }
+            const screenPtX = pt.x - window.scrollX;
+            const screenPtY = pt.y - window.scrollY;
+            sctx.beginPath();
+            sctx.arc(screenPtX, screenPtY, pt.size * pt.life, 0, Math.PI * 2);
+            sctx.fillStyle = `rgba(0, 82, 204, ${(pt.life * 0.8).toFixed(2)})`;
+            sctx.fill();
+          }
+        }
+      }
+      requestAnimationFrame(physicsTick);
+    }
+    requestAnimationFrame(physicsTick);
+
+    // Rebuild everything back to original layout
+    function rebuildAll() {
+      if (ragdollList.length === 0 && !fourBody) return;
+
+      const list = [...ragdollList];
+      ragdollList = [];
+      particles = [];
+      sctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (rebuildBtn) rebuildBtn.classList.remove("active");
+
+      // Animate 3D Four back to hero position
+      if (fourBody) {
+        World.remove(world, fourBody);
+        fourBody = null;
+        const targetPageX = fourOriginalPos ? fourOriginalPos.x : (fx.x + window.scrollX);
+        const targetPageY = fourOriginalPos ? fourOriginalPos.y : (fx.y + window.scrollY);
+        const startPageX = (fx.overrideX != null ? fx.overrideX : fx.x) + window.scrollX;
+        const startPageY = (fx.overrideY != null ? fx.overrideY : fx.y) + window.scrollY;
+        const startRot4 = fx.overrideRotZ || 0;
+        const startTime = performance.now();
+        const duration = 650;
+
+        function animateFourBack(now) {
+          const elapsed = now - startTime;
+          const t = Math.min(1, elapsed / duration);
+          const ease = 1 - Math.pow(1 - t, 3);
+          const curPageX = lerp(startPageX, targetPageX, ease);
+          const curPageY = lerp(startPageY, targetPageY, ease);
+          fx.overrideX = curPageX - window.scrollX;
+          fx.overrideY = curPageY - window.scrollY;
+          fx.overrideRotZ = lerp(startRot4, 0, ease);
+          fx.overrideRotX = lerp(fx.overrideRotX || 0, 0, ease);
+          fx.overrideRotY = lerp(fx.overrideRotY || 0, 0, ease);
+          if (t < 1) {
+            requestAnimationFrame(animateFourBack);
+          } else {
+            fx.overrideX = null;
+            fx.overrideY = null;
+            fx.overrideRotZ = null;
+            fx.overrideRotX = null;
+            fx.overrideRotY = null;
+            fourOriginalPos = null;
+          }
+        }
+        requestAnimationFrame(animateFourBack);
+      }
+
+      // Animate individual DOM elements back to their placeholders
+      list.forEach((item) => {
+        World.remove(world, item.body);
+        const pr = item.placeholder.getBoundingClientRect();
+        const targetPageX = pr.left + window.scrollX;
+        const targetPageY = pr.top + window.scrollY;
+
+        item.el.style.transition = "transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)";
+        item.el.style.transform = `translate3d(${targetPageX.toFixed(1)}px, ${targetPageY.toFixed(1)}px, 0) rotate(0rad)`;
+
+        setTimeout(() => {
+          if (item.placeholder.parentNode) {
+            item.placeholder.parentNode.insertBefore(item.el, item.placeholder);
+            item.placeholder.parentNode.removeChild(item.placeholder);
+          }
+          item.el.classList.remove("ragdoll-active");
+          item.el.style.position = "";
+          item.el.style.left = "";
+          item.el.style.top = "";
+          item.el.style.width = "";
+          item.el.style.height = "";
+          item.el.style.margin = "";
+          item.el.style.transform = "";
+          item.el.style.transition = "";
+        }, 650);
+      });
+    }
+
+    if (rebuildBtn) rebuildBtn.addEventListener("click", rebuildAll);
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") rebuildAll();
+    });
+
+    window.__rebuildAllRagdolls = rebuildAll;
+  })();
+
 })();

@@ -301,8 +301,15 @@
     </div>
   </div>
 
+  <!-- Slingshot Overlay & Rebuild Trigger -->
+  <canvas id="slingshotCanvas" aria-hidden="true"></canvas>
+  <button class="rebuild-btn" id="rebuildBtn" aria-label="Rebuild broken elements" data-tooltip="Rebuild elements" data-tooltip-kbd="ESC">
+    <span>↺ rebuild</span>
+  </button>
+
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="./matter.min.js"></script>
   <script src="./app.js" defer></script>
 </body>
 </html>
