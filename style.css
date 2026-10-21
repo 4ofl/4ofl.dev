@@ -57,6 +57,10 @@ html.break {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+html.break body {
+  background-color: var(--ink);
+}
+
 html.break .spot,
 html.break .vignette {
   display: none;
