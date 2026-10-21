@@ -715,6 +715,9 @@ html.break .row.open::after {
   font-weight: 700;
   letter-spacing: -0.055em;
   line-height: 0.95;
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
+  padding-right: 0.15em;
   background: var(--chrome);
   background-size: 260% 100%;
   background-position: var(--gx, 50%) 0;
@@ -1271,6 +1274,8 @@ html.break .about-p .w.on {
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 0.95;
+  padding-bottom: 0.18em;
+  padding-right: 0.15em;
   background: var(--chrome);
   background-size: 260% 100%;
   background-position: var(--gx, 50%) 0;
@@ -1280,7 +1285,7 @@ html.break .about-p .w.on {
   transition: -webkit-text-fill-color 0.35s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-wrap: anywhere;
   cursor: pointer;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.32rem;
 }
 
 .mail:hover {
