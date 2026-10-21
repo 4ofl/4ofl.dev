@@ -33,32 +33,39 @@
   --tooltip-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7);
 }
 
-/* ───────── Break Mode: Warm Drafting Vellum + Candid Post-Mortem ───────── */
+/* ───────── Break Mode: Blue on White Engineering Schematic ───────── */
 html.break {
-  --ink: #eae6df;
-  --graphite: #e1ddd5;
-  --smoke: #d5d0c7;
-  --line: rgba(20, 19, 18, 0.12);
-  --line-2: rgba(20, 19, 18, 0.28);
-  --mist: #635f59;
-  --bone: #141312;
-  --accent: #b83a22;
-  --dim: #b2ada4;
-  --soft: #2e2c29;
-  --peek: rgba(234, 230, 223, 0.95);
-  --ring: rgba(20, 19, 18, 0.22);
-  --sk: rgba(20, 19, 18, 0.14);
-  --top0: rgba(234, 230, 223, 0);
-  --chrome: linear-gradient(100deg, #2a2826 0%, #8a847c 22%, #141312 40%, #6e6963 58%, #181715 78%, #3d3a36 100%);
-  --tooltip-bg: rgba(234, 230, 223, 0.96);
-  --tooltip-border: rgba(20, 19, 18, 0.25);
-  --tooltip-text: #141312;
-  --tooltip-shadow: 0 10px 30px -5px rgba(20, 19, 18, 0.16);
+  --ink: #f5f7fb;
+  --graphite: #e9eef5;
+  --smoke: #dee5ef;
+  --line: rgba(0, 82, 204, 0.12);
+  --line-2: rgba(0, 82, 204, 0.24);
+  --mist: #516a8a;
+  --bone: #0a1b2e;
+  --accent: #0052cc;
+  --dim: #94acc9;
+  --soft: #1d3550;
+  --peek: rgba(245, 247, 251, 0.96);
+  --ring: rgba(0, 82, 204, 0.2);
+  --sk: rgba(0, 82, 204, 0.14);
+  --top0: rgba(245, 247, 251, 0);
+  --chrome: linear-gradient(100deg, #103463 0%, #0052cc 28%, #0a1b2e 52%, #0066ff 78%, #163d70 100%);
+  --tooltip-bg: rgba(245, 247, 251, 0.96);
+  --tooltip-border: rgba(0, 82, 204, 0.25);
+  --tooltip-text: #0a1b2e;
+  --tooltip-shadow: 0 10px 30px -5px rgba(0, 82, 204, 0.15);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 html.break body {
   background-color: var(--ink);
+  background-image:
+    linear-gradient(to right, rgba(0, 82, 204, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 82, 204, 0.04) 1px, transparent 1px),
+    linear-gradient(to right, rgba(0, 82, 204, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 82, 204, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+  background-position: -1px -1px;
 }
 
 html.break .spot,

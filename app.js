@@ -73,7 +73,7 @@
       if (modeBtn) modeBtn.setAttribute("aria-pressed", on ? "true" : "false");
       fx.kick = (fx.kick || 0) + 1;
       const themeMeta = $('meta[name="theme-color"]');
-      if (themeMeta) themeMeta.setAttribute("content", on ? "#eae6df" : "#08080a");
+      if (themeMeta) themeMeta.setAttribute("content", on ? "#f5f7fb" : "#08080a");
     };
 
     if (reduce || !document.startViewTransition) {
@@ -1133,7 +1133,7 @@
       wirePlaneLow.constant = broke ? 9999 : soft - cC;
       wirePlaneHigh.constant = cL;
       wire.visible = bT < 1 && (broke || aT > 0);
-      wireMat.color.setHex(broke ? 0x141312 : 0xedece8);
+      wireMat.color.setHex(broke ? 0x0052cc : 0xedece8);
       wireMat.opacity = broke ? 0.9 : 0.95;
 
       mesh.scale.setScalar(sc);
@@ -1216,7 +1216,7 @@
               }
               const al = clamp01((dockE - launchE) / 0.03) * (1 - clamp01((tTail - 0.85) / 0.15));
               sctx.strokeStyle = broke
-                ? `rgba(184, 58, 34, ${(0.95 * al).toFixed(3)})`
+                ? `rgba(0, 82, 204, ${(0.95 * al).toFixed(3)})`
                 : `rgba(255, 255, 255, ${(0.95 * al).toFixed(3)})`;
               sctx.lineWidth = lerp(1.7, 1.0, tHead);
               sctx.stroke();
@@ -1225,7 +1225,7 @@
                 const hp = bezierPoint(P0, P1, P2, P3, tHead);
                 sctx.beginPath();
                 sctx.arc(hp.x, hp.y, broke ? 1.8 : 2.2, 0, Math.PI * 2);
-                sctx.fillStyle = broke ? "#b83a22" : "#ffffff";
+                sctx.fillStyle = broke ? "#0052cc" : "#ffffff";
                 sctx.fill();
               }
             }
