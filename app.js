@@ -1170,61 +1170,66 @@
 
         if (wordmarkSvg && dockE > 0.06 && dockE < 0.98) {
           const r = wordmarkSvg.getBoundingClientRect();
-          const svgScale = r.width / 220;
-          const renderedH = 64 * svgScale;
-          const offsetY = r.top + (r.height - renderedH) / 2;
           const glyphArrive = new Array(9).fill(1);
 
-          for (let j = 0; j < NL; j++) {
-            const g = Math.min(8, Math.floor(j / 4));
-            const launchE = B0 + EDGE[j].fr * (B1 - B0) - 0.015;
-            const arriveE = launchE + 0.26;
-            glyphArrive[g] = Math.min(glyphArrive[g], arriveE);
-            if (dockE < launchE) continue;
+          if (r.width > 0) {
+            const svgScale = r.width / 220;
+            const renderedH = 64 * svgScale;
+            const offsetY = r.top + (r.height - renderedH) / 2;
 
-            _tempV.copy(EDGE[j].v).applyMatrix4(mesh.matrixWorld).project(camera);
-            const srcX = (_tempV.x * 0.5 + 0.5) * curVw;
-            const srcY = (-_tempV.y * 0.5 + 0.5) * curVh;
-            const dstX = r.left + EDGE_DST[j].x * svgScale;
-            const dstY = offsetY + EDGE_DST[j].y * svgScale;
+            for (let j = 0; j < NL; j++) {
+              const g = Math.min(8, Math.floor(j / 4));
+              const launchE = B0 + EDGE[j].fr * (B1 - B0) - 0.015;
+              const arriveE = launchE + 0.26;
+              glyphArrive[g] = Math.min(glyphArrive[g], arriveE);
+              if (dockE < launchE) continue;
 
-            const tHead = easeInOut(clamp01((dockE - launchE) / (arriveE - launchE)));
-            const tTail = easeInOut(clamp01((dockE - launchE - 0.07) / (arriveE - launchE + 0.03)));
-            if (tHead <= tTail + 0.002) continue;
+              _tempV.copy(EDGE[j].v).applyMatrix4(mesh.matrixWorld).project(camera);
+              // Guard against points behind camera near plane or out of bounds to prevent lines going astray
+              if (_tempV.z >= 1.0 || _tempV.z <= -1.0) continue;
 
-            const dx = dstX - srcX;
-            const sw = j % 2 ? 1 : -1;
-            const P0 = { x: srcX, y: srcY };
-            const P1 = { x: srcX + dx * 0.22 + sw * (22 + (j % 5) * 6), y: srcY - (40 + (j % 4) * 18) };
-            const P2 = { x: dstX - dx * 0.18, y: dstY + (12 + (j % 3) * 9) };
-            const P3 = { x: dstX, y: dstY };
+              const srcX = (_tempV.x * 0.5 + 0.5) * curVw;
+              const srcY = (-_tempV.y * 0.5 + 0.5) * curVh;
+              if (srcX < -200 || srcX > curVw + 200 || srcY < -200 || srcY > curVh + 200) continue;
 
-            sctx.beginPath();
-            for (let k = 0; k <= 18; k++) {
-              const u = tTail + (tHead - tTail) * (k / 18);
-              const pt = bezierPoint(P0, P1, P2, P3, u);
-              if (k === 0) sctx.moveTo(pt.x, pt.y);
-              else sctx.lineTo(pt.x, pt.y);
-            }
-            const al = clamp01((dockE - launchE) / 0.03) * (1 - clamp01((tTail - 0.85) / 0.15));
-            sctx.strokeStyle = broke
-              ? `rgba(184, 58, 34, ${(0.9 * al).toFixed(3)})`
-              : `rgba(237, 236, 232, ${(0.95 * al).toFixed(3)})`;
-            sctx.lineWidth = lerp(1.8, 1.0, tHead);
-            sctx.shadowColor = broke ? "rgba(184, 58, 34, 0.7)" : "rgba(255, 255, 255, 0.8)";
-            sctx.shadowBlur = broke ? 4 : 8;
-            sctx.stroke();
+              const dstX = r.left + EDGE_DST[j].x * svgScale;
+              const dstY = offsetY + EDGE_DST[j].y * svgScale;
 
-            if (tHead < 0.98 && tHead > 0.03) {
-              const hp = bezierPoint(P0, P1, P2, P3, tHead);
+              const tHead = easeInOut(clamp01((dockE - launchE) / (arriveE - launchE)));
+              const tTail = easeInOut(clamp01((dockE - launchE - 0.07) / (arriveE - launchE + 0.03)));
+              if (tHead <= tTail + 0.002) continue;
+
+              const dx = dstX - srcX;
+              const sw = j % 2 ? 1 : -1;
+              const P0 = { x: srcX, y: srcY };
+              const P1 = { x: srcX + dx * 0.22 + sw * (22 + (j % 5) * 6), y: srcY - (40 + (j % 4) * 18) };
+              const P2 = { x: dstX - dx * 0.18, y: dstY + (12 + (j % 3) * 9) };
+              const P3 = { x: dstX, y: dstY };
+
               sctx.beginPath();
-              sctx.arc(hp.x, hp.y, broke ? 1.7 : 2.3, 0, Math.PI * 2);
-              sctx.fillStyle = broke ? "#b83a22" : "#ffffff";
-              sctx.shadowBlur = broke ? 6 : 12;
-              sctx.fill();
+              const STEPS = 10;
+              for (let k = 0; k <= STEPS; k++) {
+                const u = tTail + (tHead - tTail) * (k / STEPS);
+                const pt = bezierPoint(P0, P1, P2, P3, u);
+                if (k === 0) sctx.moveTo(pt.x, pt.y);
+                else sctx.lineTo(pt.x, pt.y);
+              }
+              const al = clamp01((dockE - launchE) / 0.03) * (1 - clamp01((tTail - 0.85) / 0.15));
+              sctx.strokeStyle = broke
+                ? `rgba(184, 58, 34, ${(0.95 * al).toFixed(3)})`
+                : `rgba(255, 255, 255, ${(0.95 * al).toFixed(3)})`;
+              sctx.lineWidth = lerp(1.7, 1.0, tHead);
+              sctx.stroke();
+
+              if (tHead < 0.98 && tHead > 0.03) {
+                const hp = bezierPoint(P0, P1, P2, P3, tHead);
+                sctx.beginPath();
+                sctx.arc(hp.x, hp.y, broke ? 1.8 : 2.2, 0, Math.PI * 2);
+                sctx.fillStyle = broke ? "#b83a22" : "#ffffff";
+                sctx.fill();
+              }
             }
           }
-          sctx.shadowBlur = 0;
 
           // Animate glyph stroke-dashoffset & opacity
           for (let i = 0; i < 9; i++) {
