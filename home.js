@@ -89,7 +89,14 @@ const recentEl = $("#recentPush");
 if (recentEl) {
   fetch("https://worker-round-credit-5733.abyperhaps.workers.dev").then(r=>r.ok?r.json():Promise.reject()).then(d=>{
     const m=(Date.now()-new Date(d.at))/6e4,t=m<60?`${m|0}m`:m<1440?`${m/60|0}h`:`${m/1440|0}d`;
-    recentEl.textContent=`shipped ${t} ago${d.name?" · 4ofl/"+d.name:""}`}).catch(()=>{recentEl.textContent="active on github · 4ofl"});
+    if(d.name){
+      recentEl.innerHTML=`shipped ${t} ago · <a href="https://github.com/4ofl/${d.name}" target="_blank" rel="noopener">4ofl/${d.name} ↗</a>`;
+    }else{
+      recentEl.textContent=`shipped ${t} ago · private repository`;
+    }
+  }).catch(()=>{
+    recentEl.innerHTML=`active on <a href="https://github.com/4ofl" target="_blank" rel="noopener">github.com/4ofl ↗</a>`;
+  });
 }
 
 /* accordion */

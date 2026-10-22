@@ -27,7 +27,8 @@ h1 span{display:inline-block;text-align:center;transition:color .2s}
 
 /* Work section: vertically centered in viewport, eliminating dead space underneath */
 #work{min-height:92svh;display:flex;flex-direction:column;justify-content:center;padding:4.5rem var(--pad)}
-.head{display:flex;justify-content:space-between;color:var(--mist);border-bottom:1px solid var(--line);padding-bottom:.8rem;margin-bottom:1rem}
+.head{display:flex;justify-content:space-between;color:var(--mist);border-bottom:1px solid var(--line);padding-bottom:.8rem;margin-bottom:1.5rem}
+#work .head{margin-bottom:0}
 .row{border-bottom:1px solid var(--line)}
 
 /* Project row header: left-aligned in the same spot, vertically aligned */
@@ -61,7 +62,7 @@ h1 span{display:inline-block;text-align:center;transition:color .2s}
 #about{min-height:70svh;display:flex;flex-direction:column;justify-content:center;padding:4.5rem var(--pad)}
 .ag{display:grid;grid-template-columns:1.3fr 1fr;gap:3rem;align-items:start}
 .big{font:300 clamp(1.8rem,4vw,3.2rem)/1.15 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em}
-dl{display:grid;grid-template-columns:auto 1fr;gap:.9rem 1.5rem}dt{color:var(--mist);padding-top:.25rem}
+dl{display:grid;grid-template-columns:auto 1fr;gap:.9rem 1.5rem}dt{color:var(--mist);padding-top:.25rem}dl a{color:var(--accent);text-decoration:none}dl a:hover{text-decoration:underline}
 
 #contact{min-height:70svh;display:flex;flex-direction:column;justify-content:center;padding:4.5rem var(--pad) 2rem}
 .mail{display:block;width:fit-content;text-align:left;font:800 clamp(1.8rem,7vw,5.5rem)/1.1 'Bricolage Grotesque',sans-serif;letter-spacing:-.04em;margin:1.8rem 0 1.2rem;color:var(--accent)}.mail:hover{text-decoration:underline}
