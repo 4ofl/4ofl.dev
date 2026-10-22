@@ -102,7 +102,7 @@
     copyUrlBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(location.href);
-        copyUrlBtn.textContent = "copied ✓";
+        copyUrlBtn.textContent = "copied";
       } catch {
         copyUrlBtn.textContent = "press ⌘/ctrl+c";
       }

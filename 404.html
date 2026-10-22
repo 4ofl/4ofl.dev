@@ -1,80 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 · retrieval failed · 4ofl</title>
-  <meta name="theme-color" content="#08080a" />
-  <meta name="description" content="404 - Page not found. This route does not exist in the 4ofl index." />
-  <meta name="robots" content="noindex, follow" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="/style.css" />
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>404 · lost in retrieval · 4ofl</title>
+<meta name="theme-color" content="#0b0b0d"><meta name="robots" content="noindex,follow">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--ink:#0b0b0d;--bone:#edece8;--mist:#8c8a85;--line:#ffffff1a;--accent:#d47455}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--ink)}
+body{min-height:100svh;color:var(--bone);font:400 .85rem/1.6 'JetBrains Mono',ui-monospace,monospace;display:grid;place-items:center;padding:5rem 1.25rem 3rem}
+::selection{background:var(--accent);color:var(--ink)}
+a{color:var(--accent)}
+#bg{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.logo{position:fixed;top:1rem;left:clamp(1.25rem,5vw,4rem);font:800 1.3rem 'Bricolage Grotesque',sans-serif;letter-spacing:-.04em;text-decoration:none;color:var(--bone)}.logo i{font-style:normal;color:var(--accent)}
+.wrap{position:relative;width:min(680px,100%);display:grid;gap:1.4rem}
+.code{font:300 clamp(6rem,26vw,13rem)/.8 'Bricolage Grotesque',sans-serif;letter-spacing:-.06em;user-select:none}
+.code span{display:inline-block;transition:font-variation-settings .15s,color .2s}
+h1{font:600 clamp(1.8rem,5vw,2.8rem)/1.1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em}h1 i{color:var(--accent)}
+.sub{color:var(--mist);max-width:46ch}
+.term{border:1px solid var(--line);border-radius:14px;background:#ffffff08;padding:1.1rem;display:grid;gap:.9rem;backdrop-filter:blur(8px)}
+#out{display:grid;gap:.25rem;max-height:18rem;overflow:auto;color:var(--mist);word-break:break-word}
+#out .c{color:var(--bone)}#out .e{color:var(--accent)}
+.row{display:flex;gap:.6rem;border-top:1px solid var(--line);padding-top:.8rem}.row input{flex:1;background:none;border:0;outline:0;color:inherit;font:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem}.chips button{background:none;color:var(--mist);font:inherit;border:1px solid var(--line);border-radius:99px;padding:.3rem .8rem;cursor:pointer}.chips button:hover{border-color:var(--accent);color:var(--bone)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-  <!-- Ambient background effects -->
-  <div class="spot" id="spot" aria-hidden="true"></div>
-  <div class="vignette" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
+<canvas id="bg" aria-hidden="true"></canvas>
+<a class="logo" href="/">4ofl<i>.dev</i></a>
+<main class="wrap">
+  <div class="code" id="code" aria-label="404">404</div>
+  <h1>lost in <i>retrieval</i>.</h1>
+  <p class="sub">zero documents matched this route. type a command below, or let the index guess where you meant to go.</p>
+  <div class="term">
+    <div id="out" aria-live="polite"></div>
+    <div class="row"><span>&gt;</span><input id="in" placeholder="try: help" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal input"></div>
+    <div class="chips" id="chips"><button>help</button><button>ls</button><button>cd work</button><button>home</button></div>
+  </div>
+</main>
+<script>
+(()=>{"use strict";
+const $=s=>document.querySelector(s),out=$("#out"),inp=$("#in");
+const R=[["home","/"],["work","/#work"],["about","/#about"],["contact","/#contact"],["citecamp","https://citecamp.4ofl.dev"],["june","https://docs.june.4ofl.dev"],["github","https://github.com/4ofl"]];
+const lev=(a,b)=>{const d=Array.from({length:a.length+1},(_,i)=>[i,...Array(b.length).fill(0)]);for(let j=1;j<=b.length;j++)d[0][j]=j;
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]};
+const line=(t,c)=>{const d=document.createElement("div");d.textContent=t;if(c)d.className=c;out.append(d);out.scrollTop=1e9;return d};
+const link=(label,href)=>{const d=document.createElement("div"),a=document.createElement("a");a.href=href;a.textContent=label;if(href[0]!=="/")a.target="_blank",a.rel="noopener";d.append("→ ",a);out.append(d);out.scrollTop=1e9};
+const go=(href)=>{href[0]==="/"?location.href=href:open(href,"_blank","noopener")};
 
-  <!-- Top bar -->
-  <div class="top-fade" style="opacity:1" aria-hidden="true"></div>
-  <a class="wordmark active" href="/" aria-label="Aby Mathew · 4ofl.dev home" data-tooltip="Go to 4ofl.dev home" style="opacity:1">
-    <span style="font-family:'Bricolage Grotesque', sans-serif; font-size:1.4rem; font-weight:800; letter-spacing:-0.04em; color:var(--bone)">4ofl<span style="color:var(--accent)">.dev</span></span>
-  </a>
+const path=location.pathname,seg=decodeURIComponent(path.split("/").filter(Boolean).pop()||"").toLowerCase().replace(/\.\w+$/,"");
+line("> GET "+path,"c");line("< 404 NOT_FOUND [route_unresolved]","e");line("< 0 documents retrieved");
+let best=null,bd=99;for(const r of R){const d=Math.min(lev(seg,r[0]),r[0].startsWith(seg)&&seg?0:99);if(d<bd)bd=d,best=r}
+if(seg&&best&&bd<=Math.max(2,seg.length/2)){line(`closest match: "${best[0]}" (distance ${bd})`);link(best[0],best[1])}
+else{line("no close match. returning you home is the safest bet.");link("home","/")}
 
-  <!-- Build vs Break Mode Switcher -->
-  <button class="mode" id="modeBtn" aria-pressed="false" aria-label="Switch between build and break view" data-tooltip="Toggle Build / Break mode" data-tooltip-kbd="B">
-    <span>build</span><span>break</span>
-  </button>
+const run=raw=>{const c=raw.trim();if(!c)return;line("> "+c,"c");const [cmd,...a]=c.toLowerCase().split(/\s+/),arg=a.join(" ");
+  if(cmd==="help")line("help · ls · cd <route> · home · whoami · date · clear");
+  else if(cmd==="ls")R.forEach(r=>line("  "+r[0]));
+  else if(cmd==="cd"||cmd==="open"){const r=R.find(x=>x[0]===arg)||R.map(x=>[x,lev(arg,x[0])]).sort((p,q)=>p[1]-q[1])[0]?.[0];
+    if(!arg)line("cd: where to?","e");else{line("resolving "+r[0]+"…");setTimeout(()=>go(r[1]),350)}}
+  else if(cmd==="home"){line("returning…");setTimeout(()=>go("/"),300)}
+  else if(cmd==="whoami")line("a visitor on a route that doesn't exist. aby mathew built this index.");
+  else if(cmd==="date")line(new Date().toISOString());
+  else if(cmd==="clear")out.innerHTML="";
+  else if(cmd==="sudo")line("nice try. this index is read-only.","e");
+  else if(cmd==="rm")line("rm: refusing. you already found one thing that's missing.","e");
+  else{const m=["help","ls","cd","home","whoami","date","clear"].map(x=>[x,lev(cmd,x)]).sort((p,q)=>p[1]-q[1])[0];
+    line(`${cmd}: command not found${m[1]<=2?` · did you mean "${m[0]}"?`:""}`,"e")}};
+inp.addEventListener("keydown",e=>{if(e.key==="Enter"){run(inp.value);inp.value=""}});
+$("#chips").addEventListener("click",e=>{if(e.target.tagName==="BUTTON")run(e.target.textContent)});
+addEventListener("keydown",e=>{if(e.key==="Escape")location.href="/"});
+if(matchMedia("(pointer:fine)").matches)inp.focus();
 
-  <main class="notfound-body">
-    <div class="notfound-card">
-      <div class="notfound-badge">
-        <span class="pulse" aria-hidden="true"></span>
-        <span>retrieval exception · 404</span>
-      </div>
-
-      <div class="notfound-code">404</div>
-      <h1 class="notfound-title">lost in <i>retrieval</i>.</h1>
-      <p class="notfound-desc">
-        the clause or document you requested does not exist in this index. either the route was moved, or you dropped into an unpinned link.
-      </p>
-
-      <div class="break-note" style="margin-bottom:1.5rem">
-        zero documents matched this query across the local SQLite cluster and edge gateways. fail fast, don't guess.
-      </div>
-
-      <div class="notfound-terminal" aria-label="Error diagnostic output">
-        <div><span style="color:var(--bone)">&gt; GET</span> <span id="termPath" style="color:var(--accent)">/route</span> <span style="color:var(--mist)">HTTP/2.0</span></div>
-        <div>&gt; Host: 4ofl.dev</div>
-        <div class="term-err">&lt; 404 NOT_FOUND [clause_unresolved]</div>
-        <div>&lt; timestamp: <span id="termTime"></span></div>
-        <div>&lt; gateway: edge-bom1 (kerala, in) · 0 documents retrieved</div>
-      </div>
-
-      <div class="notfound-actions">
-        <a href="/" class="notfound-btn" data-tooltip="Return to homepage" data-tooltip-kbd="Esc">
-          ← return home
-        </a>
-        <button type="button" class="notfound-btn ghost" id="retryBtn" data-tooltip="Simulate route re-query">
-          retry route
-        </button>
-        <button type="button" class="notfound-btn ghost" id="copyUrlBtn" data-tooltip="Copy current URL">
-          copy path
-        </button>
-      </div>
-    </div>
-
-    <div class="notfound-foot">
-      <span>© 2026 aby mathew · </span>
-      <span id="clock">kerala</span>
-      <span> · press [esc] to go home</span>
-    </div>
-  </main>
-
-  <script src="/404.js" defer></script>
+/* big 404 reacts to cursor + dot grid */
+const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const code=$("#code");code.innerHTML=[..."404"].map(c=>`<span>${c}</span>`).join("");const S=[...code.children];
+let mx=-999,my=-999;addEventListener("pointermove",e=>{mx=e.clientX;my=e.clientY},{passive:true});
+const cv=$("#bg"),g=cv.getContext("2d");let W,H,D;
+const size=()=>{D=Math.min(devicePixelRatio||1,2);W=cv.width=innerWidth*D;H=cv.height=innerHeight*D};size();addEventListener("resize",size);
+document.fonts.ready.then(()=>{S.forEach(s=>{s.style.fontVariationSettings='"wght" 800';s.style.width=s.getBoundingClientRect().width+"px";s.style.fontVariationSettings='"wght" 300'})});
+function frame(){g.clearRect(0,0,W,H);const gap=34*D;
+  for(let y=gap/2;y<H;y+=gap)for(let x=gap/2;x<W;x+=gap){const k=Math.max(0,1-Math.hypot(x/D-mx,y/D-my)/230);
+    g.fillStyle=k?`rgba(212,116,85,${.2+.8*k})`:"rgba(255,255,255,.09)";g.beginPath();g.arc(x,y,(1+2.4*k)*D,0,6.3);g.fill()}
+  for(const s of S){const r=s.getBoundingClientRect(),k=Math.max(0,1-Math.hypot(mx-r.left-r.width/2,my-r.top-r.height/2)/300);
+    s.style.fontVariationSettings=`"wght" ${300+500*k|0}`;s.style.color=k>.55?"var(--accent)":""}
+  if(!reduce)requestAnimationFrame(frame)}
+frame();
+})();
+</script>
 </body>
 </html>
