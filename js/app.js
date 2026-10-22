@@ -361,11 +361,18 @@
     const t = list[i]?.[1];
     if (!t) return;
     shut();
-    typeof t === "function"
-      ? t()
-      : t[0] === "#"
-        ? (location.hash = t)
-        : open(t, "_blank", "noopener");
+    if (typeof t === "function") {
+      t();
+    } else if (t[0] === "#") {
+      if (lenis) {
+        lenis.scrollTo(t === "#top" ? 0 : t, { offset: 0, duration: 1.15 });
+        history.pushState(null, null, t);
+      } else {
+        location.hash = t;
+      }
+    } else {
+      open(t, "_blank", "noopener");
+    }
   }
   function openP() {
     pal.hidden = false;
@@ -440,5 +447,40 @@
       },
       { passive: true },
     );
+  }
+
+  /* lenis momentum smooth scrolling */
+  let lenis = null;
+  if (!reduce && typeof Lenis !== "undefined") {
+    lenis = new Lenis({
+      duration: 1.15,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      syncTouch: false,
+      autoRaf: false,
+    });
+    function lenisRaf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(lenisRaf);
+    }
+    requestAnimationFrame(lenisRaf);
+
+    lenis.on("scroll", () => {
+      if (window.scrollY < innerHeight) requestFrame();
+    });
+
+    $$('a[href^="#"]').forEach((a) => {
+      a.addEventListener("click", (e) => {
+        const target = a.getAttribute("href");
+        if (target && target.length > 1) {
+          e.preventDefault();
+          lenis.scrollTo(target === "#top" ? 0 : target, {
+            offset: 0,
+            duration: 1.15,
+          });
+          history.pushState(null, null, target);
+        }
+      });
+    });
   }
 })();
