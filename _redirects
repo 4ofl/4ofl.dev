@@ -8,3 +8,15 @@
 /github      https://github.com/4ofl  302
 /johnsfitness/  https://github.com/4ofl/johnsfitness-edge  302
 /johnsfitness   https://github.com/4ofl/johnsfitness-edge  302
+
+# Static asset backward compatibility
+/style.css            /css/style.css            301
+/app.js               /js/app.js                301
+/home.css             /css/style.css            301
+/home.js              /js/app.js                301
+/social-card.png      /assets/social-card.png   301
+/apple-touch-icon.png /assets/apple-touch-icon.png 301
+/favicon.svg          /assets/favicon.svg       301
+/favicon-16x16.png    /assets/favicon-16x16.png 301
+/favicon-32x32.png    /assets/favicon-32x32.png 301
+/icon-512.png         /assets/icon-512.png      301

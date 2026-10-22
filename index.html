@@ -1,106 +1,255 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>aby mathew · 4ofl</title>
-<meta name="theme-color" content="#0b0b0d">
-<meta name="description" content="Aby Mathew · I build things I wish existed.">
-<link rel="canonical" href="https://4ofl.dev/">
-<meta property="og:type" content="website"><meta property="og:url" content="https://4ofl.dev/"><meta property="og:title" content="aby mathew · 4ofl">
-<meta property="og:description" content="I build things I wish existed."><meta property="og:image" content="https://4ofl.dev/social-card.png">
-<meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Aby Mathew","url":"https://4ofl.dev/","sameAs":["https://github.com/4ofl","https://linkedin.com/in/abyperhaps"],"jobTitle":"Software Developer"}</script>
-<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap">
-<link rel="stylesheet" href="./home.css">
-</head>
-<body>
-<canvas id="bg" aria-hidden="true"></canvas>
-<header class="bar">
-  <div class="bar-inner">
-    <a class="logo" href="#top">4ofl<i>.dev</i></a>
-    <nav><a href="#work">work</a><a href="#about">about</a><a href="#contact">contact</a><button id="kBtn" aria-label="Open command palette">⌘K</button></nav>
-  </div>
-</header>
-
-<main id="top">
-<section class="hero">
-  <h1 id="name" aria-label="aby mathew">aby<br>mathew</h1>
-  <p class="sub">I build things I wish existed.</p>
-  <p class="k dim">bca undergrad · kerala, in</p>
-</section>
-
-<section id="work">
-  <p class="k head"><span>selected work</span><span>01</span></p>
-
-  <article class="row">
-    <button class="rh" aria-expanded="false"><b>citecamp</b><span>rag · academic ai</span><i></i></button>
-    <div class="rp"><div class="pi" inert>
-      <div class="copy">
-        <p>A RAG assistant over curated university documents. Every claim comes with its source.</p>
-        <p class="broke"><em>what broke:</em> college circulars are watermarked, scanned PDFs that wreck standard chunkers. The data pipeline comes first.</p>
-        <p class="k"><a href="https://citecamp.4ofl.dev" target="_blank" rel="noopener">visit citecamp ↗</a></p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>aby mathew · 4ofl</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta
+      name="description"
+      content="Aby Mathew · I build things I wish existed."
+    />
+    <link rel="canonical" href="https://4ofl.dev/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://4ofl.dev/" />
+    <meta property="og:title" content="aby mathew · 4ofl" />
+    <meta property="og:description" content="I build things I wish existed." />
+    <meta
+      property="og:image"
+      content="https://4ofl.dev/assets/social-card.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Aby Mathew",
+        "url": "https://4ofl.dev/",
+        "sameAs": [
+          "https://github.com/4ofl",
+          "https://linkedin.com/in/abyperhaps"
+        ],
+        "jobTitle": "Software Developer"
+      }
+    </script>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <canvas id="bg" aria-hidden="true"></canvas>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="#top">4ofl<i>.dev</i></a>
+        <nav>
+          <a href="#work">work</a><a href="#about">about</a
+          ><a href="#contact">contact</a
+          ><button id="kBtn" aria-label="Open command palette">⌘K</button>
+        </nav>
       </div>
-      <div class="demo"><div class="chat" id="ccChat"><p class="dim">ask something ↓</p></div>
-        <div class="chips" id="ccChips"><button>attendance for exams?</button><button>get an official transcript?</button><button>re-evaluate a paper?</button></div></div>
-    </div></div>
-  </article>
+    </header>
 
-  <article class="row">
-    <button class="rh" aria-expanded="false"><b>johns fitness</b><span>offline-first · biometrics</span><i></i></button>
-    <div class="rp"><div class="pi" inert>
-      <div class="copy">
-        <p>A gym system that keeps working when the internet doesn’t. Local SQLite first, sync queue second.</p>
-        <p class="broke"><em>what broke:</em> ISP lines drop in the 6am rush. Waiting on a cloud webhook strands 30 people outside. WAL-mode SQLite opens the relay in 12ms.</p>
-        <p class="k"><a href="https://github.com/4ofl/johnsfitness-edge" target="_blank" rel="noopener">source on github ↗</a></p>
+    <main id="top">
+      <section class="hero">
+        <h1 id="name" aria-label="aby mathew">aby<br />mathew</h1>
+        <p class="sub">I build things I wish existed.</p>
+        <p class="k dim">bca undergrad · kerala, in</p>
+      </section>
+
+      <section id="work">
+        <p class="k head"><span>selected work</span><span>01</span></p>
+
+        <article class="row">
+          <button class="rh" aria-expanded="false">
+            <b>citecamp</b><span>rag · academic ai</span><i></i>
+          </button>
+          <div class="rp">
+            <div class="pi" inert>
+              <div class="copy">
+                <p>
+                  A RAG assistant over curated university documents. Every claim
+                  comes with its source.
+                </p>
+                <p class="broke">
+                  <em>what broke:</em> college circulars are watermarked,
+                  scanned PDFs that wreck standard chunkers. The data pipeline
+                  comes first.
+                </p>
+                <p class="k">
+                  <a
+                    href="https://citecamp.4ofl.dev"
+                    target="_blank"
+                    rel="noopener"
+                    >visit citecamp ↗</a
+                  >
+                </p>
+              </div>
+              <div class="demo">
+                <div class="chat" id="ccChat">
+                  <p class="dim">ask something ↓</p>
+                </div>
+                <div class="chips" id="ccChips">
+                  <button>attendance for exams?</button
+                  ><button>get an official transcript?</button
+                  ><button>re-evaluate a paper?</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="row">
+          <button class="rh" aria-expanded="false">
+            <b>johns fitness</b><span>offline-first · biometrics</span><i></i>
+          </button>
+          <div class="rp">
+            <div class="pi" inert>
+              <div class="copy">
+                <p>
+                  A gym system that keeps working when the internet doesn’t.
+                  Local SQLite first, sync queue second.
+                </p>
+                <p class="broke">
+                  <em>what broke:</em> ISP lines drop in the 6am rush. Waiting
+                  on a cloud webhook strands 30 people outside. WAL-mode SQLite
+                  opens the relay in 12ms.
+                </p>
+                <p class="k">
+                  <a
+                    href="https://github.com/4ofl/johnsfitness-edge"
+                    target="_blank"
+                    rel="noopener"
+                    >source on github ↗</a
+                  >
+                </p>
+              </div>
+              <div class="demo">
+                <div class="jtop">
+                  <button id="net" class="sw" aria-pressed="true">
+                    network online</button
+                  ><span class="k">queue <b id="q">0</b></span>
+                </div>
+                <button
+                  id="fp"
+                  class="fp"
+                  aria-label="Scan fingerprint"
+                ></button>
+                <p class="k" id="jres">tap the fingerprint</p>
+                <ul class="log" id="jlog"></ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="row">
+          <button class="rh" aria-expanded="false">
+            <b>june</b><span>infrastructure · bots</span><i></i>
+          </button>
+          <div class="rp">
+            <div class="pi" inert>
+              <div class="copy">
+                <p>
+                  A Discord application for server automation, utilities and
+                  real-time state gateways.
+                </p>
+                <p class="broke">
+                  <em>what broke:</em> Discord’s gateway drops into zombie
+                  connections with no close frame. Built a heartbeat state
+                  machine and persistent timer queue.
+                </p>
+                <p class="k">
+                  <a
+                    href="https://docs.june.4ofl.dev"
+                    target="_blank"
+                    rel="noopener"
+                    >read the docs ↗</a
+                  >
+                </p>
+              </div>
+              <div class="demo">
+                <div class="term" id="jt">
+                  <div>june is online. try a command.</div>
+                </div>
+                <div class="trow">
+                  <span>&gt;</span
+                  ><input
+                    id="ji"
+                    placeholder="/help /ping /status /remind 5s stretch"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Command"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="about">
+        <p class="k head"><span>about</span><span>02</span></p>
+        <div class="ag">
+          <p class="big">Violently opposed to legacy software.</p>
+          <dl>
+            <dt>based</dt>
+            <dd>kerala, in</dd>
+            <dt>workbench</dt>
+            <dd>Python, C, Node.js, SQLite, Docker, Linux</dd>
+            <dt>focus</dt>
+            <dd>local-first software, RAG pipelines, edge AI</dd>
+            <dt>recent</dt>
+            <dd id="recentPush">
+              active on
+              <a href="https://github.com/4ofl" target="_blank" rel="noopener"
+                >github.com/4ofl ↗</a
+              >
+            </dd>
+          </dl>
+        </div>
+      </section>
+
+      <section id="contact">
+        <p class="k head"><span>contact</span><span>03</span></p>
+        <p class="big">Got something worth building, or breaking?</p>
+        <button class="mail" id="mail">aby@4ofl.dev</button>
+        <p class="k links">
+          <a href="https://github.com/4ofl" target="_blank" rel="noopener"
+            >github ↗</a
+          ><a
+            href="https://linkedin.com/in/abyperhaps"
+            target="_blank"
+            rel="noopener"
+            >linkedin ↗</a
+          ><a
+            href="https://discord.com/users/1310480351008657420"
+            target="_blank"
+            rel="noopener"
+            >discord ↗</a
+          >
+        </p>
+        <footer class="k dim">
+          <span>© 2026 aby mathew</span><span id="clock"></span>
+        </footer>
+      </section>
+    </main>
+
+    <div class="pal" id="pal" hidden>
+      <div class="pbox" role="dialog" aria-label="Command palette">
+        <input
+          id="pin"
+          placeholder="jump to…"
+          autocomplete="off"
+          aria-label="Search commands"
+        />
+        <ul id="plist"></ul>
       </div>
-      <div class="demo">
-        <div class="jtop"><button id="net" class="sw" aria-pressed="true">network online</button><span class="k">queue <b id="q">0</b></span></div>
-        <button id="fp" class="fp" aria-label="Scan fingerprint"></button>
-        <p class="k" id="jres">tap the fingerprint</p><ul class="log" id="jlog"></ul>
-      </div>
-    </div></div>
-  </article>
-
-  <article class="row">
-    <button class="rh" aria-expanded="false"><b>june</b><span>infrastructure · bots</span><i></i></button>
-    <div class="rp"><div class="pi" inert>
-      <div class="copy">
-        <p>A Discord application for server automation, utilities and real-time state gateways.</p>
-        <p class="broke"><em>what broke:</em> Discord’s gateway drops into zombie connections with no close frame. Built a heartbeat state machine and persistent timer queue.</p>
-        <p class="k"><a href="https://docs.june.4ofl.dev" target="_blank" rel="noopener">read the docs ↗</a></p>
-      </div>
-      <div class="demo"><div class="term" id="jt"><div>june is online. try a command.</div></div>
-        <div class="trow"><span>&gt;</span><input id="ji" placeholder="/help /ping /status /remind 5s stretch" autocomplete="off" spellcheck="false" aria-label="Command"></div></div>
-    </div></div>
-  </article>
-</section>
-
-<section id="about">
-  <p class="k head"><span>about</span><span>02</span></p>
-  <div class="ag">
-    <p class="big">Violently opposed to legacy software.</p>
-    <dl>
-      <dt>based</dt><dd>kerala, in</dd>
-      <dt>workbench</dt><dd>Python, C, Node.js, SQLite, Docker, Linux</dd>
-      <dt>focus</dt><dd>local-first software, RAG pipelines, edge AI</dd>
-      <dt>recent</dt><dd id="recentPush">active on <a href="https://github.com/4ofl" target="_blank" rel="noopener">github.com/4ofl ↗</a></dd>
-    </dl>
-  </div>
-</section>
-
-<section id="contact">
-  <p class="k head"><span>contact</span><span>03</span></p>
-  <p class="big">Got something worth building, or breaking?</p>
-  <button class="mail" id="mail">aby@4ofl.dev</button>
-  <p class="k links"><a href="https://github.com/4ofl" target="_blank" rel="noopener">github ↗</a><a href="https://linkedin.com/in/abyperhaps" target="_blank" rel="noopener">linkedin ↗</a><a href="https://discord.com/users/1310480351008657420" target="_blank" rel="noopener">discord ↗</a></p>
-  <footer class="k dim"><span>© 2026 aby mathew</span><span id="clock"></span></footer>
-</section>
-</main>
-
-<div class="pal" id="pal" hidden><div class="pbox" role="dialog" aria-label="Command palette">
-  <input id="pin" placeholder="jump to…" autocomplete="off" aria-label="Search commands"><ul id="plist"></ul></div></div>
-<script src="./home.js" defer></script>
-</body>
+    </div>
+    <script src="./js/app.js" defer></script>
+  </body>
 </html>

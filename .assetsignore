@@ -16,3 +16,6 @@ README.md
 *.log
 .env
 .env.*
+worker/**
+worker.js
+*.py
