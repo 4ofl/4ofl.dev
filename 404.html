@@ -20,6 +20,7 @@
         --mist: #8c8a85;
         --line: #ffffff1a;
         --accent: #d47455;
+        --pad: clamp(1.25rem, 5vw, 4rem);
       }
       * {
         box-sizing: border-box;
@@ -28,6 +29,7 @@
       }
       html {
         background: var(--ink);
+        scroll-behavior: smooth;
       }
       body {
         min-height: 100svh;
@@ -36,48 +38,62 @@
           400 0.85rem/1.6 "JetBrains Mono",
           ui-monospace,
           monospace;
-        display: grid;
-        place-items: center;
-        padding: 5rem 1.25rem 3rem;
+        -webkit-font-smoothing: antialiased;
       }
       ::selection {
         background: var(--accent);
         color: var(--ink);
       }
       a {
-        color: var(--accent);
+        color: inherit;
+        text-decoration: none;
       }
       #bg {
         position: fixed;
         inset: 0;
         width: 100%;
         height: 100%;
+        z-index: 0;
         pointer-events: none;
       }
+
+      /* Original standalone logo */
       .logo {
         position: fixed;
-        top: 1rem;
-        left: clamp(1.25rem, 5vw, 4rem);
+        top: 1.25rem;
+        left: var(--pad);
+        z-index: 20;
         font:
           800 1.3rem "Bricolage Grotesque",
           sans-serif;
         letter-spacing: -0.04em;
-        text-decoration: none;
         color: var(--bone);
       }
       .logo i {
         font-style: normal;
         color: var(--accent);
       }
-      .wrap {
+
+      /* Fullscreen layout */
+      .hero-404 {
         position: relative;
-        width: min(680px, 100%);
+        z-index: 1;
+        min-height: 100svh;
         display: grid;
-        gap: 1.4rem;
+        grid-template-columns: 1fr 1.15fr;
+        gap: clamp(2rem, 5vw, 4.5rem);
+        align-items: center;
+        padding: 5rem var(--pad) 3rem;
+      }
+
+      .meta-col {
+        display: grid;
+        gap: 1.2rem;
+        align-content: center;
       }
       .code {
         font:
-          300 clamp(6rem, 26vw, 13rem)/0.8 "Bricolage Grotesque",
+          300 clamp(6rem, 16vw, 12rem)/0.8 "Bricolage Grotesque",
           sans-serif;
         letter-spacing: -0.06em;
         user-select: none;
@@ -90,33 +106,102 @@
       }
       h1 {
         font:
-          600 clamp(1.8rem, 5vw, 2.8rem)/1.1 "Bricolage Grotesque",
+          600 clamp(1.8rem, 4vw, 2.8rem)/1.15 "Bricolage Grotesque",
           sans-serif;
         letter-spacing: -0.03em;
       }
       h1 i {
         color: var(--accent);
+        font-style: normal;
       }
       .sub {
         color: var(--mist);
-        max-width: 46ch;
+        max-width: 44ch;
+        line-height: 1.6;
+      }
+      .quick-nav {
+        margin-top: 0.4rem;
+      }
+      .btn-main {
+        display: inline-block;
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+        padding: 0.45rem 1.1rem;
+        border-radius: 99px;
+        background: var(--accent);
+        color: var(--ink);
+        font-weight: 500;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .btn-main:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      /* Solid opaque terminal surface */
+      .term-col {
+        width: 100%;
       }
       .term {
         border: 1px solid var(--line);
         border-radius: 14px;
-        background: #ffffff08;
-        padding: 1.1rem;
+        background: #121215;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        padding: 1.3rem;
         display: grid;
         gap: 0.9rem;
-        backdrop-filter: blur(8px);
+        position: relative;
+        z-index: 2;
       }
+      .term-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0.65rem;
+        font-size: 0.75rem;
+        color: var(--mist);
+      }
+      .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.3;
+        }
+      }
+
       #out {
         display: grid;
-        gap: 0.25rem;
-        max-height: 18rem;
-        overflow: auto;
+        gap: 0.3rem;
+        min-height: 12rem;
+        max-height: 19rem;
+        overflow-y: auto;
         color: var(--mist);
         word-break: break-word;
+        padding-top: 0.25rem;
+        padding-right: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--line) transparent;
+      }
+      #out::-webkit-scrollbar {
+        width: 5px;
+      }
+      #out::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      #out::-webkit-scrollbar-thumb {
+        background: var(--line);
+        border-radius: 4px;
+      }
+      #out::-webkit-scrollbar-thumb:hover {
+        background: var(--mist);
       }
       #out .c {
         color: var(--bone);
@@ -124,11 +209,20 @@
       #out .e {
         color: var(--accent);
       }
+      #out a {
+        color: var(--accent);
+        text-decoration: underline;
+      }
+
       .row {
         display: flex;
         gap: 0.6rem;
+        align-items: center;
         border-top: 1px solid var(--line);
         padding-top: 0.8rem;
+      }
+      .row span {
+        color: var(--accent);
       }
       .row input {
         flex: 1;
@@ -144,54 +238,84 @@
         gap: 0.5rem;
       }
       .chips button {
-        background: none;
+        background: #18181c;
         color: var(--mist);
         font: inherit;
+        font-size: 0.75rem;
         border: 1px solid var(--line);
         border-radius: 99px;
         padding: 0.3rem 0.8rem;
         cursor: pointer;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
       }
       .chips button:hover {
         border-color: var(--accent);
         color: var(--bone);
       }
+
+      @media (max-width: 880px) {
+        .hero-404 {
+          grid-template-columns: 1fr;
+          padding-top: 5rem;
+          gap: 2rem;
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
         * {
           transition: none !important;
+          animation: none !important;
         }
       }
     </style>
   </head>
   <body>
     <canvas id="bg" aria-hidden="true"></canvas>
+
     <a class="logo" href="/">4ofl<i>.dev</i></a>
-    <main class="wrap">
-      <div class="code" id="code" aria-label="404">404</div>
-      <h1>lost in <i>retrieval</i>.</h1>
-      <p class="sub">
-        zero documents matched this route. type a command below, or let the
-        index guess where you meant to go.
-      </p>
-      <div class="term">
-        <div id="out" aria-live="polite"></div>
-        <div class="row">
-          <span>&gt;</span
-          ><input
-            id="in"
-            placeholder="try: help"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-            aria-label="Terminal input"
-          />
+
+    <main class="hero-404">
+      <div class="meta-col">
+        <div class="code" id="code" aria-label="404">404</div>
+        <h1>lost in <i>retrieval</i>.</h1>
+        <p class="sub">
+          zero documents matched this route. type a command in the terminal
+          below, or jump back to an active route.
+        </p>
+        <div class="quick-nav">
+          <a href="/" class="btn-main">home ↗</a>
         </div>
-        <div class="chips" id="chips">
-          <button>help</button><button>ls</button><button>cd work</button
-          ><button>home</button>
+      </div>
+
+      <div class="term-col">
+        <div class="term">
+          <div class="term-head">
+            <span>index gateway</span>
+            <span class="status-dot"></span>
+          </div>
+          <div id="out" aria-live="polite"></div>
+          <div class="row">
+            <span>&gt;</span>
+            <input
+              id="in"
+              placeholder="try: help"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+              aria-label="Terminal input"
+            />
+          </div>
+          <div class="chips" id="chips">
+            <button>help</button>
+            <button>ls</button>
+            <button>cd work</button>
+            <button>home</button>
+          </div>
         </div>
       </div>
     </main>
+
     <script>
       (() => {
         "use strict";
@@ -235,7 +359,10 @@
             a = document.createElement("a");
           a.href = href;
           a.textContent = label;
-          if (href[0] !== "/") ((a.target = "_blank"), (a.rel = "noopener"));
+          if (href[0] !== "/") {
+            a.target = "_blank";
+            a.rel = "noopener";
+          }
           d.append("→ ", a);
           out.append(d);
           out.scrollTop = 1e9;
@@ -260,7 +387,10 @@
             lev(seg, r[0]),
             r[0].startsWith(seg) && seg ? 0 : 99,
           );
-          if (d < bd) ((bd = d), (best = r));
+          if (d < bd) {
+            bd = d;
+            best = r;
+          }
         }
         if (seg && best && bd <= Math.max(2, seg.length / 2)) {
           line(`closest match: "${best[0]}" (distance ${bd})`);
@@ -335,16 +465,9 @@
         const code = $("#code");
         code.innerHTML = [..."404"].map((c) => `<span>${c}</span>`).join("");
         const S = [...code.children];
+
         let mx = -999,
           my = -999;
-        addEventListener(
-          "pointermove",
-          (e) => {
-            mx = e.clientX;
-            my = e.clientY;
-          },
-          { passive: true },
-        );
         const cv = $("#bg"),
           g = cv.getContext("2d");
         let W, H, D;
@@ -354,47 +477,81 @@
           H = cv.height = innerHeight * D;
         };
         size();
-        addEventListener("resize", size);
-        document.fonts.ready.then(() => {
-          S.forEach((s) => {
-            s.style.fontVariationSettings = '"wght" 800';
-            s.style.width = s.getBoundingClientRect().width + "px";
-            s.style.fontVariationSettings = '"wght" 300';
-          });
-        });
+        addEventListener(
+          "resize",
+          () => {
+            size();
+            requestFrame();
+          },
+          { passive: true },
+        );
+
+        let animPending = false;
+        function requestFrame() {
+          if (!animPending && !reduce) {
+            animPending = true;
+            requestAnimationFrame(frame);
+          }
+        }
+
         function frame() {
+          animPending = false;
           g.clearRect(0, 0, W, H);
           const gap = 34 * D;
-          for (let y = gap / 2; y < H; y += gap)
-            for (let x = gap / 2; x < W; x += gap) {
-              const k = Math.max(
-                0,
-                1 - Math.hypot(x / D - mx, y / D - my) / 230,
-              );
-              g.fillStyle = k
-                ? `rgba(212,116,85,${0.2 + 0.8 * k})`
-                : "rgba(255,255,255,.09)";
-              g.beginPath();
-              g.arc(x, y, (1 + 2.4 * k) * D, 0, 6.3);
-              g.fill();
+          const radius = 1 * D;
+          const twoPi = 6.2831853;
+          const hoverDist = 230;
+
+          g.fillStyle = "rgba(255,255,255,.09)";
+          g.beginPath();
+          const startX = (W % gap) / 2 || gap / 2;
+          const startY = (H % gap) / 2 || gap / 2;
+          const active = [];
+
+          for (let y = startY; y < H; y += gap) {
+            for (let x = startX; x < W; x += gap) {
+              const dist = Math.hypot(x / D - mx, y / D - my);
+              if (dist < hoverDist) {
+                active.push({ x, y, k: 1 - dist / hoverDist });
+              } else {
+                g.moveTo(x + radius, y);
+                g.arc(x, y, radius, 0, twoPi);
+              }
             }
-          for (const s of S) {
-            const r = s.getBoundingClientRect(),
-              k = Math.max(
-                0,
-                1 -
-                  Math.hypot(
-                    mx - r.left - r.width / 2,
-                    my - r.top - r.height / 2,
-                  ) /
-                    300,
-              );
+          }
+          g.fill();
+
+          for (let i = 0; i < active.length; i++) {
+            const dot = active[i];
+            g.fillStyle = `rgba(212,116,85,${0.2 + 0.8 * dot.k})`;
+            g.beginPath();
+            g.arc(dot.x, dot.y, (1 + 2.4 * dot.k) * D, 0, twoPi);
+            g.fill();
+          }
+
+          for (let i = 0; i < S.length; i++) {
+            const s = S[i];
+            const r = s.getBoundingClientRect();
+            const d = Math.hypot(
+              mx - (r.left + r.width / 2),
+              my - (r.top + r.height / 2),
+            );
+            const k = Math.max(0, 1 - d / 280);
             s.style.fontVariationSettings = `"wght" ${(300 + 500 * k) | 0}`;
             s.style.color = k > 0.55 ? "var(--accent)" : "";
           }
-          if (!reduce) requestAnimationFrame(frame);
         }
-        frame();
+
+        addEventListener(
+          "pointermove",
+          (e) => {
+            mx = e.clientX;
+            my = e.clientY;
+            requestFrame();
+          },
+          { passive: true },
+        );
+        requestFrame();
       })();
     </script>
   </body>
