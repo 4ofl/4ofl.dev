@@ -1,3 +1,12 @@
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 :root {
   --ink: #0b0b0d;
   --bone: #edece8;
@@ -118,8 +127,11 @@ nav {
 nav a {
   text-decoration: none;
   color: var(--mist);
+  transition: color 0.15s ease;
+  position: relative;
 }
-nav a:hover {
+nav a:hover,
+nav a.active {
   color: var(--bone);
 }
 #kBtn {

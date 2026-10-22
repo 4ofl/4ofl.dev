@@ -14,6 +14,15 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&display=swap"
     />
     <style>
+      @view-transition {
+        navigation: auto;
+      }
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation-duration: 0.22s;
+        animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
       :root {
         --ink: #0b0b0d;
         --bone: #edece8;
@@ -284,7 +293,7 @@
           below, or jump back to an active route.
         </p>
         <div class="quick-nav">
-          <a href="/" class="btn-main">home ↗</a>
+          <a href="/" class="btn-main" id="homeBtn">home ↗</a>
         </div>
       </div>
 
@@ -311,6 +320,7 @@
             <button>ls</button>
             <button>cd work</button>
             <button>home</button>
+            <button>neofetch</button>
           </div>
         </div>
       </div>
@@ -368,10 +378,30 @@
           out.scrollTop = 1e9;
         };
         const go = (href) => {
-          href[0] === "/"
-            ? (location.href = href)
-            : open(href, "_blank", "noopener");
+          if (href[0] === "/") {
+            if (document.startViewTransition) {
+              document.startViewTransition(() => {
+                location.href = href;
+              });
+            } else {
+              location.href = href;
+            }
+          } else {
+            open(href, "_blank", "noopener");
+          }
         };
+
+        const homeBtn = $("#homeBtn");
+        if (homeBtn) {
+          homeBtn.onclick = (e) => {
+            if (document.startViewTransition) {
+              e.preventDefault();
+              document.startViewTransition(() => {
+                location.href = "/";
+              });
+            }
+          };
+        }
 
         const path = location.pathname,
           seg = decodeURIComponent(path.split("/").filter(Boolean).pop() || "")
@@ -400,14 +430,34 @@
           link("home", "/");
         }
 
+        const cmdHistory = [];
+        let histIdx = -1;
+        const CMDS = [
+          "help",
+          "ls",
+          "cd",
+          "home",
+          "neofetch",
+          "specs",
+          "whoami",
+          "date",
+          "clear",
+        ];
+
         const run = (raw) => {
           const c = raw.trim();
           if (!c) return;
           line("> " + c, "c");
+          if (!cmdHistory.length || cmdHistory[cmdHistory.length - 1] !== c) {
+            cmdHistory.push(c);
+          }
+          histIdx = cmdHistory.length;
           const [cmd, ...a] = c.toLowerCase().split(/\s+/),
             arg = a.join(" ");
           if (cmd === "help")
-            line("help · ls · cd <route> · home · whoami · date · clear");
+            line(
+              "help · ls · cd <route> · home · neofetch · whoami · date · clear",
+            );
           else if (cmd === "ls") R.forEach((r) => line("  " + r[0]));
           else if (cmd === "cd" || cmd === "open") {
             const r =
@@ -423,6 +473,27 @@
           } else if (cmd === "home") {
             line("returning…");
             setTimeout(() => go("/"), 300);
+          } else if (cmd === "neofetch" || cmd === "specs") {
+            const pre = document.createElement("pre");
+            pre.style.cssText =
+              "font:inherit;margin:0.35rem 0;line-height:1.45;color:var(--bone);overflow-x:auto;";
+            pre.innerHTML = `<span style="color:var(--accent);font-weight:bold;">
+  ██╗  ██╗ ██████╗ ███████╗██╗     
+  ██║  ██║██╔═══██╗██╔════╝██║     
+  ███████║██║   ██║█████╗  ██║     
+  ╚════██║██║   ██║██╔══╝  ██║     
+       ██║╚██████╔╝██║     ███████╗
+       ╚═╝ ╚═════╝ ╚═╝     ╚══════╝</span>
+
+  <span style="color:var(--mist);">os:</span>      Arch Linux · Edge Runtime
+  <span style="color:var(--mist);">host:</span>    Kerala, IN (Asia/Kolkata)
+  <span style="color:var(--mist);">uptime:</span>  41d 6h
+  <span style="color:var(--mist);">shell:</span>   4ofl-gw v1.4
+  <span style="color:var(--mist);">stack:</span>   Python, C, SQLite, Docker, Node.js
+  <span style="color:var(--mist);">focus:</span>   local-first, RAG pipelines, edge AI
+  <span style="color:var(--mist);">status:</span>  violently opposed to legacy software`;
+            out.append(pre);
+            out.scrollTop = 1e9;
           } else if (cmd === "whoami")
             line(
               "a visitor on a route that doesn't exist. aby mathew built this index.",
@@ -437,9 +508,9 @@
               "e",
             );
           else {
-            const m = ["help", "ls", "cd", "home", "whoami", "date", "clear"]
-              .map((x) => [x, lev(cmd, x)])
-              .sort((p, q) => p[1] - q[1])[0];
+            const m = CMDS.map((x) => [x, lev(cmd, x)]).sort(
+              (p, q) => p[1] - q[1],
+            )[0];
             line(
               `${cmd}: command not found${m[1] <= 2 ? ` · did you mean "${m[0]}"?` : ""}`,
               "e",
@@ -450,13 +521,39 @@
           if (e.key === "Enter") {
             run(inp.value);
             inp.value = "";
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            if (cmdHistory.length && histIdx > 0) {
+              histIdx--;
+              inp.value = cmdHistory[histIdx];
+            }
+          } else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (histIdx < cmdHistory.length - 1) {
+              histIdx++;
+              inp.value = cmdHistory[histIdx];
+            } else {
+              histIdx = cmdHistory.length;
+              inp.value = "";
+            }
+          } else if (e.key === "Tab") {
+            e.preventDefault();
+            const val = inp.value.trim().toLowerCase();
+            if (val.startsWith("cd ")) {
+              const target = val.slice(3).trim();
+              const match = R.find((r) => r[0].startsWith(target));
+              if (match) inp.value = "cd " + match[0];
+            } else if (val) {
+              const match = CMDS.find((cmd) => cmd.startsWith(val));
+              if (match) inp.value = match + (match === "cd" ? " " : "");
+            }
           }
         });
         $("#chips").addEventListener("click", (e) => {
           if (e.target.tagName === "BUTTON") run(e.target.textContent);
         });
         addEventListener("keydown", (e) => {
-          if (e.key === "Escape") location.href = "/";
+          if (e.key === "Escape") go("/");
         });
         if (matchMedia("(pointer:fine)").matches) inp.focus();
 

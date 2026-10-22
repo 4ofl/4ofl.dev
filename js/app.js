@@ -254,6 +254,9 @@
   /* june */
   const jt = $("#jt"),
     ji = $("#ji");
+  const JUNE_CMDS = ["/ping", "/status", "/remind", "/help"];
+  const juneHistory = [];
+  let juneHistIdx = -1;
   const out = (t, c) => {
     const d = document.createElement("div");
     d.textContent = t;
@@ -263,6 +266,10 @@
   };
   function run(c) {
     out("> " + c, 1);
+    if (!juneHistory.length || juneHistory[juneHistory.length - 1] !== c) {
+      juneHistory.push(c);
+    }
+    juneHistIdx = juneHistory.length;
     const m = c.match(/^\/remind (\d+)s (.+)/);
     if (m) {
       out(`reminder set for ${m[1]}s`);
@@ -277,6 +284,28 @@
     if (e.key === "Enter" && ji.value.trim()) {
       run(ji.value.trim());
       ji.value = "";
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (juneHistory.length && juneHistIdx > 0) {
+        juneHistIdx--;
+        ji.value = juneHistory[juneHistIdx];
+      }
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (juneHistIdx < juneHistory.length - 1) {
+        juneHistIdx++;
+        ji.value = juneHistory[juneHistIdx];
+      } else {
+        juneHistIdx = juneHistory.length;
+        ji.value = "";
+      }
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const val = ji.value.trim();
+      const match = JUNE_CMDS.find((cmd) => cmd.startsWith(val));
+      if (match) {
+        ji.value = match + (match === "/remind" ? " 5s " : "");
+      }
     }
   };
 
@@ -377,4 +406,39 @@
       paint();
     } else if (e.key === "Enter") go(sel);
   });
+
+  /* nav scroll-spy */
+  const navLinks = $$("nav a[href^='#']");
+  const spySections = ["work", "about", "contact"]
+    .map((id) => document.getElementById(id))
+    .filter(Boolean);
+  if ("IntersectionObserver" in window && spySections.length) {
+    const spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            navLinks.forEach((a) => {
+              if (a.getAttribute("href") === "#" + id) {
+                a.classList.add("active");
+              } else {
+                a.classList.remove("active");
+              }
+            });
+          }
+        });
+      },
+      { rootMargin: "-20% 0px -55% 0px" },
+    );
+    spySections.forEach((s) => spy.observe(s));
+    addEventListener(
+      "scroll",
+      () => {
+        if (window.scrollY < 250) {
+          navLinks.forEach((a) => a.classList.remove("active"));
+        }
+      },
+      { passive: true },
+    );
+  }
 })();
