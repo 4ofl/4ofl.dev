@@ -236,11 +236,7 @@ h1 span {
 
 /* work section */
 #work {
-  min-height: 92svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 4.5rem var(--pad);
+  padding: 5rem var(--pad);
 }
 .head {
   display: flex;

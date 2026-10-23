@@ -262,17 +262,38 @@
       });
   }
 
-  /* accordion */
-  $$(".rh").forEach(
-    (b) =>
-      (b.onclick = () => {
-        const row = b.parentElement,
-          o = !row.classList.contains("open");
-        row.classList.toggle("open", o);
-        b.setAttribute("aria-expanded", o);
-        $(".pi", row).toggleAttribute("inert", !o);
-      }),
-  );
+  /* accordion - exclusive single open row */
+  const allRows = $$(".row");
+  allRows.forEach((row) => {
+    const b = $(".rh", row);
+    if (!b) return;
+    b.onclick = () => {
+      const isOpening = !row.classList.contains("open");
+
+      // Close all other rows when opening
+      if (isOpening) {
+        allRows.forEach((otherRow) => {
+          if (otherRow !== row && otherRow.classList.contains("open")) {
+            otherRow.classList.remove("open");
+            $(".rh", otherRow)?.setAttribute("aria-expanded", "false");
+            $(".pi", otherRow)?.setAttribute("inert", "");
+          }
+        });
+      }
+
+      // Toggle current row
+      row.classList.toggle("open", isOpening);
+      b.setAttribute("aria-expanded", isOpening ? "true" : "false");
+      const pi = $(".pi", row);
+      if (pi) {
+        if (isOpening) {
+          pi.removeAttribute("inert");
+        } else {
+          pi.setAttribute("inert", "");
+        }
+      }
+    };
+  });
 
   /* citecamp */
   const CC = [
