@@ -1,3 +1,35 @@
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("../assets/fonts/bricolage-grotesque.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("../assets/fonts/jetbrains-mono-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/newsreader-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../assets/fonts/newsreader-400-italic.woff2") format("woff2");
+}
+
 @view-transition {
   navigation: auto;
 }
@@ -157,6 +189,23 @@ nav a.active {
   border-color: var(--accent);
   color: var(--bone);
 }
+.menu-btn {
+  display: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  color: var(--bone);
+  background: #141417;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+}
+.menu-btn:hover,
+.menu-btn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* hero */
 .hero {
@@ -166,20 +215,6 @@ nav a.active {
   justify-content: flex-end;
   gap: 1.5rem;
   padding-bottom: 3.5rem;
-}
-.live {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-right: 0.6rem;
-  animation: p 2s infinite;
-}
-@keyframes p {
-  50% {
-    opacity: 0.25;
-  }
 }
 h1 {
   font:
@@ -214,6 +249,8 @@ h1 span {
   border-bottom: 1px solid var(--line);
   padding-bottom: 0.8rem;
   margin-bottom: 1.5rem;
+  font-weight: 400;
+  font-size: 0.78rem;
 }
 #work .head {
   margin-bottom: 0;
@@ -474,19 +511,38 @@ dl a:hover {
   justify-content: center;
   padding: 4.5rem var(--pad) 2rem;
 }
+.mail-wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin: 1.8rem 0 1.2rem;
+}
 .mail {
-  display: block;
-  width: fit-content;
+  display: inline-block;
   text-align: left;
   font:
     800 clamp(1.8rem, 7vw, 5.5rem)/1.1 "Bricolage Grotesque",
     sans-serif;
   letter-spacing: -0.04em;
-  margin: 1.8rem 0 1.2rem;
   color: var(--accent);
+  text-decoration: none;
 }
 .mail:hover {
   text-decoration: underline;
+}
+.mail-copy {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  color: var(--mist);
+  background: #141417;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+.mail-copy:hover {
+  border-color: var(--accent);
+  color: var(--bone);
 }
 .links {
   display: flex;
@@ -556,6 +612,125 @@ footer {
   color: var(--mist);
 }
 
+/* mobile navigation drawer */
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  display: flex;
+}
+.mobile-nav[hidden] {
+  display: none;
+}
+.mobile-nav-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.mobile-nav-panel {
+  position: relative;
+  z-index: 2;
+  width: min(320px, 86vw);
+  margin-left: auto;
+  height: 100%;
+  background: #111114;
+  border-left: 1px solid var(--line);
+  padding: 1.5rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: slideDrawer 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideDrawer {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.mobile-nav-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--line);
+}
+.menu-close-btn {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--mist);
+  font-size: 1rem;
+}
+.menu-close-btn:hover {
+  border-color: var(--accent);
+  color: var(--bone);
+}
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin: 2rem 0;
+}
+.m-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  text-decoration: none;
+  color: var(--bone);
+  font:
+    600 1.6rem "Bricolage Grotesque",
+    sans-serif;
+  letter-spacing: -0.02em;
+  padding: 0.3rem 0;
+  transition: color 0.15s;
+}
+.m-link:hover,
+.m-link:active {
+  color: var(--accent);
+}
+.mobile-nav-tools {
+  margin-bottom: auto;
+}
+.m-pal-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #17171b;
+  color: var(--mist);
+}
+.m-badge {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  color: var(--accent);
+}
+.mobile-nav-footer {
+  display: flex;
+  gap: 1.2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.8rem;
+}
+.mobile-nav-footer a {
+  color: var(--mist);
+  text-decoration: none;
+}
+.mobile-nav-footer a:hover {
+  color: var(--bone);
+}
+
 @media (max-width: 760px) {
   .pi,
   .ag {
@@ -567,8 +742,11 @@ footer {
   .rh span {
     display: none;
   }
-  nav a {
+  .desktop-nav {
     display: none;
+  }
+  .menu-btn {
+    display: block;
   }
   section {
     padding: 3.5rem var(--pad);

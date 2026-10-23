@@ -35,12 +35,9 @@
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
     <link rel="manifest" href="./site.webmanifest" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap"
-    />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <link rel="manifest" href="./site.webmanifest" />
     <link rel="stylesheet" href="./css/style.css" />
   </head>
   <body>
@@ -48,13 +45,65 @@
     <header class="bar">
       <div class="bar-inner">
         <a class="logo" href="#top">4ofl<i>.dev</i></a>
-        <nav>
-          <a href="#work">work</a><a href="#about">about</a
-          ><a href="#contact">contact</a
-          ><button id="kBtn" aria-label="Open command palette">⌘K</button>
+        <nav class="desktop-nav">
+          <a href="#work">work</a>
+          <a href="#about">about</a>
+          <a href="#contact">contact</a>
+          <button id="kBtn" aria-label="Open command palette">⌘K</button>
         </nav>
+        <button
+          id="menuBtn"
+          class="menu-btn"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobileNav"
+        >
+          menu
+        </button>
       </div>
     </header>
+
+    <div id="mobileNav" class="mobile-nav" hidden aria-hidden="true">
+      <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+      <div class="mobile-nav-panel">
+        <div class="mobile-nav-top">
+          <span class="k dim">4ofl.dev</span>
+          <button
+            id="menuCloseBtn"
+            class="menu-close-btn"
+            aria-label="Close navigation menu"
+          >
+            ✕
+          </button>
+        </div>
+        <nav class="mobile-nav-links">
+          <a href="#work" class="m-link"><span class="k dim">01</span><b>work</b></a>
+          <a href="#about" class="m-link"><span class="k dim">02</span><b>about</b></a>
+          <a href="#contact" class="m-link"><span class="k dim">03</span><b>contact</b></a>
+        </nav>
+        <div class="mobile-nav-tools">
+          <button id="mPalBtn" class="m-pal-btn">
+            <span class="k">command palette</span>
+            <span class="k m-badge">⌘K</span>
+          </button>
+        </div>
+        <div class="mobile-nav-footer">
+          <a href="https://github.com/4ofl" target="_blank" rel="noopener">github ↗</a>
+          <a
+            href="https://linkedin.com/in/abyperhaps"
+            target="_blank"
+            rel="noopener"
+            >linkedin ↗</a
+          >
+          <a
+            href="https://discord.com/users/1310480351008657420"
+            target="_blank"
+            rel="noopener"
+            >discord ↗</a
+          >
+        </div>
+      </div>
+    </div>
 
     <main id="top">
       <section class="hero">
@@ -64,14 +113,14 @@
       </section>
 
       <section id="work">
-        <p class="k head"><span>selected work</span><span>01</span></p>
+        <h2 class="k head"><span>selected work</span><span>01</span></h2>
 
-        <article class="row">
-          <button class="rh" aria-expanded="false">
+        <article class="row open">
+          <button class="rh" aria-expanded="true">
             <b>citecamp</b><span>rag · academic ai</span><i></i>
           </button>
           <div class="rp">
-            <div class="pi" inert>
+            <div class="pi">
               <div class="copy">
                 <p>
                   A RAG assistant over curated university documents. Every claim
@@ -118,8 +167,8 @@
                 </p>
                 <p class="broke">
                   <em>what broke:</em> ISP lines drop in the 6am rush. Waiting
-                  on a cloud webhook strands 30 people outside. WAL-mode SQLite
-                  opens the relay in 12ms.
+                  on a cloud webhook strands people outside. Local SQLite handles
+                  verification without waiting on the cloud.
                 </p>
                 <p class="k">
                   <a
@@ -194,7 +243,7 @@
       </section>
 
       <section id="about">
-        <p class="k head"><span>about</span><span>02</span></p>
+        <h2 class="k head"><span>about</span><span>02</span></h2>
         <div class="ag">
           <p class="big">Violently opposed to legacy software.</p>
           <dl>
@@ -216,9 +265,12 @@
       </section>
 
       <section id="contact">
-        <p class="k head"><span>contact</span><span>03</span></p>
+        <h2 class="k head"><span>contact</span><span>03</span></h2>
         <p class="big">Got something worth building, or breaking?</p>
-        <button class="mail" id="mail">aby@4ofl.dev</button>
+        <div class="mail-wrap">
+          <a href="mailto:aby@4ofl.dev" class="mail" id="mailLink">aby@4ofl.dev</a>
+          <button class="mail-copy k" id="mailCopyBtn" aria-label="Copy email address to clipboard">copy</button>
+        </div>
         <p class="k links">
           <a href="https://github.com/4ofl" target="_blank" rel="noopener"
             >github ↗</a
