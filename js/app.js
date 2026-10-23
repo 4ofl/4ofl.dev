@@ -31,16 +31,43 @@
     requestFrame();
   });
 
-  /* dot grid & tap ripple */
+  /* dot grid: elastic spring cloth & tap ripple */
   const cv = $("#bg"),
     g = cv.getContext("2d");
   let W, H, D;
+  let dots = [];
+  let curVx = 0,
+    curVy = 0,
+    lastMx = -999,
+    lastMy = -999;
+
+  function initGrid() {
+    dots = [];
+    const gap = 34 * D;
+    const startX = (W % gap) / 2 || gap / 2;
+    const startY = (H % gap) / 2 || gap / 2;
+    for (let y = startY; y < H; y += gap) {
+      for (let x = startX; x < W; x += gap) {
+        dots.push({
+          ox: x,
+          oy: y,
+          x: x,
+          y: y,
+          vx: 0,
+          vy: 0,
+        });
+      }
+    }
+  }
+
   const size = () => {
     D = Math.min(devicePixelRatio || 1, 2);
     W = cv.width = innerWidth * D;
     H = cv.height = innerHeight * D;
+    initGrid();
   };
   size();
+
   addEventListener(
     "resize",
     () => {
@@ -75,10 +102,15 @@
   function render() {
     animPending = false;
     g.clearRect(0, 0, W, H);
-    const gap = 34 * D;
     const radius = 1 * D;
     const twoPi = 6.2831853;
-    const hoverDist = 230;
+    const hoverDist = 220;
+    const cursorRadius = 125 * D;
+    const spring = 0.082;
+    const damping = 0.84;
+    const targetMx = mx * D;
+    const targetMy = my * D;
+    let hasMotion = false;
 
     // update active tap ripples
     for (let i = ripples.length - 1; i >= 0; i--) {
@@ -90,50 +122,121 @@
       }
     }
 
+    // Elastic cloth & spring physics simulation
+    for (let i = 0; i < dots.length; i++) {
+      const dot = dots[i];
+
+      // Cursor / touch displacement & wake drag
+      if (mx > -900) {
+        const dx = dot.x - targetMx;
+        const dy = dot.y - targetMy;
+        const dist = Math.hypot(dx, dy);
+        if (dist < cursorRadius && dist > 0.1) {
+          const force = (1 - dist / cursorRadius) * 4.6 * D;
+          const nx = dx / dist;
+          const ny = dy / dist;
+          dot.vx += nx * force;
+          dot.vy += ny * force;
+          // Drag along cursor motion direction (fluid wake)
+          dot.vx += curVx * 0.1 * (1 - dist / cursorRadius) * D;
+          dot.vy += curVy * 0.1 * (1 - dist / cursorRadius) * D;
+        }
+      }
+
+      // Tap ripple radial shockwave impulse
+      for (let r = 0; r < ripples.length; r++) {
+        const rip = ripples[r];
+        const rdx = dot.x - rip.x;
+        const rdy = dot.y - rip.y;
+        const dDot = Math.hypot(rdx, rdy);
+        const waveDist = Math.abs(dDot - rip.r);
+        const waveWidth = 44 * D;
+        if (waveDist < waveWidth && dDot > 0.1) {
+          const intensity = (1 - waveDist / waveWidth) * rip.life;
+          const push = intensity * 2.8 * D;
+          dot.vx += (rdx / dDot) * push;
+          dot.vy += (rdy / dDot) * push;
+        }
+      }
+
+      // Hooke's Law spring pull back to (ox, oy)
+      const ax = (dot.ox - dot.x) * spring;
+      const ay = (dot.oy - dot.y) * spring;
+      dot.vx = (dot.vx + ax) * damping;
+      dot.vy = (dot.vy + ay) * damping;
+      dot.x += dot.vx;
+      dot.y += dot.vy;
+
+      // Check if dot is actively moving
+      if (
+        Math.abs(dot.x - dot.ox) > 0.12 ||
+        Math.abs(dot.y - dot.oy) > 0.12 ||
+        Math.abs(dot.vx) > 0.08 ||
+        Math.abs(dot.vy) > 0.08
+      ) {
+        hasMotion = true;
+      }
+    }
+
+    // Decay cursor velocity
+    curVx *= 0.65;
+    curVy *= 0.65;
+
+    // Render dots: ambient base batch
     g.fillStyle = "rgba(255,255,255,.09)";
     g.beginPath();
-    const startX = (W % gap) / 2 || gap / 2;
-    const startY = (H % gap) / 2 || gap / 2;
     const active = [];
 
-    for (let y = startY; y < H; y += gap) {
-      for (let x = startX; x < W; x += gap) {
-        let maxK = 0;
-        // cursor / touch hover
-        const distCursor = Math.hypot(x / D - mx, y / D - my);
+    for (let i = 0; i < dots.length; i++) {
+      const dot = dots[i];
+      let maxK = 0;
+
+      // Proximity glow
+      if (mx > -900) {
+        const distCursor = Math.hypot(dot.x / D - mx, dot.y / D - my);
         if (distCursor < hoverDist) {
           maxK = Math.max(maxK, 1 - distCursor / hoverDist);
         }
-        // tap ripples
-        for (let r = 0; r < ripples.length; r++) {
-          const rip = ripples[r];
-          const dDot = Math.hypot(x - rip.x, y - rip.y);
-          const waveDist = Math.abs(dDot - rip.r);
-          const waveWidth = 46 * D;
-          if (waveDist < waveWidth) {
-            const intensity = (1 - waveDist / waveWidth) * rip.life;
-            if (intensity > maxK) maxK = intensity;
-          }
-        }
+      }
 
-        if (maxK > 0) {
-          active.push({ x, y, k: maxK });
-        } else {
-          g.moveTo(x + radius, y);
-          g.arc(x, y, radius, 0, twoPi);
+      // Ripple wavefront glow
+      for (let r = 0; r < ripples.length; r++) {
+        const rip = ripples[r];
+        const dDot = Math.hypot(dot.x - rip.x, dot.y - rip.y);
+        const waveDist = Math.abs(dDot - rip.r);
+        const waveWidth = 46 * D;
+        if (waveDist < waveWidth) {
+          const intensity = (1 - waveDist / waveWidth) * rip.life;
+          if (intensity > maxK) maxK = intensity;
         }
+      }
+
+      // Elastic stretch tension glow
+      const stretch = Math.hypot(dot.x - dot.ox, dot.y - dot.oy);
+      if (stretch > 2.5 * D) {
+        const stretchK = Math.min(0.7, stretch / (16 * D));
+        if (stretchK > maxK) maxK = stretchK;
+      }
+
+      if (maxK > 0) {
+        active.push({ x: dot.x, y: dot.y, k: maxK });
+      } else {
+        g.moveTo(dot.x + radius, dot.y);
+        g.arc(dot.x, dot.y, radius, 0, twoPi);
       }
     }
     g.fill();
 
+    // Render active illuminated dots
     for (let i = 0; i < active.length; i++) {
       const dot = active[i];
       g.fillStyle = `rgba(212,116,85,${0.2 + 0.8 * dot.k})`;
       g.beginPath();
-      g.arc(dot.x, dot.y, (1 + 2.4 * dot.k) * D, 0, twoPi);
+      g.arc(dot.x, dot.y, (1 + 2.5 * dot.k) * D, 0, twoPi);
       g.fill();
     }
 
+    // Swell letters in "aby mathew"
     const sy = window.scrollY;
     if (sy < innerHeight && letterCenters.length) {
       for (let i = 0; i < letterCenters.length; i++) {
@@ -145,7 +248,13 @@
       }
     }
 
-    if (ripples.length > 0) {
+    // Keep running animation loop while springs are oscillating or ripples active
+    if (
+      ripples.length > 0 ||
+      hasMotion ||
+      Math.abs(curVx) > 0.05 ||
+      Math.abs(curVy) > 0.05
+    ) {
       requestFrame();
     }
   }
@@ -153,8 +262,10 @@
   addEventListener(
     "pointerdown",
     (e) => {
-      mx = e.clientX;
-      my = e.clientY;
+      curVx = e.clientX - (lastMx === -999 ? e.clientX : lastMx);
+      curVy = e.clientY - (lastMy === -999 ? e.clientY : lastMy);
+      lastMx = mx = e.clientX;
+      lastMy = my = e.clientY;
       addRipple(e.clientX, e.clientY);
     },
     { passive: true },
@@ -162,8 +273,10 @@
   addEventListener(
     "pointermove",
     (e) => {
-      mx = e.clientX;
-      my = e.clientY;
+      curVx = e.clientX - (lastMx === -999 ? e.clientX : lastMx);
+      curVy = e.clientY - (lastMy === -999 ? e.clientY : lastMy);
+      lastMx = mx = e.clientX;
+      lastMy = my = e.clientY;
       requestFrame();
     },
     { passive: true },
@@ -173,8 +286,10 @@
     () => {
       setTimeout(() => {
         if (!ripples.length) {
-          mx = -999;
-          my = -999;
+          lastMx = mx = -999;
+          lastMy = my = -999;
+          curVx = 0;
+          curVy = 0;
           requestFrame();
         }
       }, 700);
