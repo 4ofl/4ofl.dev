@@ -511,49 +511,39 @@ dl a:hover {
   justify-content: center;
   padding: 4.5rem var(--pad) 2rem;
 }
-.mail-wrap {
-  display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  flex-wrap: wrap;
-  margin: 1.8rem 0 1.2rem;
-}
 .mail {
-  display: inline-block;
+  display: block;
+  width: fit-content;
   text-align: left;
   font:
     800 clamp(1.8rem, 7vw, 5.5rem)/1.1 "Bricolage Grotesque",
     sans-serif;
   letter-spacing: -0.04em;
+  margin: 1.8rem 0 1.2rem;
   color: var(--accent);
   text-decoration: none;
 }
 .mail:hover {
   text-decoration: underline;
 }
-.mail-copy {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.4rem 0.8rem;
-  color: var(--mist);
-  background: #141417;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
-}
-.mail-copy:hover {
-  border-color: var(--accent);
-  color: var(--bone);
-}
 .links {
   display: flex;
   gap: 1.6rem;
+  align-items: center;
 }
-.links a {
+.links a,
+.links button {
   text-decoration: none;
   color: var(--mist);
+  transition: color 0.15s ease;
+  font: inherit;
 }
-.links a:hover {
+.links a:hover,
+.links button:hover {
   color: var(--bone);
+}
+.links button.copied {
+  color: var(--accent);
 }
 footer {
   display: flex;

@@ -502,16 +502,20 @@
   };
 
   /* email copy & toast */
-  const mailCopyBtn = $("#mailCopyBtn");
-  if (mailCopyBtn) {
-    mailCopyBtn.onclick = async () => {
+  const copyBtn = $("#copyBtn");
+  if (copyBtn) {
+    copyBtn.onclick = async () => {
       try {
         await navigator.clipboard.writeText("aby@4ofl.dev");
-        mailCopyBtn.textContent = "copied ✓";
+        copyBtn.textContent = "copied";
+        copyBtn.classList.add("copied");
       } catch {
         location.href = "mailto:aby@4ofl.dev";
       }
-      setTimeout(() => (mailCopyBtn.textContent = "copy"), 1800);
+      setTimeout(() => {
+        copyBtn.textContent = "copy email";
+        copyBtn.classList.remove("copied");
+      }, 1600);
     };
   }
 
@@ -539,7 +543,7 @@
     ["github", "https://github.com/4ofl"],
     ["linkedin", "https://linkedin.com/in/abyperhaps"],
     ["discord", "https://discord.com/users/1310480351008657420"],
-    ["copy email", () => mailCopyBtn?.click()],
+    ["copy email", () => copyBtn?.click()],
   ];
   let sel = 0,
     list = CMD;
