@@ -214,7 +214,7 @@
           c.classList.toggle("lbl", state.startsWith("lbl:"));
           if (state.startsWith("lbl:")) {
             const raw = state.slice(4);
-            lbl.textContent = raw === "open" ? "+ open" : raw === "close" ? "− close" : raw;
+            lbl.textContent = raw === "open" ? "+ open" : raw === "close" ? "- close" : raw;
           }
         }
       },
