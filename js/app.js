@@ -729,7 +729,6 @@
       s.onerror = no;
       document.head.append(s);
     });
-  const tok = (i) => "fp_" + ((i * 2654435761) >>> 0).toString(16);
   function warmSqlite() {
     if (dbPromise) return dbPromise;
     jdb.textContent = "loading sqlite (wasm)…";
@@ -738,18 +737,22 @@
       const SQL = await window.initSqlJs({ locateFile: (f) => "/js/vendor/" + f });
       const db = new SQL.Database();
       db.run(
-        "CREATE TABLE members(token TEXT PRIMARY KEY, tier TEXT NOT NULL, valid_until INTEGER NOT NULL);" +
-          "CREATE TABLE sync_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL, at INTEGER NOT NULL);",
+        "CREATE TABLE members(id TEXT PRIMARY KEY, reg_no TEXT NOT NULL, enrollment_id INTEGER NOT NULL, tier TEXT NOT NULL, valid_until INTEGER NOT NULL);" +
+          "CREATE TABLE sync_outbox(id INTEGER PRIMARY KEY AUTOINCREMENT, entity_type TEXT NOT NULL, payload TEXT NOT NULL, created_at INTEGER NOT NULL);",
       );
       db.run("BEGIN");
-      const ins = db.prepare("INSERT INTO members VALUES (?,?,?)");
+      const ins = db.prepare("INSERT INTO members VALUES (?,?,?,?,?)");
       const now = Date.now();
-      for (let i = 1; i <= 450; i++)
-        ins.run([tok(i), i % 5 === 0 ? "staff" : "member", i === 77 ? now - 864e5 : now + 864e5 * 30]);
+      for (let i = 1; i <= 1405; i++) {
+        const reg = "JF-" + String(i).padStart(4, "0");
+        const isExpired = i === 77;
+        const tier = i % 10 === 0 ? "staff" : i % 3 === 0 ? "annual" : "monthly";
+        ins.run(["m_" + i, reg, i, tier, isExpired ? now - 864e5 : now + 864e5 * 30]);
+      }
       ins.free();
       db.run("COMMIT");
       const ver = db.exec("SELECT sqlite_version()")[0].values[0][0];
-      jdb.textContent = `real sqlite ${ver} (wasm) · 450 members · running in your browser`;
+      jdb.textContent = `real sqlite ${ver} (wasm) · 1,405 members · running in your browser`;
       return db;
     })().catch((err) => {
       dbPromise = null;
@@ -759,10 +762,10 @@
     return dbPromise;
   }
   const SCANS = [
-    [tok(42), "valid member"],
-    [tok(5), "staff"],
-    [tok(77), "expired membership"],
-    ["fp_unknown", "unknown fingerprint"],
+    [42, "JF-0042 (annual)"],
+    [10, "JF-0010 (staff)"],
+    [77, "JF-0077 (expired)"],
+    [9999, "unknown biometric slot"],
   ];
   let scanN = 0;
   net.onclick = async () => {
@@ -772,9 +775,9 @@
     if (on && q) {
       try {
         const db = await warmSqlite();
-        const n = db.exec("SELECT COUNT(*) FROM sync_queue")[0].values[0][0];
-        db.run("DELETE FROM sync_queue");
-        add(`flushed ${n} queued scan${n > 1 ? "s" : ""} (cloud is simulated)`);
+        const n = db.exec("SELECT COUNT(*) FROM sync_outbox")[0].values[0][0];
+        db.run("DELETE FROM sync_outbox");
+        add(`flushed ${n} outbox event${n > 1 ? "s" : ""} · biometrics quarantined on premise`);
       } catch {}
       q = 0;
       $("#q").textContent = 0;
@@ -788,29 +791,33 @@
       res.textContent = "sqlite not available, so no result.";
       return;
     }
-    const [token, label] = SCANS[scanN++ % SCANS.length];
+    const [enrollmentId, label] = SCANS[scanN++ % SCANS.length];
     const t0 = performance.now();
-    const st = db.prepare("SELECT tier, valid_until > ? AS ok FROM members WHERE token = ?");
-    st.bind([Date.now(), token]);
+    const st = db.prepare("SELECT reg_no, tier, valid_until > ? AS ok FROM members WHERE enrollment_id = ?");
+    st.bind([Date.now(), enrollmentId]);
     const row = st.step() ? st.getAsObject() : null;
     st.free();
     const ms = Math.max(0.01, performance.now() - t0).toFixed(2);
     let verdict;
-    if (!row) verdict = "denied · unknown fingerprint";
-    else if (!row.ok) verdict = "denied · membership expired";
-    else verdict = `verified (${row.tier}) · relay open`;
+    if (!row) verdict = "denied · unknown enrollment slot";
+    else if (!row.ok) verdict = `denied (${row.reg_no}) · membership expired`;
+    else verdict = `verified (${row.reg_no}, ${row.tier}) · relay open`;
     res.textContent = "";
     res.append(document.createTextNode(`${verdict} · ${ms} ms `));
     const sm = document.createElement("small");
     sm.className = "dim";
-    sm.textContent = `(sqlite query, ${label})`;
+    sm.textContent = `(local query, ${label})`;
     res.append(sm);
-    if (on) add(`scan → sqlite ${ms}ms → ${row && row.ok ? "open" : "deny"} → cloud (simulated)`);
+    if (on) add(`dsp match → sqlite ${ms}ms → ${row && row.ok ? "open relay" : "deny"} → synced (cloud simulated)`);
     else {
-      db.run("INSERT INTO sync_queue(token, at) VALUES (?,?)", [token, Date.now()]);
-      q = db.exec("SELECT COUNT(*) FROM sync_queue")[0].values[0][0];
+      db.run("INSERT INTO sync_outbox(entity_type, payload, created_at) VALUES (?,?,?)", [
+        "AttendanceRecord",
+        JSON.stringify({ enrollmentId, status: row && row.ok ? "granted" : "denied" }),
+        Date.now(),
+      ]);
+      q = db.exec("SELECT COUNT(*) FROM sync_outbox")[0].values[0][0];
       $("#q").textContent = q;
-      add(`scan → sqlite ${ms}ms → ${row && row.ok ? "open" : "deny"} → queued`);
+      add(`dsp match → sqlite ${ms}ms → ${row && row.ok ? "open relay" : "deny"} → outbox queued (biometrics quarantined)`);
     }
   };
 
@@ -819,7 +826,7 @@
      ========================================================= */
   const jt = $("#jt"),
     ji = $("#ji");
-  const JUNE_CMDS = ["/ping", "/status", "/remind", "/help"];
+  const JUNE_CMDS = ["/ping", "/status", "/remind", "/watch", "/sanitize", "/help"];
   const juneHistory = [];
   let juneHistIdx = -1;
   const out = (t, c) => {
@@ -836,7 +843,7 @@
     const m = c.match(/^\/remind (\d+)s (.+)/);
     if (m) {
       const s = Math.min(+m[1], 3600);
-      out(`reminder set for ${s}s`);
+      out(`reminder set for ${s}s (persisted to node:sqlite)`);
       setTimeout(() => out("⏰ " + m[2], 1), s * 1e3);
     } else if (c === "/ping") {
       const t0 = performance.now();
@@ -850,16 +857,29 @@
       out("querying status feed…");
       const r = await F.api("/status", "status", 4000);
       const d = r && r.data;
-      if (!d || d.state === "unknown") out("status feed unavailable right now.");
-      else {
+      if (!d || d.state === "unknown" || (d.status === "error" && !d.discord)) {
+        out("status feed unavailable right now.");
+      } else {
         const parts = [];
-        if (d.shard) parts.push(`shard ${d.shard}${d.state ? ` (${d.state})` : ""}`);
-        if (d.heartbeatMs != null) parts.push(`heartbeat ${d.heartbeatMs}ms`);
-        if (d.uptimeSec != null) parts.push(`uptime ${F.uptime(d.uptimeSec)}`);
+        const sh = d.runtime && d.runtime.shardIds ? d.runtime.shardIds.join(",") : d.shard ?? "0";
+        parts.push(`shard ${sh} (${d.status || d.state || "operational"})`);
+        const ping = d.discord && d.discord.gatewayPingMs != null ? d.discord.gatewayPingMs : d.heartbeatMs;
+        if (ping != null) parts.push(`gateway ${ping}ms`);
+        const dbLat = d.database && d.database.latencyMs != null ? d.database.latencyMs : null;
+        if (dbLat != null) parts.push(`sqlite ${dbLat}ms`);
+        const up = d.uptimeSeconds != null ? d.uptimeSeconds : d.uptimeSec;
+        if (up != null) parts.push(`uptime ${F.uptime(up)}`);
         out(parts.join(" · ") + (r.cached ? ` · cached ${F.ago(r.at)}` : ""));
       }
-    } else if (c === "/help") out("/ping  /status  /remind <n>s <text>");
-    else out("unknown command. try /help");
+    } else if (c.startsWith("/watch")) {
+      out("sentinel: non-blocking tls, dns a/aaaa, and sha-256 drift detection with socket ip pinning");
+    } else if (c.startsWith("/sanitize")) {
+      out("sanitizer: strips utm tracking params, neutralizes discord mass mentions, and clears exif tags");
+    } else if (c === "/help") {
+      out("/ping  /status  /remind <n>s <text>  /watch  /sanitize");
+    } else {
+      out("unknown command. try /help");
+    }
   }
   ji.onkeydown = (e) => {
     if (e.key === "Enter" && ji.value.trim()) {
