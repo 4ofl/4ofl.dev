@@ -269,15 +269,20 @@
     const note = $("#metricsNote");
     F.api("/status", "status").then((r) => {
       const d = r && r.data;
-      if (!d || d.state === "unknown") {
+      if (!d || d.state === "unknown" || (d.status === "error" && !d.discord)) {
         ["state", "shard", "hb", "up"].forEach((k) => set(k, "n/a"));
         if (note) note.textContent = "status feed unavailable right now. nothing is estimated or faked here.";
         return;
       }
-      set("state", d.state || "n/a");
-      set("shard", d.shard || "n/a");
-      set("hb", d.heartbeatMs != null ? d.heartbeatMs + " ms" : "n/a");
-      set("up", d.uptimeSec != null ? F.uptime(d.uptimeSec) : "n/a");
+      const st = d.status || d.state || (d.discord && d.discord.connected ? "operational" : "n/a");
+      const sh = d.runtime && d.runtime.shardIds ? d.runtime.shardIds.join(",") : d.shard != null ? d.shard : "0";
+      const ping = d.discord && d.discord.gatewayPingMs != null ? d.discord.gatewayPingMs : d.heartbeatMs;
+      const up = d.uptimeSeconds != null ? d.uptimeSeconds : d.uptimeSec;
+
+      set("state", st);
+      set("shard", "shard " + sh);
+      set("hb", ping != null ? ping + " ms" : "n/a");
+      set("up", up != null ? F.uptime(up) : "n/a");
       if (note) note.textContent = r.cached ? `last seen ${F.ago(r.at)} (cached, you may be offline).` : "live from the status feed.";
     });
   }
