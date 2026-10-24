@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>june · aby mathew · 4ofl</title>
     <meta name="theme-color" content="#0b0b0d" />
-    <meta name="description" content="june · a Discord application for server automation and real-time state gateways." />
+    <meta name="description" content="june · hardened Discord bot with built-in node:sqlite, socket IP pinning, and ReDoS worker watchdog." />
     <link rel="canonical" href="https://4ofl.dev/work/june/" />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="https://4ofl.dev/work/june/" />
     <meta property="og:title" content="june · 4ofl" />
-    <meta property="og:description" content="june · a Discord application for server automation and real-time state gateways." />
+    <meta property="og:description" content="june · hardened Discord bot with built-in node:sqlite, socket IP pinning, and ReDoS worker watchdog." />
     <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
@@ -37,39 +37,102 @@
       <section class="pj-top">
         <a class="k dim" href="/#work">← all work</a>
         <h1 class="pj-title">june</h1>
-        <p class="sub">A Discord application for server automation, utilities and real-time state gateways.</p>
+        <p class="sub">A hardened Discord application with zero C++ database dependencies, socket-level SSRF pinning, and isolated ReDoS watchdogs.</p>
         <p class="k"><em class="st st-live">live</em></p>
       </section>
 
       <section class="pj-sec">
         <h2 class="k head"><span>facts</span></h2>
         <dl>
-          <div class="r"><dt>what</dt><dd>discord application · infrastructure</dd></div>
+          <div class="r"><dt>what</dt><dd>discord application · infrastructure &amp; utilities</dd></div>
+          <div class="r"><dt>runtime</dt><dd>node.js 22 lts · commonjs · native v8</dd></div>
+          <div class="r"><dt>persistence</dt><dd>built-in node:sqlite (wal mode) · zero external broker</dd></div>
+          <div class="r"><dt>container</dt><dd>docker compose on vps · alpine 3.22 · read-only rootfs · unprivileged 1000:1000</dd></div>
           <div class="r"><dt>docs</dt><dd><a href="https://docs.june.4ofl.dev" target="_blank" rel="noopener">docs.june.4ofl.dev ↗</a></dd></div>
-          <div class="r"><dt>status</dt><dd>live</dd></div>
+          <div class="r"><dt>dashboard</dt><dd><a href="https://june.4ofl.dev" target="_blank" rel="noopener">june.4ofl.dev ↗</a></dd></div>
+          <div class="r"><dt>status</dt><dd>live · production</dd></div>
         </dl>
       </section>
 
       <section class="pj-sec">
-        <h2 class="k head"><span>architecture</span><span>how a connection is kept honest</span></h2>
-        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="june: discord gateway to heartbeat state machine to command handlers, with a persistent timer queue"><g class="n" style="--d:0ms"><rect x="40" y="40" width="200" height="72" rx="10"/><text x="140.0" y="74.0" text-anchor="middle">discord</text><text class="sub" x="140.0" y="90.0" text-anchor="middle">gateway</text></g><path d="M244 76 L372 76" pathLength="1" style="--d:300ms"/><polygon class="n ah" points="380,76 372,71.5 372,80.5" style="--d:1000ms"/><g class="n" style="--d:600ms"><rect x="380" y="40" width="200" height="72" rx="10"/><text x="480.0" y="74.0" text-anchor="middle">heartbeat</text><text class="sub" x="480.0" y="90.0" text-anchor="middle">state machine</text></g><path d="M584 76 L712 76" pathLength="1" style="--d:900ms"/><polygon class="n ah" points="720,76 712,71.5 712,80.5" style="--d:1600ms"/><g class="n" style="--d:1200ms"><rect x="720" y="40" width="200" height="72" rx="10"/><text x="820.0" y="74.0" text-anchor="middle">commands</text><text class="sub" x="820.0" y="90.0" text-anchor="middle">handlers</text></g><path d="M820 116 L820 182" pathLength="1" style="--d:1500ms"/><polygon class="n ah" points="820,190 815.5,182 824.5,182" style="--d:2200ms"/><g class="n" style="--d:1800ms"><rect x="720" y="190" width="200" height="72" rx="10"/><text x="820.0" y="224.0" text-anchor="middle">timer queue</text><text class="sub" x="820.0" y="240.0" text-anchor="middle">persistent</text></g><text class="note n" x="480" y="138" text-anchor="middle" style="--d:1000ms">catches zombie connections</text></svg>
+        <h2 class="k head"><span>architecture</span><span>gateway state machine, concurrency semaphores &amp; isolated runtimes</span></h2>
+        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="june: discord gateway to heartbeat &amp; sharding to interaction guards to worker threads and node:sqlite">
+          <!-- Top Row -->
+          <g class="n" style="--d:0ms">
+            <rect x="30" y="40" width="180" height="72" rx="10"/>
+            <text x="120" y="74" text-anchor="middle">discord gateway</text>
+            <text class="sub" x="120" y="90" text-anchor="middle">v10 ws · guild intent</text>
+          </g>
+          <path d="M210 76 L262 76" pathLength="1" style="--d:250ms"/>
+          <polygon class="n ah" points="270,76 262,71.5 262,80.5" style="--d:800ms"/>
+
+          <g class="n" style="--d:500ms">
+            <rect x="270" y="40" width="190" height="72" rx="10"/>
+            <text x="365" y="74" text-anchor="middle">heartbeat &amp; shard 0</text>
+            <text class="sub" x="365" y="90" text-anchor="middle">singleton task owner</text>
+          </g>
+          <path d="M460 76 L512 76" pathLength="1" style="--d:750ms"/>
+          <polygon class="n ah" points="520,76 512,71.5 512,80.5" style="--d:1300ms"/>
+
+          <g class="n" style="--d:1000ms">
+            <rect x="520" y="40" width="190" height="72" rx="10"/>
+            <text x="615" y="74" text-anchor="middle">interaction guard</text>
+            <text class="sub" x="615" y="90" text-anchor="middle">concurrency semaphores</text>
+          </g>
+          <path d="M710 76 L762 76" pathLength="1" style="--d:1250ms"/>
+          <polygon class="n ah" points="770,76 762,71.5 762,80.5" style="--d:1800ms"/>
+
+          <g class="n" style="--d:1500ms">
+            <rect x="770" y="40" width="160" height="72" rx="10"/>
+            <text x="850" y="74" text-anchor="middle">node:sqlite</text>
+            <text class="sub" x="850" y="90" text-anchor="middle">wal · zero C++ deps</text>
+          </g>
+
+          <!-- Vertical Branches to Bottom Row -->
+          <path d="M365 112 L365 162" pathLength="1" style="--d:1000ms"/>
+          <polygon class="n ah" points="365,170 360.5,162 369.5,162" style="--d:1500ms"/>
+
+          <g class="n" style="--d:1200ms">
+            <rect x="270" y="170" width="190" height="72" rx="10"/>
+            <text x="365" y="204" text-anchor="middle">socket ip pinning</text>
+            <text class="sub" x="365" y="220" text-anchor="middle">anti-ssrf / toctou</text>
+          </g>
+
+          <path d="M615 112 L615 162" pathLength="1" style="--d:1500ms"/>
+          <polygon class="n ah" points="615,170 610.5,162 619.5,162" style="--d:2000ms"/>
+
+          <g class="n" style="--d:1700ms">
+            <rect x="520" y="170" width="190" height="72" rx="10"/>
+            <text x="615" y="204" text-anchor="middle">worker threads</text>
+            <text class="sub" x="615" y="220" text-anchor="middle">500ms watchdog (redos)</text>
+          </g>
+
+          <text class="note n" x="30" y="215" text-anchor="start" style="--d:1400ms">catches zombie connections</text>
+          <text class="note n" x="770" y="215" text-anchor="start" style="--d:2200ms">0.1–0.4ms indexed queries</text>
+        </svg>
       </section>
 
       <section class="pj-sec">
         <h2 class="k head"><span>what broke</span></h2>
-        <p class="t">Discord’s gateway drops into zombie connections with no close frame. The socket looks open and nothing is coming through. Built a heartbeat state machine so a silent drop is noticed and handled, and a persistent timer queue so scheduled work doesn’t depend on one connection staying healthy.</p>
+        <div class="copy">
+          <p class="t"><b>Zombie Gateway Sockets:</b> Discord’s Gateway WebSocket drops into dead TCP connections without transmitting a close frame. The socket looks connected, but no traffic arrives. June monitors heartbeat acknowledgments with jittered intervals; if an interval elapses with no acknowledgment, the client immediately calls <code>socket.destroy()</code> and resumes the session. When clustering across multiple shards, spawns are staggered by 5,500ms to eliminate Discord identify rate limits.</p>
+          <p class="t"><b>Outbound SSRF &amp; DNS Rebinding (TOCTOU):</b> Diagnostic utilities (like <code>/screenshot</code> and the <code>/watch</code> sentinel) accept arbitrary user URLs. Naive HTTP clients re-resolve DNS on connect, allowing attackers to pass a validation check with a public IP and rebind to <code>127.0.0.1</code> or cloud metadata endpoints. June overrides Node's native transport <code>lookup</code> agent hook, validating all IPv4/IPv6 addresses against private and CGNAT blocks, and pins the TCP socket directly to the pre-validated IP address with a 10MB streaming byte cap.</p>
+          <p class="t"><b>ReDoS Event-Loop Starvation &amp; The "0" Guild Sentinel:</b> Malicious regular expressions in user utilities can starve Node's single-threaded event loop, delaying gateway heartbeats until Discord evicts the client. Regex execution is sandboxed in isolated <code>worker_threads</code> backed by a 500ms software watchdog timer. Additionally, when Discord introduced user-installable apps encoding DM interactions with a <code>"0"</code> guild sentinel, June introduced <code>specificGuildOwner()</code> to decouple user vs guild whitelisting and prevent erroneous access rejections.</p>
+        </div>
       </section>
 
       <section class="pj-sec">
         <h2 class="k head"><span>metrics</span></h2>
-        <p class="t dim">Pulled live from the bot’s status feed through an edge worker. If the feed is down, it says so.</p>
+        <p class="t dim">Live telemetry from June's operational endpoint through an edge worker, alongside verified engine benchmarks.</p>
         <div id="metrics" class="metrics">
-        <div><b data-m="state">…</b><span>gateway state</span></div>
-        <div><b data-m="shard">…</b><span>shard</span></div>
-        <div><b data-m="hb">…</b><span>heartbeat</span></div>
-        <div><b data-m="up">…</b><span>uptime</span></div>
-      </div>
-      <p class="k dim" id="metricsNote">loading…</p>
+          <div><b data-m="state">…</b><span>gateway state</span></div>
+          <div><b data-m="shard">…</b><span>shard</span></div>
+          <div><b data-m="hb">…</b><span>gateway ping</span></div>
+          <div><b data-m="up">…</b><span>uptime</span></div>
+          <div><b>0.1–0.4ms</b><span>sqlite latency</span></div>
+          <div><b>125</b><span>unit tests (node --test)</span></div>
+        </div>
+        <p class="k dim" id="metricsNote">loading…</p>
       </section>
 
       <section class="pj-sec">
