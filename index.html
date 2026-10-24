@@ -183,7 +183,7 @@
 
         <article class="row" data-slug="johns-fitness">
           <button class="rh" aria-expanded="false" data-cursor="open">
-            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">building</em>
+            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-live">production</em>
             <i></i>
           </button>
           <div class="rp">
@@ -191,12 +191,14 @@
               <div class="copy">
                 <p>
                   A gym system that keeps working when the internet doesn’t.
-                  Local SQLite first, sync queue second.
+                  BioMax biometric DSP matching, local SQLite WAL, and a
+                  transactional sync outbox.
                 </p>
                 <p class="broke">
                   <em>why local-first:</em> ISP lines drop in the 6am rush, and
-                  waiting on a cloud webhook strands people outside. Verifying
-                  on the device means the door never depends on the cloud.
+                  waiting on a cloud webhook strands people outside. On-device
+                  DSP matching trips the relay in &lt; 15ms. Biometric templates
+                  never leave the gym LAN.
                 </p>
                 <p class="k links2">
                   <a class="cs" href="/work/johns-fitness/">case study →</a>
@@ -209,11 +211,11 @@
                 </p>
               </div>
               <div class="demo">
-                <p class="k dim" id="jdb">real sqlite (wasm) · loads on first scan</p>
+                <p class="k dim" id="jdb">real sqlite (wasm) · 1,405 members · loads on first scan</p>
                 <div class="jtop">
                   <button id="net" class="sw" aria-pressed="true">
                     network online</button
-                  ><span class="k">queue <b id="q">0</b></span>
+                  ><span class="k">outbox <b id="q">0</b></span>
                 </div>
                 <button
                   id="fp"
@@ -221,7 +223,7 @@
                   data-cursor="scan"
                   aria-label="Scan fingerprint"
                 ></button>
-                <p class="k" id="jres" aria-live="polite">tap the fingerprint</p>
+                <p class="k" id="jres" aria-live="polite">tap to simulate biometric scan</p>
                 <ul class="log" id="jlog"></ul>
               </div>
             </div>
@@ -237,13 +239,15 @@
             <div class="pi" inert>
               <div class="copy">
                 <p>
-                  A Discord application for server automation, utilities and
-                  real-time state gateways.
+                  A hardened Discord application with zero C++ database
+                  dependencies, socket-level SSRF pinning, and isolated ReDoS
+                  watchdogs.
                 </p>
                 <p class="broke">
-                  <em>what broke:</em> Discord’s gateway drops into zombie
-                  connections with no close frame. Built a heartbeat state
-                  machine and persistent timer queue.
+                  <em>what broke:</em> Discord drops zombie connections without
+                  close frames, and user URLs risk DNS rebinding. Built a
+                  heartbeat state machine, socket IP pinning, and a 500ms regex
+                  worker thread watchdog.
                 </p>
                 <p class="k links2">
                   <a class="cs" href="/work/june/">case study →</a>
