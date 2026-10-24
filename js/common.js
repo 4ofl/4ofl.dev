@@ -30,7 +30,7 @@
     ind.dataset.on = navigator.onLine;
   };
   const OFFLINE_MSG =
-    "<b>offline.</b> this site still works. offline-first, like johns fitness.";
+    "<b>offline.</b> this site still works.";
   addEventListener("offline", () => {
     paintNet();
     F.toast(OFFLINE_MSG, 4500);
