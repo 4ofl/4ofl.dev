@@ -1002,93 +1002,30 @@ dl .r.on {
   padding-left: 0.45em;
 }
 
-/* custom cursor */
-html.has-cur,
-html.has-cur * {
-  cursor: none !important;
-}
-html.has-cur input,
-html.has-cur textarea {
-  cursor: text !important;
-}
-.cur {
+/* floating micro-pill next to native cursor */
+.cur-pill {
   position: fixed;
   left: 0;
   top: 0;
   z-index: 300;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.cur.on {
-  opacity: 1;
-}
-.cur.txt {
-  opacity: 0;
-}
-.cur-dot,
-.cur-ring,
-.cur-lbl {
-  position: absolute;
-  left: 0;
-  top: 0;
-  font-style: normal;
-}
-.cur-dot {
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
-  border-radius: 50%;
-  background: var(--accent);
-  transition: opacity 0.15s;
-}
-.cur-ring {
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  border-radius: 50%;
-  border: 1px solid #edece866;
-  transition: width 0.3s var(--ease), height 0.3s var(--ease),
-    margin 0.3s var(--ease), background 0.2s, border-color 0.2s;
-}
-.cur-lbl {
   font: 500 0.68rem "JetBrains Mono", monospace;
   color: var(--bone);
-  background: rgba(20, 20, 23, 0.88);
-  border: 1px solid rgba(212, 116, 85, 0.55);
+  background: rgba(20, 20, 24, 0.92);
+  border: 1px solid rgba(212, 116, 85, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  padding: 0.2rem 0.55rem;
+  padding: 0.22rem 0.55rem;
   border-radius: 99px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  opacity: 0;
-  margin: -32px 0 0 14px;
-  transition: opacity 0.18s ease, transform 0.18s var(--ease);
-  pointer-events: none;
   white-space: nowrap;
+  opacity: 0;
+  transform: translate3d(-100px, -100px, 0);
+  margin: 14px 0 0 14px;
+  transition: opacity 0.15s ease;
 }
-.cur.hov .cur-ring {
-  width: 52px;
-  height: 52px;
-  margin: -26px 0 0 -26px;
-  border-color: var(--accent);
-}
-.cur.lbl .cur-ring {
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
-  background: transparent;
-  border-color: var(--accent);
-}
-.cur.lbl .cur-lbl {
+.cur-pill.on {
   opacity: 1;
-}
-.cur.lbl .cur-dot {
-  opacity: 1;
-}
-.cur.down .cur-ring {
-  transform-origin: center;
-  filter: brightness(0.9);
 }
 
 /* toast + net indicator */

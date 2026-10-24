@@ -159,71 +159,55 @@
     { passive: true },
   );
 
-  /* ---------- custom cursor (fine pointers only) ---------- */
+  /* ---------- native pointer + floating micro-pill (fine pointers only) ---------- */
   if (fine && !reduce) {
     const c = document.createElement("div");
-    c.className = "cur";
+    c.className = "cur-pill";
     c.setAttribute("aria-hidden", "true");
-    c.innerHTML = '<i class="cur-ring"></i><i class="cur-dot"></i><span class="cur-lbl"></span>';
     document.body.append(c);
-    document.documentElement.classList.add("has-cur");
-    const ring = $(".cur-ring", c),
-      dot = $(".cur-dot", c),
-      lbl = $(".cur-lbl", c);
+
     let x = -100,
       y = -100,
       rx = -100,
       ry = -100,
-      shown = false,
       raf = 0,
-      cur = "";
+      labelText = "";
+
     const loop = () => {
-      rx += (x - rx) * 0.22;
-      ry += (y - ry) * 0.22;
-      const t = `translate3d(${rx}px,${ry}px,0)`;
-      ring.style.transform = t;
-      lbl.style.transform = t;
-      raf = Math.abs(x - rx) + Math.abs(y - ry) > 0.15 ? requestAnimationFrame(loop) : 0;
+      rx += (x - rx) * 0.28;
+      ry += (y - ry) * 0.28;
+      c.style.transform = `translate3d(${rx}px,${ry}px,0)`;
+      raf = Math.abs(x - rx) + Math.abs(y - ry) > 0.2 ? requestAnimationFrame(loop) : 0;
     };
+
     addEventListener(
       "pointermove",
       (e) => {
         if (e.pointerType !== "mouse") return;
         x = e.clientX;
         y = e.clientY;
-        dot.style.transform = `translate3d(${x}px,${y}px,0)`;
-        if (!shown) {
-          shown = true;
-          rx = x;
-          ry = y;
-          c.classList.add("on");
-        }
         if (!raf) raf = requestAnimationFrame(loop);
-        const el = e.target.closest("[data-cursor],a,button,input,textarea");
-        let state = "";
-        if (el) {
-          if (el.matches("input,textarea")) state = "txt";
-          else if (el.dataset.cursor) state = "lbl:" + el.dataset.cursor;
-          else if (el.matches('a[target="_blank"]')) state = "lbl:↗";
-          else state = "hov";
+
+        const el = e.target.closest("[data-cursor], a[target='_blank']");
+        let next = "";
+        if (el && !el.matches("input, textarea")) {
+          const raw = el.dataset.cursor || (el.matches('a[target="_blank"]') ? "↗" : "");
+          next = raw === "open" ? "+ open" : raw === "close" ? "- close" : raw;
         }
-        if (state !== cur) {
-          cur = state;
-          c.classList.toggle("txt", state === "txt");
-          c.classList.toggle("hov", state === "hov");
-          c.classList.toggle("lbl", state.startsWith("lbl:"));
-          if (state.startsWith("lbl:")) {
-            const raw = state.slice(4);
-            lbl.textContent = raw === "open" ? "+ open" : raw === "close" ? "- close" : raw;
-          }
+
+        if (next !== labelText) {
+          labelText = next;
+          c.textContent = next;
+          c.classList.toggle("on", Boolean(next));
         }
       },
       { passive: true },
     );
-    addEventListener("pointerdown", () => c.classList.add("down"), { passive: true });
-    addEventListener("pointerup", () => c.classList.remove("down"), { passive: true });
-    document.documentElement.addEventListener("mouseleave", () => c.classList.remove("on"));
-    document.documentElement.addEventListener("mouseenter", () => shown && c.classList.add("on"));
+
+    document.documentElement.addEventListener("mouseleave", () => {
+      c.classList.remove("on");
+      labelText = "";
+    });
   }
 
   /* ---------- reveals: word-by-word headlines, drawn diagrams ---------- */
