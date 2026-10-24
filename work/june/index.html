@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>june · aby mathew · 4ofl</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="june · a Discord application for server automation and real-time state gateways." />
+    <link rel="canonical" href="https://4ofl.dev/work/june/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://4ofl.dev/work/june/" />
+    <meta property="og:title" content="june · 4ofl" />
+    <meta property="og:description" content="june · a Discord application for server automation and real-time state gateways." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+    <noscript><style>.arch .n{opacity:1}.arch path{stroke-dashoffset:0}</style></noscript>
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/#about">about</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/#work">← all work</a>
+        <h1 class="pj-title">june</h1>
+        <p class="sub">A Discord application for server automation, utilities and real-time state gateways.</p>
+        <p class="k"><em class="st st-live">live</em></p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>facts</span></h2>
+        <dl>
+          <div class="r"><dt>what</dt><dd>discord application · infrastructure</dd></div>
+          <div class="r"><dt>docs</dt><dd><a href="https://docs.june.4ofl.dev" target="_blank" rel="noopener">docs.june.4ofl.dev ↗</a></dd></div>
+          <div class="r"><dt>status</dt><dd>live</dd></div>
+        </dl>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>architecture</span><span>how a connection is kept honest</span></h2>
+        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="june: discord gateway to heartbeat state machine to command handlers, with a persistent timer queue"><g class="n" style="--d:0ms"><rect x="40" y="40" width="200" height="72" rx="10"/><text x="140.0" y="74.0" text-anchor="middle">discord</text><text class="sub" x="140.0" y="90.0" text-anchor="middle">gateway</text></g><path d="M244 76 L372 76" pathLength="1" style="--d:300ms"/><polygon class="n ah" points="380,76 372,71.5 372,80.5" style="--d:1000ms"/><g class="n" style="--d:600ms"><rect x="380" y="40" width="200" height="72" rx="10"/><text x="480.0" y="74.0" text-anchor="middle">heartbeat</text><text class="sub" x="480.0" y="90.0" text-anchor="middle">state machine</text></g><path d="M584 76 L712 76" pathLength="1" style="--d:900ms"/><polygon class="n ah" points="720,76 712,71.5 712,80.5" style="--d:1600ms"/><g class="n" style="--d:1200ms"><rect x="720" y="40" width="200" height="72" rx="10"/><text x="820.0" y="74.0" text-anchor="middle">commands</text><text class="sub" x="820.0" y="90.0" text-anchor="middle">handlers</text></g><path d="M820 116 L820 182" pathLength="1" style="--d:1500ms"/><polygon class="n ah" points="820,190 815.5,182 824.5,182" style="--d:2200ms"/><g class="n" style="--d:1800ms"><rect x="720" y="190" width="200" height="72" rx="10"/><text x="820.0" y="224.0" text-anchor="middle">timer queue</text><text class="sub" x="820.0" y="240.0" text-anchor="middle">persistent</text></g><text class="note n" x="480" y="138" text-anchor="middle" style="--d:1000ms">catches zombie connections</text></svg>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>what broke</span></h2>
+        <p class="t">Discord’s gateway drops into zombie connections with no close frame. The socket looks open and nothing is coming through. Built a heartbeat state machine so a silent drop is noticed and handled, and a persistent timer queue so scheduled work doesn’t depend on one connection staying healthy.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>metrics</span></h2>
+        <p class="t dim">Pulled live from the bot’s status feed through an edge worker. If the feed is down, it says so.</p>
+        <div id="metrics" class="metrics">
+        <div><b data-m="state">…</b><span>gateway state</span></div>
+        <div><b data-m="shard">…</b><span>shard</span></div>
+        <div><b data-m="hb">…</b><span>heartbeat</span></div>
+        <div><b data-m="up">…</b><span>uptime</span></div>
+      </div>
+      <p class="k dim" id="metricsNote">loading…</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>next</span></h2>
+        <a class="pj-next" href="/work/johns-fitness/" data-cursor="open">johns fitness</a>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew</span
+      ><span><span id="net-ind" class="ind">online</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>

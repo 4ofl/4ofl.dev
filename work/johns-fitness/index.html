@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>johns fitness · aby mathew · 4ofl</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="johns fitness · offline-first gym access with a local SQLite and a sync queue." />
+    <link rel="canonical" href="https://4ofl.dev/work/johns-fitness/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://4ofl.dev/work/johns-fitness/" />
+    <meta property="og:title" content="johns fitness · 4ofl" />
+    <meta property="og:description" content="johns fitness · offline-first gym access with a local SQLite and a sync queue." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+    <noscript><style>.arch .n{opacity:1}.arch path{stroke-dashoffset:0}</style></noscript>
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/#about">about</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/#work">← all work</a>
+        <h1 class="pj-title">johns fitness</h1>
+        <p class="sub">A gym system that keeps working when the internet doesn’t. Local SQLite first, sync queue second.</p>
+        <p class="k"><em class="st st-build">building</em></p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>facts</span></h2>
+        <dl>
+          <div class="r"><dt>what</dt><dd>offline-first access control · biometrics</dd></div>
+          <div class="r"><dt>status</dt><dd>building. not in production yet</dd></div>
+          <div class="r"><dt>source</dt><dd><a href="https://github.com/4ofl/johnsfitness-edge" target="_blank" rel="noopener">github.com/4ofl/johnsfitness-edge ↗</a></dd></div>
+        </dl>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>architecture</span><span>the decision is made on the device</span></h2>
+        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="johns fitness: fingerprint reader to local sqlite to door relay, with a sync queue to the cloud"><g class="n" style="--d:0ms"><rect x="40" y="40" width="200" height="72" rx="10"/><text x="140.0" y="74.0" text-anchor="middle">fingerprint</text><text class="sub" x="140.0" y="90.0" text-anchor="middle">reader</text></g><path d="M244 76 L372 76" pathLength="1" style="--d:300ms"/><polygon class="n ah" points="380,76 372,71.5 372,80.5" style="--d:1000ms"/><g class="n" style="--d:600ms"><rect x="380" y="40" width="200" height="72" rx="10"/><text x="480.0" y="74.0" text-anchor="middle">local sqlite</text><text class="sub" x="480.0" y="90.0" text-anchor="middle">verify here</text></g><path d="M584 76 L712 76" pathLength="1" style="--d:900ms"/><polygon class="n ah" points="720,76 712,71.5 712,80.5" style="--d:1600ms"/><g class="n" style="--d:1200ms"><rect x="720" y="40" width="200" height="72" rx="10"/><text x="820.0" y="74.0" text-anchor="middle">door relay</text><text class="sub" x="820.0" y="90.0" text-anchor="middle">opens</text></g><path d="M480 116 L480 182" pathLength="1" style="--d:1500ms"/><polygon class="n ah" points="480,190 475.5,182 484.5,182" style="--d:2200ms"/><g class="n" style="--d:1800ms"><rect x="380" y="190" width="200" height="72" rx="10"/><text x="480.0" y="224.0" text-anchor="middle">sync queue</text><text class="sub" x="480.0" y="240.0" text-anchor="middle">only when online</text></g><path d="M584 226 L712 226" pathLength="1" style="--d:2100ms"/><polygon class="n ah" points="720,226 712,221.5 712,230.5" style="--d:2800ms"/><g class="n" style="--d:2400ms"><rect x="720" y="190" width="200" height="72" rx="10"/><text x="820.0" y="224.0" text-anchor="middle">cloud</text><text class="sub" x="820.0" y="240.0" text-anchor="middle">later, not in the way</text></g><text class="note n" x="40" y="236" text-anchor="start" style="--d:2600ms">the cloud is never in the critical path</text></svg>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>why local-first</span></h2>
+        <p class="t">ISP lines drop in the 6am rush, and waiting on a cloud webhook strands people outside. So the scan is verified against a local SQLite database, the door opens from that answer, and the cloud only hears about it later through a sync queue. The demo on the home page runs a real SQLite in your browser to show the shape of it.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>metrics</span></h2>
+        <p class="t dim">Left empty on purpose.</p>
+        <p class="k dim">no numbers yet. it isn’t in production, so there is nothing honest to measure. when it is, this is where scan-to-relay latency and queue depth at the 6am rush will go.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>next</span></h2>
+        <a class="pj-next" href="/work/citecamp/" data-cursor="open">citecamp</a>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew</span
+      ><span><span id="net-ind" class="ind">online</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>

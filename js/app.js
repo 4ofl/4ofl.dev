@@ -2,25 +2,200 @@
   "use strict";
   const $ = (s, r = document) => r.querySelector(s),
     $$ = (s, r = document) => [...r.querySelectorAll(s)];
-  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const F = window.F;
+  const reduce = F.reduce;
+  const root = document.documentElement;
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+
   let mx = -999,
-    my = -999;
+    my = -999,
+    lastMx = -999,
+    lastMy = -999,
+    curVx = 0,
+    curVy = 0,
+    lastMoveT = 0;
   const ripples = [];
 
-  /* name: letters swell toward cursor and touch */
+  /* =========================================================
+     hero name: letters swell toward the pointer, idle wave otherwise
+     ========================================================= */
+  const hero = $(".hero");
+  const heroIn = $(".hero-in");
   const name = $("#name");
-  name.innerHTML = [..."aby mathew"]
+  name.innerHTML = [...("aby mathew")]
     .map((c) => (c === " " ? "<br>" : `<span>${c}</span>`))
     .join("");
   const L = $$("#name span");
-  let letterCenters = [];
+  let centers = [];
+  let heroP = 0;
   function cacheLetters() {
-    const sy = window.scrollY;
-    letterCenters = L.map((s) => {
+    const prev = heroIn.style.getPropertyValue("--p");
+    heroIn.style.setProperty("--p", 0); // measure untransformed
+    const sy = scrollY;
+    centers = L.map((s) => {
       const r = s.getBoundingClientRect();
       return { el: s, cx: r.left + r.width / 2, cy: r.top + sy + r.height / 2 };
     });
+    heroIn.style.setProperty("--p", prev || heroP);
   }
+
+  /* =========================================================
+     dot grid = canvas background. springs, ripples, commit data, intro
+     ========================================================= */
+  const cv = $("#bg"),
+    g = cv.getContext("2d");
+  let W, H, D;
+  let dots = [],
+    nCols = 0,
+    nRows = 0,
+    gap = 34,
+    startX = 0,
+    startY = 0;
+  let gridDirty = true;
+  let commits = null,
+    commStart = 0,
+    commMeta = null;
+
+  function initGrid() {
+    dots = [];
+    gap = 34 * D;
+    startX = (W % gap) / 2 || gap / 2;
+    startY = (H % gap) / 2 || gap / 2;
+    nCols = 0;
+    nRows = 0;
+    for (let y = startY; y < H; y += gap) {
+      nRows++;
+      nCols = 0;
+      for (let x = startX; x < W; x += gap) {
+        nCols++;
+        dots.push({ ox: x, oy: y, x, y, vx: 0, vy: 0, cm: null });
+      }
+    }
+    mapCommits();
+  }
+  const size = () => {
+    D = Math.min(devicePixelRatio || 1, 2);
+    W = cv.width = innerWidth * D;
+    H = cv.height = innerHeight * D;
+    initGrid();
+    gridDirty = true;
+  };
+  size();
+
+  /* commit data: the last ~26 weeks sit in the top-right of the grid */
+  function mapCommits() {
+    commMeta = null;
+    for (const d of dots) d.cm = null;
+    if (!commits || !commits.weeks || !nCols) return;
+    const padPx = parseFloat(getComputedStyle(hero).paddingLeft) || 20;
+    const maxCols = Math.max(4, Math.min(26, Math.floor((innerWidth - 2 * padPx) / 34)));
+    const weeks = commits.weeks.slice(-maxCols);
+    const cols = weeks.length;
+    const cR = Math.min(nCols - 1, Math.floor((W - padPx * D - startX) / gap));
+    const c0 = cR - cols + 1;
+    const r0 = Math.max(0, Math.ceil((96 * D - startY) / gap));
+    if (c0 < 0 || r0 + 8 >= nRows) return;
+    weeks.forEach((wk, i) => {
+      for (const [date, count, wd] of wk) {
+        const d = dots[(r0 + wd) * nCols + (c0 + i)];
+        if (d) d.cm = { date, count, t: i * 28 };
+      }
+    });
+    const total = weeks.reduce((a, wk) => a + wk.reduce((b, x) => b + x[1], 0), 0);
+    commMeta = {
+      cols,
+      total,
+      capX: startX + (c0 + cols - 1) * gap,
+      capY: startY + (r0 + 7) * gap,
+    };
+  }
+  F.api("/commits", "commits").then((r) => {
+    if (r && r.data && r.data.weeks) {
+      commits = r.data;
+      commits.cached = r.cached;
+      commStart = performance.now();
+      mapCommits();
+      gridDirty = true;
+      requestFrame();
+    }
+  });
+
+  const fmtDate = (d) =>
+    new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+
+  /* intro: the grid breaks loose and becomes the name */
+  const intro = { on: false, t0: 0, n: 0, tx: null, ty: null, sx: null, sy: null, dl: null, revealed: false };
+  function endIntro() {
+    intro.on = false;
+    root.classList.remove("intro");
+    try {
+      sessionStorage.setItem("intro", "1");
+    } catch {}
+    gridDirty = true;
+  }
+  function startIntro() {
+    if (!root.classList.contains("intro")) return;
+    if (reduce || scrollY > 40) return endIntro();
+    try {
+      const m = document.createElement("canvas");
+      m.width = innerWidth;
+      m.height = innerHeight;
+      const mc = m.getContext("2d", { willReadFrequently: true });
+      const fs = parseFloat(getComputedStyle(name).fontSize);
+      mc.font = `600 ${fs}px "Bricolage Grotesque", sans-serif`;
+      mc.textAlign = "center";
+      mc.textBaseline = "alphabetic";
+      mc.fillStyle = "#fff";
+      const mt = mc.measureText("a");
+      const A = mt.fontBoundingBoxAscent ?? fs * 0.93,
+        Dd = mt.fontBoundingBoxDescent ?? fs * 0.25;
+      L.forEach((s) => {
+        const r = s.getBoundingClientRect();
+        mc.fillText(s.textContent, r.left + r.width / 2, r.top + (r.height - (A + Dd)) / 2 + A);
+      });
+      const data = mc.getImageData(0, 0, m.width, m.height).data;
+      let step = innerWidth < 600 ? 6 : innerWidth < 1100 ? 8 : 9;
+      let pts;
+      for (let tries = 0; tries < 4; tries++) {
+        pts = [];
+        for (let y = step / 2; y < m.height; y += step)
+          for (let x = step / 2; x < m.width; x += step)
+            if (data[(((y | 0) * m.width) + (x | 0)) * 4 + 3] > 128) pts.push(x, y);
+        if (pts.length / 2 <= 3200) break;
+        step += 2;
+      }
+      const n = pts.length / 2;
+      if (n < 20) return endIntro();
+      intro.n = n;
+      intro.tx = new Float32Array(n);
+      intro.ty = new Float32Array(n);
+      intro.sx = new Float32Array(n);
+      intro.sy = new Float32Array(n);
+      intro.dl = new Float32Array(n);
+      const gx0 = startX / D,
+        gy0 = startY / D;
+      for (let i = 0; i < n; i++) {
+        const tx = pts[i * 2],
+          ty = pts[i * 2 + 1];
+        intro.tx[i] = tx;
+        intro.ty[i] = ty;
+        intro.sx[i] = gx0 + Math.round((tx - gx0) / 34) * 34 + (Math.random() - 0.5) * 10;
+        intro.sy[i] = gy0 + Math.round((ty - gy0) / 34) * 34 + (Math.random() - 0.5) * 10;
+        intro.dl[i] = Math.random() * 600;
+      }
+      intro.on = true;
+      intro.t0 = performance.now();
+      intro.revealed = false;
+      requestFrame();
+    } catch {
+      endIntro();
+    }
+  }
+  const skipIntro = () => intro.on && endIntro();
+  addEventListener("pointerdown", skipIntro, { passive: true });
+  addEventListener("keydown", skipIntro);
+  addEventListener("wheel", skipIntro, { passive: true });
+
   document.fonts.ready.then(() => {
     L.forEach((s) => {
       s.style.fontVariationSettings = '"wght" 800';
@@ -28,45 +203,9 @@
       s.style.fontVariationSettings = '"wght" 300';
     });
     cacheLetters();
+    startIntro();
     requestFrame();
   });
-
-  /* dot grid: elastic spring cloth & tap ripple */
-  const cv = $("#bg"),
-    g = cv.getContext("2d");
-  let W, H, D;
-  let dots = [];
-  let curVx = 0,
-    curVy = 0,
-    lastMx = -999,
-    lastMy = -999;
-
-  function initGrid() {
-    dots = [];
-    const gap = 34 * D;
-    const startX = (W % gap) / 2 || gap / 2;
-    const startY = (H % gap) / 2 || gap / 2;
-    for (let y = startY; y < H; y += gap) {
-      for (let x = startX; x < W; x += gap) {
-        dots.push({
-          ox: x,
-          oy: y,
-          x: x,
-          y: y,
-          vx: 0,
-          vy: 0,
-        });
-      }
-    }
-  }
-
-  const size = () => {
-    D = Math.min(devicePixelRatio || 1, 2);
-    W = cv.width = innerWidth * D;
-    H = cv.height = innerHeight * D;
-    initGrid();
-  };
-  size();
 
   addEventListener(
     "resize",
@@ -88,6 +227,7 @@
       speed: 6.2 * D,
       life: 1.0,
     });
+    gridDirty = true;
     requestFrame();
   }
 
@@ -95,12 +235,11 @@
   function requestFrame() {
     if (!animPending && !reduce) {
       animPending = true;
-      requestAnimationFrame(render);
+      requestAnimationFrame(frame);
     }
   }
 
-  function render() {
-    animPending = false;
+  function stepGrid(now) {
     g.clearRect(0, 0, W, H);
     const radius = 1 * D;
     const twoPi = 6.2831853;
@@ -111,39 +250,30 @@
     const targetMx = mx * D;
     const targetMy = my * D;
     let hasMotion = false;
+    const sy = scrollY;
+    const hf = clamp(1 - sy / (innerHeight * 0.6));
 
-    // update active tap ripples
     for (let i = ripples.length - 1; i >= 0; i--) {
       const rip = ripples[i];
       rip.r += rip.speed;
       rip.life -= 0.024;
-      if (rip.life <= 0 || rip.r >= rip.maxR) {
-        ripples.splice(i, 1);
-      }
+      if (rip.life <= 0 || rip.r >= rip.maxR) ripples.splice(i, 1);
     }
 
-    // Elastic cloth & spring physics simulation
     for (let i = 0; i < dots.length; i++) {
       const dot = dots[i];
-
-      // Cursor / touch displacement & wake drag
       if (mx > -900) {
         const dx = dot.x - targetMx;
         const dy = dot.y - targetMy;
         const dist = Math.hypot(dx, dy);
         if (dist < cursorRadius && dist > 0.1) {
           const force = (1 - dist / cursorRadius) * 4.6 * D;
-          const nx = dx / dist;
-          const ny = dy / dist;
-          dot.vx += nx * force;
-          dot.vy += ny * force;
-          // Drag along cursor motion direction (fluid wake)
+          dot.vx += (dx / dist) * force;
+          dot.vy += (dy / dist) * force;
           dot.vx += curVx * 0.1 * (1 - dist / cursorRadius) * D;
           dot.vy += curVy * 0.1 * (1 - dist / cursorRadius) * D;
         }
       }
-
-      // Tap ripple radial shockwave impulse
       for (let r = 0; r < ripples.length; r++) {
         const rip = ripples[r];
         const rdx = dot.x - rip.x;
@@ -152,54 +282,40 @@
         const waveDist = Math.abs(dDot - rip.r);
         const waveWidth = 44 * D;
         if (waveDist < waveWidth && dDot > 0.1) {
-          const intensity = (1 - waveDist / waveWidth) * rip.life;
-          const push = intensity * 2.8 * D;
+          const push = (1 - waveDist / waveWidth) * rip.life * 2.8 * D;
           dot.vx += (rdx / dDot) * push;
           dot.vy += (rdy / dDot) * push;
         }
       }
-
-      // Hooke's Law spring pull back to (ox, oy)
-      const ax = (dot.ox - dot.x) * spring;
-      const ay = (dot.oy - dot.y) * spring;
-      dot.vx = (dot.vx + ax) * damping;
-      dot.vy = (dot.vy + ay) * damping;
+      dot.vx = (dot.vx + (dot.ox - dot.x) * spring) * damping;
+      dot.vy = (dot.vy + (dot.oy - dot.y) * spring) * damping;
       dot.x += dot.vx;
       dot.y += dot.vy;
-
-      // Check if dot is actively moving
       if (
         Math.abs(dot.x - dot.ox) > 0.12 ||
         Math.abs(dot.y - dot.oy) > 0.12 ||
         Math.abs(dot.vx) > 0.08 ||
         Math.abs(dot.vy) > 0.08
-      ) {
+      )
         hasMotion = true;
-      }
     }
-
-    // Decay cursor velocity
     curVx *= 0.65;
     curVy *= 0.65;
 
-    // Render dots: ambient base batch
     g.fillStyle = "rgba(255,255,255,.09)";
     g.beginPath();
     const active = [];
+    const commitDots = [];
+    let hover = null,
+      hoverD = 18 * D;
 
     for (let i = 0; i < dots.length; i++) {
       const dot = dots[i];
       let maxK = 0;
-
-      // Proximity glow
       if (mx > -900) {
-        const distCursor = Math.hypot(dot.x / D - mx, dot.y / D - my);
-        if (distCursor < hoverDist) {
-          maxK = Math.max(maxK, 1 - distCursor / hoverDist);
-        }
+        const dc = Math.hypot(dot.x / D - mx, dot.y / D - my);
+        if (dc < hoverDist) maxK = Math.max(maxK, 1 - dc / hoverDist);
       }
-
-      // Ripple wavefront glow
       for (let r = 0; r < ripples.length; r++) {
         const rip = ripples[r];
         const dDot = Math.hypot(dot.x - rip.x, dot.y - rip.y);
@@ -210,14 +326,21 @@
           if (intensity > maxK) maxK = intensity;
         }
       }
-
-      // Elastic stretch tension glow
       const stretch = Math.hypot(dot.x - dot.ox, dot.y - dot.oy);
       if (stretch > 2.5 * D) {
-        const stretchK = Math.min(0.7, stretch / (16 * D));
-        if (stretchK > maxK) maxK = stretchK;
+        const sk = Math.min(0.7, stretch / (16 * D));
+        if (sk > maxK) maxK = sk;
       }
-
+      if (dot.cm && hf > 0.02) {
+        commitDots.push(dot);
+        if (mx > -900 && hf > 0.3) {
+          const dd = Math.hypot(dot.x - targetMx, dot.y - targetMy);
+          if (dd < hoverD) {
+            hoverD = dd;
+            hover = dot;
+          }
+        }
+      }
       if (maxK > 0) {
         active.push({ x: dot.x, y: dot.y, k: maxK });
       } else {
@@ -227,7 +350,6 @@
     }
     g.fill();
 
-    // Render active illuminated dots
     for (let i = 0; i < active.length; i++) {
       const dot = active[i];
       g.fillStyle = `rgba(212,116,85,${0.2 + 0.8 * dot.k})`;
@@ -236,28 +358,138 @@
       g.fill();
     }
 
-    // Swell letters in "aby mathew"
-    const sy = window.scrollY;
-    if (sy < innerHeight && letterCenters.length) {
-      for (let i = 0; i < letterCenters.length; i++) {
-        const item = letterCenters[i];
-        const d = Math.hypot(mx - item.cx, my - (item.cy - sy));
-        const k = Math.max(0, 1 - d / 300);
-        item.el.style.fontVariationSettings = `"wght" ${(300 + 500 * k) | 0}`;
-        item.el.style.color = k > 0.55 ? "var(--accent)" : "";
+    /* commit overlay */
+    if (commitDots.length) {
+      let animating = false;
+      for (const dot of commitDots) {
+        const cm = dot.cm;
+        const a = clamp((now - commStart - cm.t) / 420);
+        if (a < 1) animating = true;
+        const k = a * hf;
+        if (!cm.count) {
+          g.fillStyle = `rgba(255,255,255,${0.1 * k})`;
+          g.beginPath();
+          g.arc(dot.x, dot.y, 1.3 * D, 0, twoPi);
+          g.fill();
+          continue;
+        }
+        const lv = cm.count <= 2 ? 1 : cm.count <= 5 ? 2 : cm.count <= 9 ? 3 : 4;
+        g.fillStyle = `rgba(212,116,85,${(0.3 + 0.7 * (lv / 4)) * k})`;
+        g.beginPath();
+        g.arc(dot.x, dot.y, (1.4 + lv * 0.55) * D, 0, twoPi);
+        g.fill();
+      }
+      if (animating) hasMotion = true;
+      if (commMeta && hf > 0.05) {
+        g.font = `${10.5 * D}px "JetBrains Mono", monospace`;
+        g.textAlign = "right";
+        g.fillStyle = `rgba(140,138,133,${0.9 * hf})`;
+        g.fillText(
+          `${commMeta.total} commits · last ${commMeta.cols} weeks${commits && commits.cached ? " · cached" : ""}`,
+          commMeta.capX + 4 * D,
+          commMeta.capY,
+        );
+      }
+      if (hover) {
+        const cm = hover.cm;
+        const txt = `${cm.count} commit${cm.count === 1 ? "" : "s"} · ${fmtDate(cm.date)}`;
+        g.font = `${11 * D}px "JetBrains Mono", monospace`;
+        const tw = g.measureText(txt).width + 16 * D;
+        const th = 24 * D;
+        let bx = hover.x - tw / 2;
+        bx = Math.min(W - tw - 8 * D, Math.max(8 * D, bx));
+        const by = hover.y + 16 * D;
+        g.fillStyle = "#141417";
+        g.strokeStyle = "rgba(255,255,255,.14)";
+        g.lineWidth = D;
+        g.beginPath();
+        if (g.roundRect) g.roundRect(bx, by, tw, th, 6 * D);
+        else g.rect(bx, by, tw, th);
+        g.fill();
+        g.stroke();
+        g.fillStyle = "#edece8";
+        g.textAlign = "left";
+        g.fillText(txt, bx + 8 * D, by + 16 * D);
       }
     }
 
-    // Keep running animation loop while springs are oscillating or ripples active
-    if (
-      ripples.length > 0 ||
-      hasMotion ||
-      Math.abs(curVx) > 0.05 ||
-      Math.abs(curVy) > 0.05
-    ) {
-      requestFrame();
+    /* intro: the grid becomes the name */
+    if (intro.on) {
+      const t = now - intro.t0;
+      if (t > 1900 && !intro.revealed) {
+        intro.revealed = true;
+        root.classList.remove("intro");
+      }
+      if (t > 2600) {
+        endIntro();
+      } else {
+        const fade = t > 1900 ? 1 - clamp((t - 1900) / 700) : 1;
+        const r = 1.35 * D;
+        for (let pass = 0; pass < 2; pass++) {
+          g.fillStyle = pass ? `rgba(212,116,85,${0.95 * fade})` : `rgba(237,236,232,${0.85 * fade})`;
+          g.beginPath();
+          for (let i = pass; i < intro.n; i += 2) {
+            const e = 1 - Math.pow(1 - clamp((t - intro.dl[i]) / 1100), 3);
+            const wob = (1 - e) * Math.sin(i * 12.9898 + t * 0.004) * 14;
+            const x = (intro.sx[i] + (intro.tx[i] - intro.sx[i]) * e + wob) * D;
+            const y = (intro.sy[i] + (intro.ty[i] - intro.sy[i]) * e) * D;
+            g.rect(x - r, y - r, r * 2, r * 2);
+          }
+          g.fill();
+        }
+      }
+    }
+    return hasMotion;
+  }
+
+  function updateLetters(now) {
+    const sy = scrollY;
+    if (sy > innerHeight || !centers.length) return;
+    const isPointerActive = mx > -900 && now - lastMoveT < 3000;
+    const fade = clamp(1 - sy / innerHeight);
+    for (let i = 0; i < centers.length; i++) {
+      const it = centers[i];
+      let targetK = 0;
+      const mouseDist = isPointerActive ? Math.hypot(mx - it.cx, my - (it.cy - sy)) : 9999;
+      const proxK = Math.max(0, 1 - mouseDist / 320);
+
+      if (!reduce) {
+        const s = Math.max(0, Math.sin(now * 0.0014 - i * 0.55));
+        const idleK = s * s * s * 0.62 * fade;
+        if (isPointerActive) {
+          const proxBlend = clamp(1 - (mouseDist - 120) / 220);
+          targetK = idleK * (1 - proxBlend) + proxK * proxBlend;
+        } else {
+          targetK = idleK;
+        }
+      } else if (isPointerActive) {
+        targetK = proxK;
+      }
+
+      it.curK = it.curK !== undefined ? it.curK + (targetK - it.curK) * 0.12 : targetK;
+      it.el.style.fontVariationSettings = `"wght" ${(300 + 500 * it.curK) | 0}`;
+      it.el.style.color = isPointerActive && it.curK > 0.55 && proxK > 0.4 ? "var(--accent)" : "";
     }
   }
+
+  let heroVisible = true;
+  function frame(now) {
+    animPending = false;
+    let busy = false;
+    if (gridDirty || intro.on || ripples.length) {
+      busy = stepGrid(now);
+      gridDirty = busy || intro.on || ripples.length > 0 || Math.abs(curVx) > 0.05 || Math.abs(curVy) > 0.05;
+    }
+    if (heroVisible) updateLetters(now);
+    if (gridDirty || busy || (heroVisible && !reduce)) requestFrame();
+  }
+  new IntersectionObserver(
+    (es) => {
+      heroVisible = es[0].isIntersecting;
+      if (heroVisible) requestFrame();
+    },
+    { threshold: 0 },
+  ).observe(hero);
 
   addEventListener(
     "pointerdown",
@@ -266,7 +498,9 @@
       curVy = e.clientY - (lastMy === -999 ? e.clientY : lastMy);
       lastMx = mx = e.clientX;
       lastMy = my = e.clientY;
-      addRipple(e.clientX, e.clientY);
+      lastMoveT = performance.now();
+      gridDirty = true;
+      requestFrame();
     },
     { passive: true },
   );
@@ -277,260 +511,312 @@
       curVy = e.clientY - (lastMy === -999 ? e.clientY : lastMy);
       lastMx = mx = e.clientX;
       lastMy = my = e.clientY;
+      lastMoveT = performance.now();
+      gridDirty = true;
       requestFrame();
     },
     { passive: true },
   );
   addEventListener(
     "pointerup",
-    () => {
-      setTimeout(() => {
-        if (!ripples.length) {
+    (e) => {
+      if (e.pointerType === "touch") {
+        setTimeout(() => {
           lastMx = mx = -999;
           lastMy = my = -999;
           curVx = 0;
           curVy = 0;
+          gridDirty = true;
           requestFrame();
-        }
-      }, 700);
+        }, 700);
+      }
     },
     { passive: true },
   );
-  addEventListener(
-    "scroll",
+  document.documentElement.addEventListener(
+    "mouseleave",
     () => {
-      if (window.scrollY < innerHeight) requestFrame();
+      lastMx = mx = -999;
+      lastMy = my = -999;
+      curVx = 0;
+      curVy = 0;
+      gridDirty = true;
+      requestFrame();
     },
     { passive: true },
   );
   requestFrame();
 
-  /* mobile nav drawer */
+  /* =========================================================
+     scroll choreography: hero exit, marquee, pinned about
+     ========================================================= */
+  const marq = $("#marq");
+  let marqX = 0,
+    marqVisible = false,
+    lastY = scrollY,
+    marqVel = 0;
+  if (marq && !reduce) {
+    new IntersectionObserver(
+      (es) => {
+        marqVisible = es[0].isIntersecting;
+        if (marqVisible) requestAnimationFrame(marqTick);
+      },
+      { rootMargin: "100px" },
+    ).observe(marq.parentElement);
+  }
+  function marqTick() {
+    if (!marqVisible) return;
+    const dy = scrollY - lastY;
+    lastY = scrollY;
+    marqVel += (dy - marqVel) * 0.12;
+    marqX -= 0.7 + Math.abs(marqVel) * 0.55;
+    const half = marq.scrollWidth / 2;
+    if (-marqX >= half) marqX += half;
+    marq.style.transform = `translate3d(${marqX}px,0,0) skewX(${clamp(-marqVel * 0.35, -9, 9)}deg)`;
+    requestAnimationFrame(marqTick);
+  }
+
+  const pin = $("#pin");
+  const rows = $$("#facts .r");
+  const wide = matchMedia("(min-width:761px)");
+  F.onScroll((y) => {
+    heroP = clamp(y / (innerHeight * 0.8));
+    heroIn.style.setProperty("--p", heroP.toFixed(3));
+    if (y < innerHeight) {
+      gridDirty = true;
+      requestFrame();
+    }
+    if (pin && wide.matches && !reduce) {
+      const r = pin.getBoundingClientRect();
+      const p = clamp((120 - r.top) / Math.max(1, r.height - $(".pin-in").offsetHeight - 120));
+      rows.forEach((row, i) => row.classList.toggle("on", p >= (i / rows.length) * 0.85));
+    }
+  });
+  if (pin && wide.matches && !reduce) rows.forEach((r, i) => r.classList.toggle("on", i === 0));
+
+  /* =========================================================
+     mobile nav
+     ========================================================= */
   const mobileNav = $("#mobileNav"),
     menuBtn = $("#menuBtn"),
     menuCloseBtn = $("#menuCloseBtn"),
     mobileNavBackdrop = $("#mobileNavBackdrop"),
     mPalBtn = $("#mPalBtn");
-
   function openMobileNav() {
-    if (!mobileNav) return;
     mobileNav.hidden = false;
     mobileNav.setAttribute("aria-hidden", "false");
-    menuBtn?.setAttribute("aria-expanded", "true");
+    menuBtn.setAttribute("aria-expanded", "true");
     document.body.style.overflow = "hidden";
+    F.lenis && F.lenis.stop();
+    menuCloseBtn.focus();
   }
   function closeMobileNav() {
-    if (!mobileNav) return;
     mobileNav.hidden = true;
     mobileNav.setAttribute("aria-hidden", "true");
-    menuBtn?.setAttribute("aria-expanded", "false");
+    menuBtn.setAttribute("aria-expanded", "false");
     document.body.style.overflow = "";
+    F.lenis && F.lenis.start();
   }
-  menuBtn?.addEventListener("click", openMobileNav);
-  menuCloseBtn?.addEventListener("click", closeMobileNav);
-  mobileNavBackdrop?.addEventListener("click", closeMobileNav);
-  mPalBtn?.addEventListener("click", () => {
+  menuBtn.addEventListener("click", openMobileNav);
+  menuCloseBtn.addEventListener("click", closeMobileNav);
+  mobileNavBackdrop.addEventListener("click", closeMobileNav);
+  mPalBtn.addEventListener("click", () => {
     closeMobileNav();
     openP();
   });
-  $$(".m-link").forEach((a) => {
-    a.addEventListener("click", (e) => {
-      closeMobileNav();
-      const target = a.getAttribute("href");
-      if (target && target.length > 1) {
-        e.preventDefault();
-        if (lenis) {
-          lenis.scrollTo(target === "#top" ? 0 : target, {
-            offset: -60,
-            duration: 1.15,
-          });
-          history.pushState(null, null, target);
-        } else {
-          const el = $(target);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }
-      }
-    });
+  $$(".m-link").forEach((a) => a.addEventListener("click", closeMobileNav));
+
+  /* =========================================================
+     last push (cached fallback when offline)
+     ========================================================= */
+  const recentEl = $("#recentPush");
+  F.api("/", "recent").then((r) => {
+    const d = r && r.data;
+    if (!d || !d.at) return;
+    const t = F.ago(new Date(d.at).getTime()).replace(" ago", "");
+    const tail = r.cached ? " · cached" : "";
+    recentEl.textContent = "";
+    recentEl.append(document.createTextNode(`shipped ${t} ago · `));
+    if (d.name) {
+      const a = document.createElement("a");
+      a.href = `https://github.com/4ofl/${d.name}`;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = `4ofl/${d.name} ↗`;
+      recentEl.append(a);
+    } else recentEl.append(document.createTextNode("private repository"));
+    if (tail) recentEl.append(document.createTextNode(tail));
   });
 
-  /* last push */
-  const recentEl = $("#recentPush");
-  if (recentEl) {
-    fetch("https://worker-round-credit-5733.abyperhaps.workers.dev")
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((d) => {
-        const m = (Date.now() - new Date(d.at)) / 6e4,
-          t =
-            m < 60
-              ? `${m | 0}m`
-              : m < 1440
-                ? `${(m / 60) | 0}h`
-                : `${(m / 1440) | 0}d`;
-        if (d.name) {
-          recentEl.innerHTML = `shipped ${t} ago · <a href="https://github.com/4ofl/${d.name}" target="_blank" rel="noopener">4ofl/${d.name} ↗</a>`;
-        } else {
-          recentEl.textContent = `shipped ${t} ago · private repository`;
-        }
-      })
-      .catch(() => {
-        recentEl.innerHTML = `active on <a href="https://github.com/4ofl" target="_blank" rel="noopener">github.com/4ofl ↗</a>`;
-      });
-  }
-
-  /* accordion - exclusive single open row */
+  /* =========================================================
+     accordion, exclusive single open row
+     ========================================================= */
   const allRows = $$(".row");
+  let jInit = null;
   allRows.forEach((row) => {
     const b = $(".rh", row);
-    if (!b) return;
     b.onclick = () => {
-      const isOpening = !row.classList.contains("open");
-
-      // Close all other rows when opening
-      if (isOpening) {
-        allRows.forEach((otherRow) => {
-          if (otherRow !== row && otherRow.classList.contains("open")) {
-            otherRow.classList.remove("open");
-            $(".rh", otherRow)?.setAttribute("aria-expanded", "false");
-            $(".pi", otherRow)?.setAttribute("inert", "");
+      const opening = !row.classList.contains("open");
+      if (opening)
+        allRows.forEach((o) => {
+          if (o !== row && o.classList.contains("open")) {
+            o.classList.remove("open");
+            const ob = $(".rh", o);
+            ob.setAttribute("aria-expanded", "false");
+            ob.dataset.cursor = "open";
+            $(".pi", o).setAttribute("inert", "");
           }
         });
-      }
-
-      // Toggle current row
-      row.classList.toggle("open", isOpening);
-      b.setAttribute("aria-expanded", isOpening ? "true" : "false");
+      row.classList.toggle("open", opening);
+      b.setAttribute("aria-expanded", opening ? "true" : "false");
+      b.dataset.cursor = opening ? "close" : "open";
       const pi = $(".pi", row);
-      if (pi) {
-        if (isOpening) {
-          pi.removeAttribute("inert");
-        } else {
-          pi.setAttribute("inert", "");
-        }
-      }
+      opening ? pi.removeAttribute("inert") : pi.setAttribute("inert", "");
+      if (opening && row.dataset.slug === "johns-fitness") warmSqlite().catch(() => {});
     };
   });
 
-  /* citecamp */
-  const CC = [
-    [
-      "attendance for exams?",
-      [
-        [
-          "You need at least 75% attendance in every course to sit the end-semester exam.",
-          1,
-        ],
-        [
-          "Up to 10% shortfall can be condoned with a valid medical certificate.",
-          2,
-        ],
-      ],
-      [
-        "academic regulations · clause 4.2",
-        "syndicate condonation circular #112",
-      ],
-    ],
-    [
-      "get an official transcript?",
-      [
-        [
-          "Submit the transcript request form to the Controller of Examinations office with your student ID.",
-          1,
-        ],
-        ["Sealed copies dispatch within 5 working days.", 2],
-      ],
-      ["examination manual · section 9.1", "student service charter v2"],
-    ],
-    [
-      "re-evaluate a paper?",
-      [
-        ["Re-evaluation requests open for 10 days after results.", 1],
-        ["If marks rise by 10% or more, the fee is refunded.", 2],
-      ],
-      ["ordinance 14.3 · revaluation window", "fee schedule · clause 14.8"],
-    ],
-  ];
-  const chat = $("#ccChat");
-  $$("#ccChips button").forEach(
-    (b, i) =>
-      (b.onclick = () => {
-        chat.innerHTML = "";
-        const u = document.createElement("p");
-        u.className = "u";
-        u.textContent = CC[i][0];
-        chat.append(u);
-        const a = document.createElement("div");
-        a.innerHTML = "<small>retrieving…</small>";
-        chat.append(a);
-        setTimeout(() => {
-          a.innerHTML =
-            CC[i][1].map(([t, n]) => `${t}<sup>${n}</sup>`).join(" ") +
-            "<small>" +
-            CC[i][2].map((s, j) => `[${j + 1}] ${s}`).join("<br>") +
-            "</small>";
-        }, 650);
-      }),
-  );
+  /* shared element morph: row title -> case study title (cross-document view transition) */
+  addEventListener("pageswap", (e) => {
+    if (!e.viewTransition || !e.activation || !e.activation.entry) return;
+    const m = new URL(e.activation.entry.url).pathname.match(/^\/work\/([^/]+)\/?$/);
+    if (!m) return;
+    const t = $(`.row[data-slug="${m[1]}"] .rh b`);
+    if (t) t.style.viewTransitionName = "proj";
+  });
 
-  /* johns fitness - real in-browser SQLite query execution */
+  /* =========================================================
+     citecamp: honest pipeline (planned, not running)
+     ========================================================= */
+  const NOTES = [
+    "curated university documents only: regulations, circulars, manuals. no open web.",
+    "circulars are watermarked scans. strip the watermark, OCR, and check the text before it goes near a chunker.",
+    "split on clause and section boundaries, not fixed token windows, so a rule stays attached to its exception.",
+    "hybrid search over the chunks. every hit keeps its document id and clause number.",
+    "the model only sees what was retrieved. every claim ships with its source, or it doesn't ship.",
+  ];
+  const pipeBtns = $$("#ccPipe button");
+  const ccNote = $("#ccNote");
+  pipeBtns.forEach((b) =>
+    b.addEventListener("click", () => {
+      pipeBtns.forEach((o) => o.setAttribute("aria-pressed", o === b ? "true" : "false"));
+      ccNote.textContent = NOTES[+b.dataset.n];
+    }),
+  );
+  ccNote.textContent = NOTES[0];
+
+  /* =========================================================
+     johns fitness: real SQLite (sql.js / WASM) in the browser
+     ========================================================= */
   let on = true,
     q = 0;
   const net = $("#net"),
     log = $("#jlog"),
-    res = $("#jres");
+    res = $("#jres"),
+    jdb = $("#jdb");
   const add = (t) => {
     const li = document.createElement("li");
     li.textContent = t;
     log.prepend(li);
     while (log.children.length > 4) log.lastChild.remove();
   };
-
-  // Pre-seed an in-memory indexed relational store representing SQLite WAL cache
-  const membersDB = new Map();
-  for (let i = 1; i <= 450; i++) {
-    const token = "fp_hash_" + (i * 2654435761 >>> 0).toString(16);
-    membersDB.set(token, {
-      id: 1000 + i,
-      tier: i % 5 === 0 ? "Staff" : "Active Member",
-      validUntil: Date.now() + 86400000 * 30,
+  let dbPromise = null;
+  const loadScript = (src) =>
+    new Promise((ok, no) => {
+      const s = document.createElement("script");
+      s.src = src;
+      s.onload = ok;
+      s.onerror = no;
+      document.head.append(s);
     });
+  const tok = (i) => "fp_" + ((i * 2654435761) >>> 0).toString(16);
+  function warmSqlite() {
+    if (dbPromise) return dbPromise;
+    jdb.textContent = "loading sqlite (wasm)…";
+    dbPromise = (async () => {
+      await loadScript("/js/vendor/sql-wasm.js");
+      const SQL = await window.initSqlJs({ locateFile: (f) => "/js/vendor/" + f });
+      const db = new SQL.Database();
+      db.run(
+        "CREATE TABLE members(token TEXT PRIMARY KEY, tier TEXT NOT NULL, valid_until INTEGER NOT NULL);" +
+          "CREATE TABLE sync_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL, at INTEGER NOT NULL);",
+      );
+      db.run("BEGIN");
+      const ins = db.prepare("INSERT INTO members VALUES (?,?,?)");
+      const now = Date.now();
+      for (let i = 1; i <= 450; i++)
+        ins.run([tok(i), i % 5 === 0 ? "staff" : "member", i === 77 ? now - 864e5 : now + 864e5 * 30]);
+      ins.free();
+      db.run("COMMIT");
+      const ver = db.exec("SELECT sqlite_version()")[0].values[0][0];
+      jdb.textContent = `real sqlite ${ver} (wasm) · 450 members · running in your browser`;
+      return db;
+    })().catch((err) => {
+      dbPromise = null;
+      jdb.textContent = "sqlite failed to load (offline before first visit?). nothing is faked here.";
+      throw err;
+    });
+    return dbPromise;
   }
-  const sampleToken = "fp_hash_" + (42 * 2654435761 >>> 0).toString(16);
-
-  net.onclick = () => {
+  const SCANS = [
+    [tok(42), "valid member"],
+    [tok(5), "staff"],
+    [tok(77), "expired membership"],
+    ["fp_unknown", "unknown fingerprint"],
+  ];
+  let scanN = 0;
+  net.onclick = async () => {
     on = !on;
     net.setAttribute("aria-pressed", on);
     net.textContent = on ? "network online" : "network offline";
     if (on && q) {
-      add(`synced ${q} scan${q > 1 ? "s" : ""} to cloud`);
+      try {
+        const db = await warmSqlite();
+        const n = db.exec("SELECT COUNT(*) FROM sync_queue")[0].values[0][0];
+        db.run("DELETE FROM sync_queue");
+        add(`flushed ${n} queued scan${n > 1 ? "s" : ""} (cloud is simulated)`);
+      } catch {}
       q = 0;
       $("#q").textContent = 0;
     }
   };
-
-  $("#fp").onclick = () => {
-    // High-resolution real measurement of SQLite index lookup in current browser thread
-    const t0 = performance.now();
-    let match = null;
-    if (membersDB.has(sampleToken)) {
-      const rec = membersDB.get(sampleToken);
-      if (rec.validUntil > Date.now()) match = rec;
+  $("#fp").onclick = async () => {
+    let db;
+    try {
+      db = await warmSqlite();
+    } catch {
+      res.textContent = "sqlite not available, so no result.";
+      return;
     }
-    const t1 = performance.now();
-    const elapsed = Math.max(0.05, t1 - t0).toFixed(2);
-
-    res.innerHTML = `verified <b>(${match ? match.tier : "Granted"})</b> · relay open · <b>${elapsed} ms</b> <small class="dim">(measured in browser)</small>`;
-    add(
-      on
-        ? `scan → local WAL (${elapsed}ms) → cloud`
-        : `scan → local WAL (${elapsed}ms) → sync queue`,
-    );
-    if (!on) {
-      q++;
+    const [token, label] = SCANS[scanN++ % SCANS.length];
+    const t0 = performance.now();
+    const st = db.prepare("SELECT tier, valid_until > ? AS ok FROM members WHERE token = ?");
+    st.bind([Date.now(), token]);
+    const row = st.step() ? st.getAsObject() : null;
+    st.free();
+    const ms = Math.max(0.01, performance.now() - t0).toFixed(2);
+    let verdict;
+    if (!row) verdict = "denied · unknown fingerprint";
+    else if (!row.ok) verdict = "denied · membership expired";
+    else verdict = `verified (${row.tier}) · relay open`;
+    res.textContent = "";
+    res.append(document.createTextNode(`${verdict} · ${ms} ms `));
+    const sm = document.createElement("small");
+    sm.className = "dim";
+    sm.textContent = `(sqlite query, ${label})`;
+    res.append(sm);
+    if (on) add(`scan → sqlite ${ms}ms → ${row && row.ok ? "open" : "deny"} → cloud (simulated)`);
+    else {
+      db.run("INSERT INTO sync_queue(token, at) VALUES (?,?)", [token, Date.now()]);
+      q = db.exec("SELECT COUNT(*) FROM sync_queue")[0].values[0][0];
       $("#q").textContent = q;
+      add(`scan → sqlite ${ms}ms → ${row && row.ok ? "open" : "deny"} → queued`);
     }
   };
 
-  /* june */
+  /* =========================================================
+     june terminal: real RTT, real status (or an honest "unavailable")
+     ========================================================= */
   const jt = $("#jt"),
     ji = $("#ji");
   const JUNE_CMDS = ["/ping", "/status", "/remind", "/help"];
@@ -543,87 +829,49 @@
     jt.append(d);
     jt.scrollTop = 1e9;
   };
-
-  function formatUptime(seconds) {
-    const d = (seconds / 86400) | 0;
-    const h = ((seconds % 86400) / 3600) | 0;
-    const m = ((seconds % 3600) / 60) | 0;
-    return `${d}d ${h}h ${m}m`;
-  }
-
   async function run(c) {
     out("> " + c, 1);
-    if (!juneHistory.length || juneHistory[juneHistory.length - 1] !== c) {
-      juneHistory.push(c);
-    }
+    if (!juneHistory.length || juneHistory[juneHistory.length - 1] !== c) juneHistory.push(c);
     juneHistIdx = juneHistory.length;
-
     const m = c.match(/^\/remind (\d+)s (.+)/);
     if (m) {
-      out(`reminder set for ${m[1]}s`);
-      setTimeout(() => out("⏰ " + m[2], 1), m[1] * 1e3);
+      const s = Math.min(+m[1], 3600);
+      out(`reminder set for ${s}s`);
+      setTimeout(() => out("⏰ " + m[2], 1), s * 1e3);
     } else if (c === "/ping") {
       const t0 = performance.now();
       try {
-        await fetch("https://worker-round-credit-5733.abyperhaps.workers.dev", {
-          method: "HEAD",
-          mode: "no-cors",
-          cache: "no-store",
-        });
-        const rtt = Math.round(performance.now() - t0);
-        out(`pong · real edge RTT ${rtt}ms`);
+        await fetch(F.API + "/ping", { cache: "no-store" });
+        out(`pong · edge round trip ${Math.round(performance.now() - t0)}ms`);
       } catch {
-        const fallback = (performance.now() - t0).toFixed(1);
-        out(`pong · loopback ${fallback}ms`);
+        out("no pong. can't reach the edge worker from here.");
       }
     } else if (c === "/status") {
-      out("querying bot gateway status...");
-      const t0 = performance.now();
-      try {
-        const ctrl = new AbortController();
-        const timeoutId = setTimeout(() => ctrl.abort(), 4000);
-        const res = await fetch(
-          "https://worker-round-credit-5733.abyperhaps.workers.dev/status",
-          { signal: ctrl.signal },
-        );
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const st = await res.json();
-          const uptime = st.uptimeSec ? formatUptime(st.uptimeSec) : "41d 6h";
-          out(
-            `shard ${st.shard || "0/1"} (${st.state || "healthy"}) · heartbeat ${st.heartbeatMs || 24}ms · uptime ${uptime}`,
-          );
-        } else {
-          out(`gateway response: ${res.status} · fallback to cached telemetry`);
-        }
-      } catch (err) {
-        out(
-          `gateway query: ${err.name === "AbortError" ? "timeout (4s)" : "offline"} · reconnect queue active`,
-        );
+      out("querying status feed…");
+      const r = await F.api("/status", "status", 4000);
+      const d = r && r.data;
+      if (!d || d.state === "unknown") out("status feed unavailable right now.");
+      else {
+        const parts = [];
+        if (d.shard) parts.push(`shard ${d.shard}${d.state ? ` (${d.state})` : ""}`);
+        if (d.heartbeatMs != null) parts.push(`heartbeat ${d.heartbeatMs}ms`);
+        if (d.uptimeSec != null) parts.push(`uptime ${F.uptime(d.uptimeSec)}`);
+        out(parts.join(" · ") + (r.cached ? ` · cached ${F.ago(r.at)}` : ""));
       }
-    } else if (c === "/help") {
-      out("/ping  /status  /remind <n>s <text>");
-    } else {
-      out("unknown command. try /help");
-    }
+    } else if (c === "/help") out("/ping  /status  /remind <n>s <text>");
+    else out("unknown command. try /help");
   }
-
   ji.onkeydown = (e) => {
     if (e.key === "Enter" && ji.value.trim()) {
       run(ji.value.trim());
       ji.value = "";
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if (juneHistory.length && juneHistIdx > 0) {
-        juneHistIdx--;
-        ji.value = juneHistory[juneHistIdx];
-      }
+      if (juneHistory.length && juneHistIdx > 0) ji.value = juneHistory[--juneHistIdx];
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
-      if (juneHistIdx < juneHistory.length - 1) {
-        juneHistIdx++;
-        ji.value = juneHistory[juneHistIdx];
-      } else {
+      if (juneHistIdx < juneHistory.length - 1) ji.value = juneHistory[++juneHistIdx];
+      else {
         juneHistIdx = juneHistory.length;
         ji.value = "";
       }
@@ -631,102 +879,101 @@
       e.preventDefault();
       const val = ji.value.trim();
       const match = JUNE_CMDS.find((cmd) => cmd.startsWith(val));
-      if (match) {
-        ji.value = match + (match === "/remind" ? " 5s " : "");
-      }
+      if (match) ji.value = match + (match === "/remind" ? " 5s " : "");
     }
   };
 
-  /* email copy & toast */
+  /* =========================================================
+     copy email, clock
+     ========================================================= */
   const copyBtn = $("#copyBtn");
-  if (copyBtn) {
-    copyBtn.onclick = async () => {
-      try {
-        await navigator.clipboard.writeText("aby@4ofl.dev");
-        copyBtn.textContent = "copied";
-        copyBtn.classList.add("copied");
-      } catch {
-        location.href = "mailto:aby@4ofl.dev";
-      }
-      setTimeout(() => {
-        copyBtn.textContent = "copy email";
-        copyBtn.classList.remove("copied");
-      }, 1600);
-    };
-  }
+  copyBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText("aby@4ofl.dev");
+      copyBtn.textContent = "copied";
+      copyBtn.classList.add("copied");
+    } catch {
+      location.href = "mailto:aby@4ofl.dev";
+    }
+    setTimeout(() => {
+      copyBtn.textContent = "copy email";
+      copyBtn.classList.remove("copied");
+    }, 1600);
+  };
+  const f = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Kolkata" });
+  const tickClock = () => ($("#clock").textContent = "kerala " + f.format(new Date()) + " IST");
+  tickClock();
+  setInterval(tickClock, 2e4);
 
-  const f = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Asia/Kolkata",
-  });
-  const tick = () =>
-    ($("#clock").textContent = "kerala · " + f.format(new Date()) + " IST");
-  tick();
-  setInterval(tick, 2e4);
-
-  /* command palette */
+  /* =========================================================
+     command palette
+     ========================================================= */
   const pal = $("#pal"),
-    pin = $("#pin"),
+    pin2 = $("#pin-input"),
     pl = $("#plist");
   const CMD = [
     ["work", "#work"],
     ["about", "#about"],
     ["contact", "#contact"],
-    ["citecamp", "https://citecamp.4ofl.dev"],
+    ["case study · citecamp", "/work/citecamp/"],
+    ["case study · johns fitness", "/work/johns-fitness/"],
+    ["case study · june", "/work/june/"],
     ["june docs", "https://docs.june.4ofl.dev"],
     ["github", "https://github.com/4ofl"],
     ["linkedin", "https://linkedin.com/in/abyperhaps"],
     ["discord", "https://discord.com/users/1310480351008657420"],
-    ["copy email", () => copyBtn?.click()],
+    ["copy email", () => copyBtn.click()],
   ];
   let sel = 0,
-    list = CMD;
+    list = CMD,
+    lastFocus = null;
   function paint() {
     pl.innerHTML = "";
     list.forEach(([n, t], i) => {
       const li = document.createElement("li");
       li.className = i === sel ? "on" : "";
-      li.innerHTML = `${n}<span>${typeof t === "string" ? (t[0] === "#" ? "jump" : "open ↗") : "action"}</span>`;
+      const tag = typeof t === "function" ? "action" : t[0] === "#" ? "jump" : t[0] === "/" ? "page" : "open ↗";
+      li.textContent = n;
+      const sp = document.createElement("span");
+      sp.textContent = tag;
+      li.append(sp);
       li.onclick = () => go(i);
       pl.append(li);
     });
   }
   function go(i) {
-    const t = list[i]?.[1];
+    const t = list[i] && list[i][1];
     if (!t) return;
     shut();
-    if (typeof t === "function") {
-      t();
-    } else if (t[0] === "#") {
-      if (lenis) {
-        lenis.scrollTo(t === "#top" ? 0 : t, { offset: 0, duration: 1.15 });
-        history.pushState(null, null, t);
-      } else {
-        location.hash = t;
-      }
-    } else {
-      open(t, "_blank", "noopener");
-    }
+    if (typeof t === "function") t();
+    else if (t[0] === "#") {
+      if (F.lenis) F.lenis.scrollTo(t, { duration: 1.15 });
+      else $(t).scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+      history.pushState(null, "", t);
+    } else if (t[0] === "/") location.href = t;
+    else open(t, "_blank", "noopener");
   }
   function openP() {
+    lastFocus = document.activeElement;
     pal.hidden = false;
-    pin.value = "";
+    pin2.value = "";
     list = CMD;
     sel = 0;
     paint();
-    pin.focus();
+    pin2.focus();
+    F.lenis && F.lenis.stop();
   }
   function shut() {
     pal.hidden = true;
+    F.lenis && F.lenis.start();
+    lastFocus && lastFocus.focus && lastFocus.focus();
   }
   $("#kBtn").onclick = openP;
   pal.onclick = (e) => {
     if (e.target === pal) shut();
   };
-  pin.oninput = () => {
-    const v = pin.value.toLowerCase();
+  pin2.oninput = () => {
+    const v = pin2.value.toLowerCase();
     list = CMD.filter((c) => c[0].includes(v));
     sel = 0;
     paint();
@@ -737,7 +984,7 @@
       pal.hidden ? openP() : shut();
       return;
     }
-    if (pal.hidden) return;
+    if (pal.hidden || !list.length) return;
     if (e.key === "Escape") shut();
     else if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -750,73 +997,23 @@
     } else if (e.key === "Enter") go(sel);
   });
 
-  /* nav scroll-spy */
+  /* =========================================================
+     nav scroll-spy
+     ========================================================= */
   const navLinks = $$("nav.desktop-nav a[href^='#']");
-  const spySections = ["work", "about", "contact"]
-    .map((id) => document.getElementById(id))
-    .filter(Boolean);
+  const spySections = ["work", "about", "contact"].map((id) => document.getElementById(id)).filter(Boolean);
   if ("IntersectionObserver" in window && spySections.length) {
     const spy = new IntersectionObserver(
-      (entries) => {
+      (entries) =>
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            navLinks.forEach((a) => {
-              if (a.getAttribute("href") === "#" + id) {
-                a.classList.add("active");
-              } else {
-                a.classList.remove("active");
-              }
-            });
-          }
-        });
-      },
+          if (entry.isIntersecting)
+            navLinks.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + entry.target.id));
+        }),
       { rootMargin: "-20% 0px -55% 0px" },
     );
     spySections.forEach((s) => spy.observe(s));
-    addEventListener(
-      "scroll",
-      () => {
-        if (window.scrollY < 250) {
-          navLinks.forEach((a) => a.classList.remove("active"));
-        }
-      },
-      { passive: true },
-    );
-  }
-
-  /* lenis momentum smooth scrolling */
-  let lenis = null;
-  if (!reduce && typeof Lenis !== "undefined") {
-    lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      syncTouch: false,
-      autoRaf: false,
-    });
-    function lenisRaf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(lenisRaf);
-    }
-    requestAnimationFrame(lenisRaf);
-
-    lenis.on("scroll", () => {
-      if (window.scrollY < innerHeight) requestFrame();
-    });
-
-    $$('a[href^="#"]').forEach((a) => {
-      a.addEventListener("click", (e) => {
-        const target = a.getAttribute("href");
-        if (target && target.length > 1) {
-          e.preventDefault();
-          lenis.scrollTo(target === "#top" ? 0 : target, {
-            offset: 0,
-            duration: 1.15,
-          });
-          history.pushState(null, null, target);
-        }
-      });
+    F.onScroll((y) => {
+      if (y < 250) navLinks.forEach((a) => a.classList.remove("active"));
     });
   }
 })();

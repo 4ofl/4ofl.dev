@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>citecamp · aby mathew · 4ofl</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="citecamp · a planned RAG assistant over curated university documents." />
+    <link rel="canonical" href="https://4ofl.dev/work/citecamp/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://4ofl.dev/work/citecamp/" />
+    <meta property="og:title" content="citecamp · 4ofl" />
+    <meta property="og:description" content="citecamp · a planned RAG assistant over curated university documents." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+    <noscript><style>.arch .n{opacity:1}.arch path{stroke-dashoffset:0}</style></noscript>
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/#about">about</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/#work">← all work</a>
+        <h1 class="pj-title">citecamp</h1>
+        <p class="sub">A RAG assistant over curated university documents. The goal: every claim ships with its source.</p>
+        <p class="k"><em class="st st-idea">concept</em></p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>facts</span></h2>
+        <dl>
+          <div class="r"><dt>what</dt><dd>retrieval assistant · academic documents</dd></div>
+          <div class="r"><dt>status</dt><dd>concept. only a landing page exists</dd></div>
+          <div class="r"><dt>landing</dt><dd><a href="https://citecamp.4ofl.dev" target="_blank" rel="noopener">citecamp.4ofl.dev ↗</a></dd></div>
+        </dl>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>architecture</span><span>planned, dashed because it isn’t built</span></h2>
+        <svg class="arch pl" viewBox="0 0 960 190" role="img" aria-label="citecamp (planned): documents to clean to chunk to retrieve to answer with sources"><g class="n plan" style="--d:0ms"><rect x="6" y="50" width="150" height="72" rx="10"/><text x="81.0" y="84.0" text-anchor="middle">documents</text><text class="sub" x="81.0" y="100.0" text-anchor="middle">curated only</text></g><path d="M160 86 L202 86" pathLength="1" style="--d:300ms"/><polygon class="n ah" points="206,86 198,81.5 198,90.5" style="--d:1000ms"/><g class="n plan" style="--d:500ms"><rect x="206" y="50" width="150" height="72" rx="10"/><text x="281.0" y="84.0" text-anchor="middle">clean</text><text class="sub" x="281.0" y="100.0" text-anchor="middle">watermark, OCR</text></g><path d="M360 86 L402 86" pathLength="1" style="--d:800ms"/><polygon class="n ah" points="406,86 398,81.5 398,90.5" style="--d:1500ms"/><g class="n plan" style="--d:1000ms"><rect x="406" y="50" width="150" height="72" rx="10"/><text x="481.0" y="84.0" text-anchor="middle">chunk</text><text class="sub" x="481.0" y="100.0" text-anchor="middle">by clause</text></g><path d="M560 86 L602 86" pathLength="1" style="--d:1300ms"/><polygon class="n ah" points="606,86 598,81.5 598,90.5" style="--d:2000ms"/><g class="n plan" style="--d:1500ms"><rect x="606" y="50" width="150" height="72" rx="10"/><text x="681.0" y="84.0" text-anchor="middle">retrieve</text><text class="sub" x="681.0" y="100.0" text-anchor="middle">keep doc ids</text></g><path d="M760 86 L802 86" pathLength="1" style="--d:1800ms"/><polygon class="n ah" points="806,86 798,81.5 798,90.5" style="--d:2500ms"/><g class="n plan" style="--d:2000ms"><rect x="806" y="50" width="150" height="72" rx="10"/><text x="881.0" y="84.0" text-anchor="middle">answer</text><text class="sub" x="881.0" y="100.0" text-anchor="middle">with sources</text></g><text class="note n" x="281" y="160" text-anchor="middle" style="--d:1200ms">pipeline first. this is where it breaks.</text></svg>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>design bet</span></h2>
+        <p class="t">College circulars are watermarked, scanned PDFs, and standard chunkers choke on those. So the data pipeline comes first and the model second: clean the documents, split them where the rules actually split, keep every chunk tied to its document and clause, and only then let a model answer from what was retrieved.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>metrics</span></h2>
+        <p class="t dim">Left empty on purpose.</p>
+        <p class="k dim">none. nothing beyond the landing page is built, so there are no results to show yet.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>next</span></h2>
+        <a class="pj-next" href="/work/june/" data-cursor="open">june</a>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew</span
+      ><span><span id="net-ind" class="ind">online</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>

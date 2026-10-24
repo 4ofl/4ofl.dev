@@ -32,15 +32,35 @@
         "jobTitle": "Software Developer"
       }
     </script>
-    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
-    <link rel="manifest" href="./site.webmanifest" />
-    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
-    <link rel="manifest" href="./site.webmanifest" />
-    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="preload"
+      href="/assets/fonts/bricolage-grotesque.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script>
+      /* intro plays once per session; the failsafe timer can never leave the name hidden */
+      try {
+        if (
+          !sessionStorage.getItem("intro") &&
+          !matchMedia("(prefers-reduced-motion:reduce)").matches &&
+          !location.hash
+        ) {
+          document.documentElement.classList.add("intro");
+          setTimeout(function () {
+            document.documentElement.classList.remove("intro");
+          }, 5000);
+        }
+      } catch (e) {}
+    </script>
+    <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
+    <a class="skip" href="#work">skip to work</a>
     <canvas id="bg" aria-hidden="true"></canvas>
     <header class="bar">
       <div class="bar-inner">
@@ -107,56 +127,64 @@
 
     <main id="top">
       <section class="hero">
-        <h1 id="name" aria-label="aby mathew">aby<br />mathew</h1>
-        <p class="sub">I build things I wish existed.</p>
-        <p class="k dim">bca undergrad · kerala, in</p>
+        <div class="hero-in">
+          <h1 id="name" aria-label="aby mathew">aby<br />mathew</h1>
+          <p class="sub">I build things I wish existed.</p>
+          <p class="k dim">bca undergrad · kerala, in</p>
+        </div>
       </section>
 
       <section id="work">
         <h2 class="k head"><span>selected work</span><span>01</span></h2>
 
-        <article class="row open">
-          <button class="rh" aria-expanded="true">
-            <b>citecamp</b><span>rag · academic ai</span><i></i>
+        <article class="row open" data-slug="citecamp">
+          <button class="rh" aria-expanded="true" data-cursor="close">
+            <b>citecamp</b><span>rag · academic ai</span
+            ><em class="st st-idea">concept</em><i></i>
           </button>
           <div class="rp">
             <div class="pi">
               <div class="copy">
                 <p>
-                  A RAG assistant over curated university documents. Every claim
-                  comes with its source.
+                  A RAG assistant over curated university documents. The goal:
+                  every claim ships with its source.
                 </p>
                 <p class="broke">
-                  <em>what broke:</em> college circulars are watermarked,
-                  scanned PDFs that wreck standard chunkers. The data pipeline
-                  comes first.
+                  <em>design bet:</em> college circulars are watermarked,
+                  scanned PDFs, and standard chunkers choke on those. So the
+                  data pipeline comes first, the model second.
                 </p>
-                <p class="k">
+                <p class="k links2">
+                  <a class="cs" href="/work/citecamp/">case study →</a>
                   <a
                     href="https://citecamp.4ofl.dev"
                     target="_blank"
                     rel="noopener"
-                    >visit citecamp ↗</a
+                    >preview ↗</a
                   >
                 </p>
               </div>
               <div class="demo">
-                <div class="chat" id="ccChat">
-                  <p class="dim">ask something ↓</p>
-                </div>
-                <div class="chips" id="ccChips">
-                  <button>attendance for exams?</button
-                  ><button>get an official transcript?</button
-                  ><button>re-evaluate a paper?</button>
-                </div>
+                <p class="k dim">
+                  planned pipeline · nothing below is running yet
+                </p>
+                <ol class="pipe" id="ccPipe">
+                  <li><button aria-pressed="true" data-n="0">ingest <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="1">clean <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="2">chunk <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="3">retrieve <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="4">answer <i>planned</i></button></li>
+                </ol>
+                <p class="pnote" id="ccNote" aria-live="polite"></p>
               </div>
             </div>
           </div>
         </article>
 
-        <article class="row">
-          <button class="rh" aria-expanded="false">
-            <b>johns fitness</b><span>offline-first · biometrics</span><i></i>
+        <article class="row" data-slug="johns-fitness">
+          <button class="rh" aria-expanded="false" data-cursor="open">
+            <b>johns fitness</b><span>offline-first · biometrics</span
+            ><em class="st st-build">building</em><i></i>
           </button>
           <div class="rp">
             <div class="pi" inert>
@@ -166,11 +194,12 @@
                   Local SQLite first, sync queue second.
                 </p>
                 <p class="broke">
-                  <em>what broke:</em> ISP lines drop in the 6am rush. Waiting
-                  on a cloud webhook strands people outside. Local SQLite handles
-                  verification without waiting on the cloud.
+                  <em>why local-first:</em> ISP lines drop in the 6am rush, and
+                  waiting on a cloud webhook strands people outside. Verifying
+                  on the device means the door never depends on the cloud.
                 </p>
-                <p class="k">
+                <p class="k links2">
+                  <a class="cs" href="/work/johns-fitness/">case study →</a>
                   <a
                     href="https://github.com/4ofl/johnsfitness-edge"
                     target="_blank"
@@ -180,6 +209,7 @@
                 </p>
               </div>
               <div class="demo">
+                <p class="k dim" id="jdb">real sqlite (wasm) · loads on first scan</p>
                 <div class="jtop">
                   <button id="net" class="sw" aria-pressed="true">
                     network online</button
@@ -188,18 +218,20 @@
                 <button
                   id="fp"
                   class="fp"
+                  data-cursor="scan"
                   aria-label="Scan fingerprint"
                 ></button>
-                <p class="k" id="jres">tap the fingerprint</p>
+                <p class="k" id="jres" aria-live="polite">tap the fingerprint</p>
                 <ul class="log" id="jlog"></ul>
               </div>
             </div>
           </div>
         </article>
 
-        <article class="row">
-          <button class="rh" aria-expanded="false">
-            <b>june</b><span>infrastructure · bots</span><i></i>
+        <article class="row" data-slug="june">
+          <button class="rh" aria-expanded="false" data-cursor="open">
+            <b>june</b><span>infrastructure · bots</span
+            ><em class="st st-live">live</em><i></i>
           </button>
           <div class="rp">
             <div class="pi" inert>
@@ -213,7 +245,8 @@
                   connections with no close frame. Built a heartbeat state
                   machine and persistent timer queue.
                 </p>
-                <p class="k">
+                <p class="k links2">
+                  <a class="cs" href="/work/june/">case study →</a>
                   <a
                     href="https://docs.june.4ofl.dev"
                     target="_blank"
@@ -223,7 +256,7 @@
                 </p>
               </div>
               <div class="demo">
-                <div class="term" id="jt">
+                <div class="term" id="jt" aria-live="polite">
                   <div>june is online. try a command.</div>
                 </div>
                 <div class="trow">
@@ -242,34 +275,43 @@
         </article>
       </section>
 
+      <div class="marq" aria-hidden="true">
+        <div class="marq-track" id="marq">
+          <span>local-first</span><span>offline-first</span><span>rag pipelines</span><span>sqlite</span><span>gateways</span><span>no legacy</span>
+          <span>local-first</span><span>offline-first</span><span>rag pipelines</span><span>sqlite</span><span>gateways</span><span>no legacy</span>
+        </div>
+      </div>
+
       <section id="about">
         <h2 class="k head"><span>about</span><span>02</span></h2>
-        <div class="ag">
-          <p class="big">Violently opposed to legacy software.</p>
-          <dl>
-            <dt>based</dt>
-            <dd>kerala, in</dd>
-            <dt>workbench</dt>
-            <dd>Python, C, Node.js, SQLite, Docker, Linux</dd>
-            <dt>focus</dt>
-            <dd>local-first software, RAG pipelines, edge AI</dd>
-            <dt>recent</dt>
-            <dd id="recentPush">
-              active on
-              <a href="https://github.com/4ofl" target="_blank" rel="noopener"
-                >github.com/4ofl ↗</a
-              >
-            </dd>
-          </dl>
+        <div class="pin" id="pin">
+          <div class="pin-in">
+            <div class="ag">
+              <p class="big">Violently opposed to legacy software.</p>
+              <dl id="facts">
+                <div class="r"><dt>based</dt><dd>kerala, in</dd></div>
+                <div class="r"><dt>workbench</dt><dd>Python, C, Node.js, SQLite, Docker, Linux</dd></div>
+                <div class="r"><dt>focus</dt><dd>local-first software, RAG pipelines</dd></div>
+                <div class="r"><dt>exploring</dt><dd>edge AI</dd></div>
+                <div class="r">
+                  <dt>recent</dt>
+                  <dd id="recentPush">
+                    active on
+                    <a href="https://github.com/4ofl" target="_blank" rel="noopener">github.com/4ofl ↗</a>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="contact">
         <h2 class="k head"><span>contact</span><span>03</span></h2>
         <p class="big">Got something worth building, or breaking?</p>
-        <a href="mailto:aby@4ofl.dev" class="mail" id="mail">aby@4ofl.dev</a>
+        <a href="mailto:aby@4ofl.dev" class="mail" id="mail" data-cursor="mail">aby@4ofl.dev</a>
         <p class="k links">
-          <button id="copyBtn" class="link-btn" aria-label="Copy email address to clipboard">copy email</button
+          <button id="copyBtn" class="link-btn" data-cursor="copy" aria-label="Copy email address to clipboard">copy email</button
           ><a href="https://github.com/4ofl" target="_blank" rel="noopener"
             >github ↗</a
           ><a
@@ -285,7 +327,8 @@
           >
         </p>
         <footer class="k dim">
-          <span>© 2026 aby mathew</span><span id="clock"></span>
+          <span>© 2026 aby mathew</span
+          ><span><span id="net-ind" class="ind">online</span> · <span id="clock"></span></span>
         </footer>
       </section>
     </main>
@@ -293,7 +336,7 @@
     <div class="pal" id="pal" hidden>
       <div class="pbox" role="dialog" aria-label="Command palette">
         <input
-          id="pin"
+          id="pin-input"
           placeholder="jump to…"
           autocomplete="off"
           aria-label="Search commands"
@@ -301,7 +344,8 @@
         <ul id="plist"></ul>
       </div>
     </div>
-    <script src="./js/lenis.min.js"></script>
-    <script src="./js/app.js" defer></script>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+    <script src="/js/app.js" defer></script>
   </body>
 </html>
