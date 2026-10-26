@@ -548,37 +548,8 @@
   requestFrame();
 
   /* =========================================================
-     scroll choreography: hero exit, marquee, pinned about
+     scroll choreography: hero exit
      ========================================================= */
-  const marq = $("#marq");
-  let marqX = 0,
-    marqVisible = false,
-    lastY = scrollY,
-    marqVel = 0;
-  if (marq && !reduce) {
-    new IntersectionObserver(
-      (es) => {
-        marqVisible = es[0].isIntersecting;
-        if (marqVisible) requestAnimationFrame(marqTick);
-      },
-      { rootMargin: "100px" },
-    ).observe(marq.parentElement);
-  }
-  function marqTick() {
-    if (!marqVisible) return;
-    const dy = scrollY - lastY;
-    lastY = scrollY;
-    marqVel += (dy - marqVel) * 0.12;
-    marqX -= 0.7 + Math.abs(marqVel) * 0.55;
-    const half = marq.scrollWidth / 2;
-    if (-marqX >= half) marqX += half;
-    marq.style.transform = `translate3d(${marqX}px,0,0) skewX(${clamp(-marqVel * 0.35, -9, 9)}deg)`;
-    requestAnimationFrame(marqTick);
-  }
-
-  const pin = $("#pin");
-  const rows = $$("#facts .r");
-  const wide = matchMedia("(min-width:761px)");
   F.onScroll((y) => {
     heroP = clamp(y / (innerHeight * 0.8));
     heroIn.style.setProperty("--p", heroP.toFixed(3));
@@ -586,13 +557,7 @@
       gridDirty = true;
       requestFrame();
     }
-    if (pin && wide.matches && !reduce) {
-      const r = pin.getBoundingClientRect();
-      const p = clamp((120 - r.top) / Math.max(1, r.height - $(".pin-in").offsetHeight - 120));
-      rows.forEach((row, i) => row.classList.toggle("on", p >= (i / rows.length) * 0.85));
-    }
   });
-  if (pin && wide.matches && !reduce) rows.forEach((r, i) => r.classList.toggle("on", i === 0));
 
   /* =========================================================
      mobile nav

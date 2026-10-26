@@ -7,13 +7,13 @@
     <meta name="theme-color" content="#0b0b0d" />
     <meta
       name="description"
-      content="Aby Mathew · I build things I wish existed."
+      content="Aby Mathew · Violently opposed to legacy software."
     />
     <link rel="canonical" href="https://4ofl.dev/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://4ofl.dev/" />
     <meta property="og:title" content="aby mathew · 4ofl" />
-    <meta property="og:description" content="I build things I wish existed." />
+    <meta property="og:description" content="Violently opposed to legacy software." />
     <meta
       property="og:image"
       content="https://4ofl.dev/assets/social-card.png"
@@ -129,7 +129,7 @@
       <section class="hero">
         <div class="hero-in">
           <h1 id="name" aria-label="aby mathew">aby<br />mathew</h1>
-          <p class="sub">I build things I wish existed.</p>
+          <p class="sub">Violently opposed to legacy software.</p>
           <p class="k dim">bca undergrad · kerala, in</p>
         </div>
       </section>
@@ -137,45 +137,49 @@
       <section id="work">
         <h2 class="k head"><span>selected work</span><span>01</span></h2>
 
-        <article class="row open" data-slug="citecamp">
+        <article class="row open" data-slug="june">
           <button class="rh" aria-expanded="true" data-cursor="close">
-            <b>citecamp</b><span>rag · academic ai</span><em class="st st-idea">concept</em>
+            <b>june</b><span>infrastructure · bots</span><em class="st st-live">live</em>
             <i></i>
           </button>
           <div class="rp">
             <div class="pi">
               <div class="copy">
                 <p>
-                  A RAG assistant over curated university documents. The goal:
-                  every claim ships with its source.
+                  A hardened Discord application with zero C++ database
+                  dependencies, socket-level SSRF pinning, and isolated ReDoS
+                  watchdogs.
                 </p>
                 <p class="broke">
-                  <em>design bet:</em> college circulars are watermarked,
-                  scanned PDFs, and standard chunkers choke on those. So the
-                  data pipeline comes first, the model second.
+                  <em>what broke:</em> Discord drops zombie connections without
+                  close frames, and user URLs risk DNS rebinding. Built a
+                  heartbeat state machine, socket IP pinning, and a 500ms regex
+                  worker thread watchdog.
                 </p>
                 <p class="k links2">
-                  <a class="cs" href="/work/citecamp/">case study →</a>
+                  <a class="cs" href="/work/june/">case study →</a>
                   <a
-                    href="https://citecamp.4ofl.dev"
+                    href="https://docs.june.4ofl.dev"
                     target="_blank"
                     rel="noopener"
-                    >preview ↗</a
+                    >read the docs ↗</a
                   >
                 </p>
               </div>
               <div class="demo">
-                <p class="k dim">
-                  planned pipeline · nothing below is running yet
-                </p>
-                <ol class="pipe" id="ccPipe">
-                  <li><button aria-pressed="true" data-n="0">ingest <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="1">clean <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="2">chunk <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="3">retrieve <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="4">answer <i>planned</i></button></li>
-                </ol>
-                <p class="pnote" id="ccNote" aria-live="polite"></p>
+                <div class="term" id="jt" aria-live="polite">
+                  <div>june is online. try a command.</div>
+                </div>
+                <div class="trow">
+                  <span>&gt;</span
+                  ><input
+                    id="ji"
+                    placeholder="/help /ping /status /remind 5s stretch"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Command"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -183,7 +187,7 @@
 
         <article class="row" data-slug="johns-fitness">
           <button class="rh" aria-expanded="false" data-cursor="open">
-            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">pilot</em>
+            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">prototype</em>
             <i></i>
           </button>
           <div class="rp">
@@ -230,68 +234,57 @@
           </div>
         </article>
 
-        <article class="row" data-slug="june">
+        <article class="row" data-slug="citecamp">
           <button class="rh" aria-expanded="false" data-cursor="open">
-            <b>june</b><span>infrastructure · bots</span><em class="st st-live">live</em>
+            <b>citecamp</b><span>rag · academic ai</span><em class="st st-idea">concept</em>
             <i></i>
           </button>
           <div class="rp">
             <div class="pi" inert>
               <div class="copy">
                 <p>
-                  A hardened Discord application with zero C++ database
-                  dependencies, socket-level SSRF pinning, and isolated ReDoS
-                  watchdogs.
+                  A RAG assistant over curated university documents. The goal:
+                  every claim ships with its source.
                 </p>
                 <p class="broke">
-                  <em>what broke:</em> Discord drops zombie connections without
-                  close frames, and user URLs risk DNS rebinding. Built a
-                  heartbeat state machine, socket IP pinning, and a 500ms regex
-                  worker thread watchdog.
+                  <em>design bet:</em> college circulars are watermarked,
+                  scanned PDFs, and standard chunkers choke on those. So the
+                  data pipeline comes first, the model second.
                 </p>
                 <p class="k links2">
-                  <a class="cs" href="/work/june/">case study →</a>
+                  <a class="cs" href="/work/citecamp/">case study →</a>
                   <a
-                    href="https://docs.june.4ofl.dev"
+                    href="https://citecamp.4ofl.dev"
                     target="_blank"
                     rel="noopener"
-                    >read the docs ↗</a
+                    >preview ↗</a
                   >
                 </p>
               </div>
               <div class="demo">
-                <div class="term" id="jt" aria-live="polite">
-                  <div>june is online. try a command.</div>
-                </div>
-                <div class="trow">
-                  <span>&gt;</span
-                  ><input
-                    id="ji"
-                    placeholder="/help /ping /status /remind 5s stretch"
-                    autocomplete="off"
-                    spellcheck="false"
-                    aria-label="Command"
-                  />
-                </div>
+                <p class="k dim">
+                  planned pipeline · nothing below is running yet
+                </p>
+                <ol class="pipe" id="ccPipe">
+                  <li><button aria-pressed="true" data-n="0">ingest <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="1">clean <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="2">chunk <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="3">retrieve <i>planned</i></button></li>
+                  <li><button aria-pressed="false" data-n="4">answer <i>planned</i></button></li>
+                </ol>
+                <p class="pnote" id="ccNote" aria-live="polite"></p>
               </div>
             </div>
           </div>
         </article>
       </section>
 
-      <div class="marq" aria-hidden="true">
-        <div class="marq-track" id="marq">
-          <span>local-first</span><span>offline-first</span><span>rag pipelines</span><span>sqlite</span><span>gateways</span><span>no legacy</span>
-          <span>local-first</span><span>offline-first</span><span>rag pipelines</span><span>sqlite</span><span>gateways</span><span>no legacy</span>
-        </div>
-      </div>
-
       <section id="about">
         <h2 class="k head"><span>about</span><span>02</span></h2>
         <div class="pin" id="pin">
           <div class="pin-in">
             <div class="ag">
-              <p class="big">Violently opposed to legacy software.</p>
+              <p class="big">BCA undergrad based in Kerala. Spending most of my time building local-first tools, untangling messy data pipelines, and seeing how much compute can stay on the device.</p>
               <dl id="facts">
                 <div class="r"><dt>based</dt><dd>kerala, in</dd></div>
                 <div class="r"><dt>workbench</dt><dd>Python, C, Node.js, SQLite, Docker, Linux</dd></div>

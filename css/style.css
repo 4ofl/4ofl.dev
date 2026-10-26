@@ -913,14 +913,7 @@ html.intro .hero-in > .k {
   font-size: 0.95rem;
 }
 
-/* about: pinned, rows light up with scroll */
-.pin {
-  height: 110svh;
-}
-.pin-in {
-  position: sticky;
-  top: 7.5rem;
-}
+/* about */
 dl {
   grid-template-columns: 1fr;
   gap: 1.1rem;
@@ -929,25 +922,6 @@ dl .r {
   display: grid;
   grid-template-columns: 7rem 1fr;
   gap: 1.5rem;
-  opacity: 0.16;
-  transform: translateX(-0.6rem);
-  transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
-}
-dl .r.on {
-  opacity: 1;
-  transform: none;
-}
-@media (max-width: 760px), (prefers-reduced-motion: reduce) {
-  .pin {
-    height: auto;
-  }
-  .pin-in {
-    position: static;
-  }
-  dl .r {
-    opacity: 1;
-    transform: none;
-  }
 }
 @media (max-width: 760px) {
   dl .r {
@@ -974,33 +948,6 @@ dl .r.on {
   transform: none;
 }
 
-/* marquee */
-.marq {
-  overflow: hidden;
-  padding: 1.2rem 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  margin: 1.5rem 0;
-}
-.marq-track {
-  display: flex;
-  width: max-content;
-  white-space: nowrap;
-  will-change: transform;
-}
-.marq span {
-  font: 600 clamp(3.5rem, 11vw, 9rem) / 1 "Bricolage Grotesque", sans-serif;
-  letter-spacing: -0.05em;
-  color: transparent;
-  -webkit-text-stroke: 1px #edece84d;
-  padding-right: 0.45em;
-}
-.marq span::after {
-  content: "/";
-  color: var(--accent);
-  -webkit-text-stroke: 0;
-  padding-left: 0.45em;
-}
 
 /* floating micro-pill next to native cursor */
 .cur-pill {
