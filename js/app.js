@@ -558,7 +558,7 @@
         ? `PTR ${hover.addr} · ${hover.cm.count} commit${hover.cm.count === 1 ? "" : "s"}${hover.cm.count ? " [0x" + hover.cm.hexVal + "]" : ""}`
         : `PTR ${hover.addr}`;
       const txt2 = isCm
-        ? `${fmtDate(hover.cm.date)} · BUFFER ALLOC`
+        ? `${fmtDate(hover.cm.date)}`
         : `VAL 0x${hover.val} · READ OK`;
 
       g.font = `500 ${10.5 * D}px "JetBrains Mono", monospace`;
