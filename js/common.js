@@ -4,7 +4,7 @@
     $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
   const fine = matchMedia("(hover:hover) and (pointer:fine)").matches;
-  const API = "https://worker-round-credit-5733.abyperhaps.workers.dev";
+  const API = "https://api.4ofl.dev";
   const F = (window.F = { API, reduce, fine, lenis: null, scrollFns: [] });
 
   /* ---------- toast ---------- */

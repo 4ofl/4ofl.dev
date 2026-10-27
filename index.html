@@ -83,7 +83,15 @@
       </div>
     </header>
 
-    <div id="mobileNav" class="mobile-nav" hidden aria-hidden="true">
+    <div
+      id="mobileNav"
+      class="mobile-nav"
+      hidden
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navigation menu"
+    >
       <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
       <div class="mobile-nav-panel">
         <div class="mobile-nav-top">
@@ -331,14 +339,18 @@
     </main>
 
     <div class="pal" id="pal" hidden>
-      <div class="pbox" role="dialog" aria-label="Command palette">
+      <div class="pbox" role="dialog" aria-modal="true" aria-label="Command palette">
         <input
           id="pin-input"
           placeholder="jump to…"
           autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="plist"
           aria-label="Search commands"
         />
-        <ul id="plist"></ul>
+        <ul id="plist" role="listbox" aria-label="Commands"></ul>
       </div>
     </div>
     <script src="/js/lenis.min.js" defer></script>

@@ -164,7 +164,7 @@
               }
             });
             if (cur.length) weeksMap.push(cur);
-            applyCommits({ total: data.total?.lastYear || 1420, weeks: weeksMap }, false);
+            applyCommits({ total: data.total?.lastYear, weeks: weeksMap }, false);
           }
         })
         .catch(() => {});
@@ -193,7 +193,7 @@
       m.height = innerHeight;
       const mc = m.getContext("2d", { willReadFrequently: true });
       const fs = parseFloat(getComputedStyle(name).fontSize);
-      mc.font = `600 ${fs}px "Bricolage Grotesque", sans-serif`;
+      mc.font = `800 ${fs}px "Bricolage Grotesque", sans-serif`;
       mc.textAlign = "center";
       mc.textBaseline = "alphabetic";
       mc.fillStyle = "#fff";
@@ -248,10 +248,11 @@
   addEventListener("wheel", skipIntro, { passive: true });
 
   document.fonts.ready.then(() => {
+    const isIntro = root.classList.contains("intro");
     L.forEach((s) => {
       s.style.fontVariationSettings = '"wght" 800';
       s.style.width = s.getBoundingClientRect().width + "px";
-      s.style.fontVariationSettings = '"wght" 300';
+      if (!isIntro) s.style.fontVariationSettings = '"wght" 300';
     });
     cacheLetters();
     startIntro();
@@ -436,6 +437,16 @@
       }
     }
 
+    // Commit buffer caption in hero
+    if (commMeta && hf > 0.04) {
+      const label = `${commMeta.total ? commMeta.total.toLocaleString() + " " : ""}commits · last ${commMeta.cols}w`;
+      g.font = `${8 * D}px "JetBrains Mono", monospace`;
+      g.textAlign = "right";
+      g.textBaseline = "top";
+      g.fillStyle = `rgba(140, 138, 133, ${0.55 * hf})`;
+      g.fillText(label, commMeta.capX + 11 * D, commMeta.capY + 3 * D);
+    }
+
     // 3. Memory Inspector HUD (Hover Tooltip)
     if (hover) {
       const isCm = Boolean(hover.cm);
@@ -509,6 +520,23 @@
   function updateLetters(now) {
     const sy = scrollY;
     if (sy > innerHeight || !centers.length) return;
+
+    if (intro.on) {
+      const t = now - intro.t0;
+      let introK = 1;
+      if (t >= 1900) {
+        const p = clamp((t - 1900) / 700);
+        introK = 1 - p;
+      }
+      for (let i = 0; i < centers.length; i++) {
+        const it = centers[i];
+        it.curK = introK;
+        it.el.style.fontVariationSettings = `"wght" ${(300 + 500 * introK) | 0}`;
+        it.el.style.color = "";
+      }
+      return;
+    }
+
     const isPointerActive = mx > -900 && now - lastMoveT < 3000;
     const fade = clamp(1 - sy / innerHeight);
     for (let i = 0; i < centers.length; i++) {
@@ -639,21 +667,46 @@
     F.lenis && F.lenis.stop();
     menuCloseBtn.focus();
   }
-  function closeMobileNav() {
+  function closeMobileNav(returnFocus = true) {
+    if (mobileNav.hidden) return;
     mobileNav.hidden = true;
     mobileNav.setAttribute("aria-hidden", "true");
     menuBtn.setAttribute("aria-expanded", "false");
     document.body.style.overflow = "";
     F.lenis && F.lenis.start();
+    if (returnFocus) menuBtn.focus();
   }
   menuBtn.addEventListener("click", openMobileNav);
-  menuCloseBtn.addEventListener("click", closeMobileNav);
-  mobileNavBackdrop.addEventListener("click", closeMobileNav);
+  menuCloseBtn.addEventListener("click", () => closeMobileNav(true));
+  mobileNavBackdrop.addEventListener("click", () => closeMobileNav(true));
   mPalBtn.addEventListener("click", () => {
-    closeMobileNav();
+    closeMobileNav(false);
     openP();
   });
-  $$(".m-link").forEach((a) => a.addEventListener("click", closeMobileNav));
+  $$(".m-link").forEach((a) => a.addEventListener("click", () => closeMobileNav(false)));
+
+  mobileNav.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeMobileNav(true);
+      return;
+    }
+    if (e.key === "Tab") {
+      const focusables = $$("button, [href], input", mobileNav).filter(
+        (el) => !el.hasAttribute("disabled") && el.offsetParent !== null,
+      );
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
 
   /* =========================================================
      last push (cached fallback when offline)
@@ -712,6 +765,23 @@
     if (!m) return;
     const t = $(`.row[data-slug="${m[1]}"] .rh b`);
     if (t) t.style.viewTransitionName = "proj";
+  });
+
+  addEventListener("pagereveal", (e) => {
+    if (!e.viewTransition) return;
+    const fromUrl = e.activation?.from?.url || (window.navigation?.activation?.from?.url) || document.referrer;
+    if (!fromUrl) return;
+    try {
+      const m = new URL(fromUrl).pathname.match(/^\/work\/([^/]+)\/?$/);
+      if (!m) return;
+      const t = $(`.row[data-slug="${m[1]}"] .rh b`);
+      if (t) {
+        t.style.viewTransitionName = "proj";
+        e.viewTransition.finished.finally(() => {
+          t.style.viewTransitionName = "";
+        });
+      }
+    } catch {}
   });
 
   /* =========================================================
@@ -980,6 +1050,9 @@
     pl.innerHTML = "";
     list.forEach(([n, t], i) => {
       const li = document.createElement("li");
+      li.id = "p-opt-" + i;
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", i === sel ? "true" : "false");
       li.className = i === sel ? "on" : "";
       const tag = typeof t === "function" ? "action" : t[0] === "#" ? "jump" : t[0] === "/" ? "page" : "open ↗";
       li.textContent = n;
@@ -989,6 +1062,15 @@
       li.onclick = () => go(i);
       pl.append(li);
     });
+    if (list.length && list[sel]) {
+      pin2.setAttribute("aria-activedescendant", "p-opt-" + sel);
+      const activeEl = document.getElementById("p-opt-" + sel);
+      if (activeEl && typeof activeEl.scrollIntoView === "function") {
+        activeEl.scrollIntoView({ block: "nearest" });
+      }
+    } else {
+      pin2.removeAttribute("aria-activedescendant");
+    }
   }
   function go(i) {
     const t = list[i] && list[i][1];
@@ -1005,6 +1087,7 @@
   function openP() {
     lastFocus = document.activeElement;
     pal.hidden = false;
+    pin2.setAttribute("aria-expanded", "true");
     pin2.value = "";
     list = CMD;
     sel = 0;
@@ -1014,6 +1097,8 @@
   }
   function shut() {
     pal.hidden = true;
+    pin2.setAttribute("aria-expanded", "false");
+    pin2.removeAttribute("aria-activedescendant");
     F.lenis && F.lenis.start();
     lastFocus && lastFocus.focus && lastFocus.focus();
   }
