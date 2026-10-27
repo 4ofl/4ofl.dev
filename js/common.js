@@ -69,7 +69,10 @@
       const t = setTimeout(() => c.abort(), timeout);
       let r;
       try {
-        r = await fetch(API + path, { signal: c.signal });
+        const pCtrl = new AbortController();
+        const pt = setTimeout(() => pCtrl.abort(), 600);
+        r = await fetch(API + path, { signal: pCtrl.signal });
+        clearTimeout(pt);
         if (!r.ok) throw 0;
       } catch {
         r = await fetch("https://worker-round-credit-5733.abyperhaps.workers.dev" + path, { signal: c.signal });

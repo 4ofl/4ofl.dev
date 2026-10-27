@@ -58,6 +58,20 @@
     commStart = 0,
     commMeta = null;
 
+  try {
+    const raw = localStorage.getItem("c:commits");
+    if (raw) {
+      const cached = JSON.parse(raw);
+      if (cached && cached.data && cached.data.weeks) {
+        commits = cached.data;
+        commits.cached = true;
+      }
+    }
+  } catch {}
+  if (commits && !root.classList.contains("intro")) {
+    commStart = performance.now();
+  }
+
   const SEED_BYTES = [
     "00", "00", "..", "00", "4F", "0B", "0D", "..",
     "00", "FF", "C0", "00", "2A", "10", "..", "00",
@@ -101,17 +115,21 @@
   function mapCommits() {
     commMeta = null;
     for (const d of dots) d.cm = null;
-    if (!commits || !commits.weeks || !nCols) return;
+    if (!commits || !commits.weeks || !nCols || !nRows) return;
     const padPx = parseFloat(getComputedStyle(hero).paddingLeft) || 20;
     const maxCols = Math.max(4, Math.min(30, Math.floor((innerWidth - 2 * padPx) / 36)));
     const weeks = commits.weeks.slice(-maxCols);
     const cols = weeks.length;
     const cR = Math.min(nCols - 1, Math.floor((W - padPx * D - startX) / gapX));
-    const c0 = cR - cols + 1;
-    const r0 = Math.max(0, Math.ceil((96 * D - startY) / gapY));
-    if (c0 < 0 || r0 + 8 >= nRows) return;
-    weeks.forEach((wk, i) => {
+    const c0 = Math.max(0, cR - cols + 1);
+    const visibleCols = Math.min(cols, cR - c0 + 1);
+    const visibleWeeks = weeks.slice(-visibleCols);
+    const r0 = Math.max(0, Math.min(Math.max(0, nRows - 7), Math.ceil((96 * D - startY) / gapY)));
+    if (visibleCols <= 0 || r0 >= nRows) return;
+
+    visibleWeeks.forEach((wk, i) => {
       for (const [date, count, wd] of wk) {
+        if (wd >= 7 || r0 + wd >= nRows) continue;
         const d = dots[(r0 + wd) * nCols + (c0 + i)];
         if (d) {
           const hexVal = !count ? ".." : count < 16 ? "0" + count.toString(16).toUpperCase() : count.toString(16).toUpperCase();
@@ -127,17 +145,17 @@
         }
       }
     });
-    const total = weeks.reduce((a, wk) => a + wk.reduce((b, x) => b + x[1], 0), 0);
+    const total = commits.total || visibleWeeks.reduce((a, wk) => a + wk.reduce((b, x) => b + x[1], 0), 0);
     commMeta = {
-      cols,
+      cols: visibleCols,
       total,
       c0,
       cR,
       r0,
-      capX: startX + (c0 + cols - 1) * gapX,
+      capX: startX + (c0 + visibleCols - 1) * gapX,
       capY: startY + (r0 + 7) * gapY,
       startAddr: dots[r0 * nCols + c0]?.addr || "0x0000",
-      endAddr: dots[(r0 + 6) * nCols + (c0 + cols - 1)]?.addr || "0x00D2",
+      endAddr: dots[(r0 + 6) * nCols + (c0 + visibleCols - 1)]?.addr || "0x00D2",
     };
   }
 
@@ -153,10 +171,16 @@
   }
 
   function applyCommits(data, cached) {
+    const hadCommits = Boolean(commits);
     commits = data;
     commits.cached = cached;
     mapCommits();
-    triggerCommitsStart();
+    if (!hadCommits) {
+      triggerCommitsStart();
+    } else {
+      gridDirty = true;
+      requestFrame();
+    }
   }
 
   F.api("/commits", "commits").then((r) => {
@@ -178,7 +202,11 @@
               }
             });
             if (cur.length) weeksMap.push(cur);
-            applyCommits({ total: data.total?.lastYear, weeks: weeksMap }, false);
+            const resData = { total: data.total?.lastYear, weeks: weeksMap };
+            try {
+              localStorage.setItem("c:commits", JSON.stringify({ at: Date.now(), data: resData }));
+            } catch {}
+            applyCommits(resData, false);
           }
         })
         .catch(() => {});
@@ -417,75 +445,78 @@
         }
       }
 
-      // Commit Buffer Cell (Hero top-right) with sequential allocation sweep & crossfade
-      if (dot.cm && hf > 0.001) {
+      // Commit Buffer Cell (Hero top-right) with sequential allocation sweep & scroll conversion
+      if (dot.cm) {
         const cm = dot.cm;
         const dt = now - commStart - cm.t;
-
-        // Has the allocation sweep wave reached this cell yet?
-        if (dt < 0) {
-          // Still unallocated: render as ambient memory cell (quietly waiting in the grid)
-          if (maxK > 0.38) {
-            g.fillStyle = `rgba(212, 116, 85, ${0.12 * maxK})`;
-            g.fillRect(dot.x - 10 * D, dot.y - 7 * D, 20 * D, 14 * D);
-            g.fillStyle = `rgba(212, 116, 85, ${0.3 + 0.7 * maxK})`;
-            g.fillText(dot.val, dot.x, dot.y);
-          } else if (maxK > 0) {
-            g.fillStyle = `rgba(237, 236, 232, ${0.05 + 0.45 * maxK})`;
-            g.fillText(dot.val, dot.x, dot.y);
-          } else {
-            g.fillStyle = "rgba(237, 236, 232, 0.045)";
-            g.fillText(dot.val, dot.x, dot.y);
-          }
-          continue;
-        }
-
-        // The sweep wave has arrived at this cell!
         const allocDur = 300;
-        const a = clamp(dt / allocDur);
-        if (a < 1) hasMotion = true;
-        const k = a * hf;
 
-        // Base ambient memory cell softly fades out as commits allocate in:
-        const ambAlpha = (1 - k) * (maxK > 0 ? (0.05 + 0.45 * maxK) : 0.045);
-        if (ambAlpha > 0.003) {
-          g.fillStyle = maxK > 0.38
-            ? `rgba(212, 116, 85, ${0.3 + 0.7 * maxK})`
-            : `rgba(237, 236, 232, ${ambAlpha})`;
-          g.fillText(dot.val, dot.x, dot.y);
+        // Allocation sweep progress: 0 before wave arrives, 1 when fully allocated
+        let a = 1;
+        if (dt < 0) {
+          a = 0;
+          hasMotion = true; // Wave is coming, keep frame loop active!
+        } else if (dt < allocDur) {
+          a = clamp(dt / allocDur);
+          hasMotion = true; // Wave is sweeping this cell!
         }
 
         // Phosphor allocation pulse during first 45% of arrival:
-        const pulse = a < 0.45 ? Math.sin((a / 0.45) * Math.PI) : 0;
+        const pulse = (a > 0 && a < 0.45) ? Math.sin((a / 0.45) * Math.PI) : 0;
 
-        // Commit overlay visuals
-        if (cm.count > 0) {
-          const baseBoxAlpha = (0.2 + cm.level * 0.16 + maxK * 0.28) * k;
+        // Flip threshold for converting between commit hex and background raw hex:
+        // Micro-stagger between 0.38 and 0.62 creates a digital memory decoding ripple across cells
+        const flipHf = 0.5 + (((cm.col * 7 + cm.row * 13) % 11) - 5) * 0.024;
+        const isCommitMode = a > 0.25 && hf >= flipHf;
+
+        // Which character to display:
+        // In hero / allocated: show commit hex value (or ".." for 0 commits)
+        // When scrolled down / unallocated: show the underlying background hex character (dot.val)
+        const displayVal = isCommitMode
+          ? (cm.count > 0 ? cm.hexVal : "..")
+          : dot.val;
+
+        // Orange commit heatmap box & border:
+        if (cm.count > 0 && a > 0 && hf > 0.02) {
+          const fadeHf = Math.pow(hf, 1.4);
+          const baseBoxAlpha = (0.2 + cm.level * 0.16) * a * fadeHf + maxK * 0.28 * hf;
           const boxAlpha = Math.min(0.92, baseBoxAlpha + pulse * 0.36);
-          if (boxAlpha > 0.005) {
+          if (boxAlpha > 0.01) {
             g.fillStyle = `rgba(212, 116, 85, ${boxAlpha})`;
             g.fillRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
 
-            if (cm.level >= 3 || maxK > 0.35 || pulse > 0.1) {
-              const borderAlpha = Math.min(0.85, 0.45 * k + pulse * 0.5);
-              g.strokeStyle = pulse > 0.3 ? `rgba(255, 235, 220, ${borderAlpha})` : `rgba(212, 116, 85, ${borderAlpha})`;
-              g.lineWidth = D;
-              g.strokeRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+            if (cm.level >= 3 || pulse > 0.1 || maxK > 0.35) {
+              const borderAlpha = Math.min(0.85, (0.45 * a * fadeHf) + pulse * 0.5);
+              if (borderAlpha > 0.01) {
+                g.strokeStyle = pulse > 0.3 ? `rgba(255, 235, 220, ${borderAlpha})` : `rgba(212, 116, 85, ${borderAlpha})`;
+                g.lineWidth = D;
+                g.strokeRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+              }
             }
-
-            g.fillStyle = (cm.level >= 3 || pulse > 0.35)
-              ? "#edece8"
-              : `rgba(237, 236, 232, ${(0.68 + cm.level * 0.08) * k})`;
-            g.fillText(cm.hexVal, dot.x, dot.y);
-          }
-        } else {
-          // Zero commits: subtle pulse then settle to ".."
-          const dotAlpha = (0.05 + 0.22 * maxK) * k + pulse * 0.18;
-          if (dotAlpha > 0.005) {
-            g.fillStyle = `rgba(237, 236, 232, ${dotAlpha})`;
-            g.fillText("..", dot.x, dot.y);
           }
         }
+
+        // Ambient hover box if hovered when unallocated or fully scrolled out:
+        if (maxK > 0.38 && (!isCommitMode || cm.count === 0)) {
+          g.fillStyle = `rgba(212, 116, 85, ${0.12 * maxK})`;
+          g.fillRect(dot.x - 10 * D, dot.y - 7 * D, 20 * D, 14 * D);
+        }
+
+        // Text alpha calculation:
+        // Peak brightness in hero: 0.95 for level 3/4, 0.72-0.88 for level 1/2, 0.22 for zero commits.
+        // Ambient background brightness: 0.045 (or up to 0.5 on hover).
+        // Smoothly blends from peak brightness down to ambient grey as user scrolls (hf: 1 -> 0).
+        const peakAlpha = cm.count > 0 ? (cm.level >= 3 ? 0.95 : 0.72 + cm.level * 0.08) : 0.22;
+        const ambAlpha = maxK > 0 ? (0.05 + 0.45 * maxK) : 0.045;
+        const blend = a * Math.pow(hf, 1.2);
+        const textAlpha = clamp(ambAlpha + (peakAlpha - ambAlpha) * blend + pulse * 0.35, 0.045, 1.0);
+
+        if (maxK > 0.38) {
+          g.fillStyle = `rgba(212, 116, 85, ${0.3 + 0.7 * maxK})`;
+        } else {
+          g.fillStyle = `rgba(237, 236, 232, ${textAlpha})`;
+        }
+        g.fillText(displayVal, dot.x, dot.y);
         continue;
       }
 
@@ -507,8 +538,8 @@
     // Commit buffer caption in hero (fades in smoothly as the sweep reaches the right edge)
     if (commMeta && hf > 0.01) {
       const sweepEnd = commMeta.cols * 20 + 160;
+      if (now - commStart < sweepEnd + 320) hasMotion = true;
       const capIn = clamp((now - commStart - sweepEnd) / 320);
-      if (capIn < 1 && now > commStart) hasMotion = true;
       const capAlpha = 0.85 * hf * capIn;
       if (capAlpha > 0.01) {
         const label = `${commMeta.total ? commMeta.total.toLocaleString() + " " : ""}commits · last ${commMeta.cols}w`;
@@ -522,7 +553,7 @@
 
     // 3. Memory Inspector HUD (Hover Tooltip)
     if (hover) {
-      const isCm = Boolean(hover.cm && hf > 0.2 && now - commStart - hover.cm.t >= 0);
+      const isCm = Boolean(hover.cm && hf > 0.4 && now - commStart - hover.cm.t >= 0);
       const txt1 = isCm
         ? `PTR ${hover.addr} · ${hover.cm.count} commit${hover.cm.count === 1 ? "" : "s"}${hover.cm.count ? " [0x" + hover.cm.hexVal + "]" : ""}`
         : `PTR ${hover.addr}`;
