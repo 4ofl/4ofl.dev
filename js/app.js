@@ -40,7 +40,8 @@
   }
 
   /* =========================================================
-     dot grid = canvas background. springs, ripples, commit data, intro
+     Memory Buffer / Hex Dump Grid = canvas background
+     Memory registers, hex offsets, real commit buffer, read-head physics
      ========================================================= */
   const cv = $("#bg"),
     g = cv.getContext("2d");
@@ -48,7 +49,8 @@
   let dots = [],
     nCols = 0,
     nRows = 0,
-    gap = 34,
+    gapX = 36,
+    gapY = 32,
     startX = 0,
     startY = 0;
   let gridDirty = true;
@@ -56,19 +58,32 @@
     commStart = 0,
     commMeta = null;
 
+  const SEED_BYTES = [
+    "00", "00", "..", "00", "4F", "0B", "0D", "..",
+    "00", "FF", "C0", "00", "2A", "10", "..", "00",
+    "7E", "01", "8C", "00", "ED", "EC", "E8", "..",
+    "00", "5A", "..", "3E", "00", "B4", "02", "00",
+  ];
+
   function initGrid() {
     dots = [];
-    gap = 34 * D;
-    startX = (W % gap) / 2 || gap / 2;
-    startY = (H % gap) / 2 || gap / 2;
+    gapX = (innerWidth > 768 ? 36 : 32) * D;
+    gapY = (innerWidth > 768 ? 32 : 28) * D;
+    startX = (W % gapX) / 2 || gapX / 2;
+    startY = (H % gapY) / 2 || gapY / 2;
     nCols = 0;
     nRows = 0;
-    for (let y = startY; y < H; y += gap) {
+    for (let y = startY; y < H; y += gapY) {
       nRows++;
       nCols = 0;
-      for (let x = startX; x < W; x += gap) {
+      for (let x = startX; x < W; x += gapX) {
         nCols++;
-        dots.push({ ox: x, oy: y, x, y, vx: 0, vy: 0, cm: null });
+        const row = nRows - 1;
+        const col = nCols - 1;
+        const val = SEED_BYTES[((row * 13 + col * 7) ^ (row * 3)) % SEED_BYTES.length];
+        const addrNum = (row * 32 + col) * 4;
+        const addr = "0x" + addrNum.toString(16).toUpperCase().padStart(4, "0");
+        dots.push({ ox: x, oy: y, x, y, vx: 0, vy: 0, val, addr, cm: null, row, col });
       }
     }
     mapCommits();
@@ -82,41 +97,77 @@
   };
   size();
 
-  /* commit data: the last ~26 weeks sit in the top-right of the grid */
+  /* commit data: mapped as an allocated memory buffer in top-right */
   function mapCommits() {
     commMeta = null;
     for (const d of dots) d.cm = null;
     if (!commits || !commits.weeks || !nCols) return;
     const padPx = parseFloat(getComputedStyle(hero).paddingLeft) || 20;
-    const maxCols = Math.max(4, Math.min(26, Math.floor((innerWidth - 2 * padPx) / 34)));
+    const maxCols = Math.max(4, Math.min(30, Math.floor((innerWidth - 2 * padPx) / 36)));
     const weeks = commits.weeks.slice(-maxCols);
     const cols = weeks.length;
-    const cR = Math.min(nCols - 1, Math.floor((W - padPx * D - startX) / gap));
+    const cR = Math.min(nCols - 1, Math.floor((W - padPx * D - startX) / gapX));
     const c0 = cR - cols + 1;
-    const r0 = Math.max(0, Math.ceil((96 * D - startY) / gap));
+    const r0 = Math.max(0, Math.ceil((96 * D - startY) / gapY));
     if (c0 < 0 || r0 + 8 >= nRows) return;
     weeks.forEach((wk, i) => {
       for (const [date, count, wd] of wk) {
         const d = dots[(r0 + wd) * nCols + (c0 + i)];
-        if (d) d.cm = { date, count, t: i * 28 };
+        if (d) {
+          const hexVal = !count ? ".." : count < 16 ? "0" + count.toString(16).toUpperCase() : count.toString(16).toUpperCase();
+          d.cm = {
+            date,
+            count: count || 0,
+            hexVal,
+            t: i * 24,
+            level: !count ? 0 : count <= 2 ? 1 : count <= 5 ? 2 : count <= 9 ? 3 : 4,
+          };
+        }
       }
     });
     const total = weeks.reduce((a, wk) => a + wk.reduce((b, x) => b + x[1], 0), 0);
     commMeta = {
       cols,
       total,
-      capX: startX + (c0 + cols - 1) * gap,
-      capY: startY + (r0 + 7) * gap,
+      capX: startX + (c0 + cols - 1) * gapX,
+      capY: startY + (r0 + 7) * gapY,
+      startAddr: dots[r0 * nCols + c0]?.addr || "0x0000",
+      endAddr: dots[(r0 + 6) * nCols + (c0 + cols - 1)]?.addr || "0x00D2",
     };
   }
+
+  function applyCommits(data, cached) {
+    commits = data;
+    commits.cached = cached;
+    commStart = performance.now();
+    mapCommits();
+    gridDirty = true;
+    requestFrame();
+  }
+
   F.api("/commits", "commits").then((r) => {
     if (r && r.data && r.data.weeks) {
-      commits = r.data;
-      commits.cached = r.cached;
-      commStart = performance.now();
-      mapCommits();
-      gridDirty = true;
-      requestFrame();
+      applyCommits(r.data, r.cached);
+    } else {
+      fetch("https://github-contributions-api.jogruber.de/v4/4ofl?y=last")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.contributions) {
+            const weeksMap = [];
+            let cur = [];
+            data.contributions.slice(-210).forEach((c) => {
+              const wd = new Date(c.date + "T00:00:00Z").getUTCDay();
+              cur.push([c.date, c.count, wd]);
+              if (cur.length === 7) {
+                weeksMap.push(cur);
+                cur = [];
+              }
+            });
+            if (cur.length) weeksMap.push(cur);
+            applyCommits({ total: data.total?.lastYear || 1420, weeks: weeksMap }, false);
+          }
+        })
+        .catch(() => {});
     }
   });
 
@@ -241,9 +292,8 @@
 
   function stepGrid(now) {
     g.clearRect(0, 0, W, H);
-    const radius = 1 * D;
     const twoPi = 6.2831853;
-    const hoverDist = 220;
+    const hoverDist = 180 * D;
     const cursorRadius = 125 * D;
     const spring = 0.082;
     const damping = 0.84;
@@ -267,7 +317,7 @@
         const dy = dot.y - targetMy;
         const dist = Math.hypot(dx, dy);
         if (dist < cursorRadius && dist > 0.1) {
-          const force = (1 - dist / cursorRadius) * 4.6 * D;
+          const force = (1 - dist / cursorRadius) * 4.4 * D;
           dot.vx += (dx / dist) * force;
           dot.vy += (dy / dist) * force;
           dot.vx += curVx * 0.1 * (1 - dist / cursorRadius) * D;
@@ -280,7 +330,7 @@
         const rdy = dot.y - rip.y;
         const dDot = Math.hypot(rdx, rdy);
         const waveDist = Math.abs(dDot - rip.r);
-        const waveWidth = 44 * D;
+        const waveWidth = 46 * D;
         if (waveDist < waveWidth && dDot > 0.1) {
           const push = (1 - waveDist / waveWidth) * rip.life * 2.8 * D;
           dot.vx += (rdx / dDot) * push;
@@ -302,12 +352,25 @@
     curVx *= 0.65;
     curVy *= 0.65;
 
-    g.fillStyle = "rgba(255,255,255,.09)";
-    g.beginPath();
-    const active = [];
-    const commitDots = [];
-    let hover = null,
-      hoverD = 18 * D;
+    // 1. Left-edge Memory Address Gutter
+    if (dots.length > 0) {
+      g.font = `${7.5 * D}px "JetBrains Mono", monospace`;
+      g.textAlign = "left";
+      g.textBaseline = "middle";
+      g.fillStyle = "rgba(140, 138, 133, 0.14)";
+      for (let r = 0; r < nRows; r += 3) {
+        const d = dots[r * nCols];
+        if (d) g.fillText(d.addr + ":", 12 * D, d.y);
+      }
+    }
+
+    // 2. Render Memory Cells (Hex Dump & Commits)
+    g.font = `${8.5 * D}px "JetBrains Mono", monospace`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+
+    let hover = null;
+    let hoverD = 20 * D;
 
     for (let i = 0; i < dots.length; i++) {
       const dot = dots[i];
@@ -315,6 +378,10 @@
       if (mx > -900) {
         const dc = Math.hypot(dot.x / D - mx, dot.y / D - my);
         if (dc < hoverDist) maxK = Math.max(maxK, 1 - dc / hoverDist);
+        if (dc * D < hoverD) {
+          hoverD = dc * D;
+          hover = dot;
+        }
       }
       for (let r = 0; r < ripples.length; r++) {
         const rip = ripples[r];
@@ -323,97 +390,94 @@
         const waveWidth = 46 * D;
         if (waveDist < waveWidth) {
           const intensity = (1 - waveDist / waveWidth) * rip.life;
-          if (intensity > maxK) maxK = intensity;
+          if (intensity > maxK) maxK = Math.max(maxK, intensity);
         }
       }
-      const stretch = Math.hypot(dot.x - dot.ox, dot.y - dot.oy);
-      if (stretch > 2.5 * D) {
-        const sk = Math.min(0.7, stretch / (16 * D));
-        if (sk > maxK) maxK = sk;
-      }
+
+      // Commit Buffer Cell (Hero top-right)
       if (dot.cm && hf > 0.02) {
-        commitDots.push(dot);
-        if (mx > -900 && hf > 0.3) {
-          const dd = Math.hypot(dot.x - targetMx, dot.y - targetMy);
-          if (dd < hoverD) {
-            hoverD = dd;
-            hover = dot;
-          }
-        }
-      }
-      if (maxK > 0) {
-        active.push({ x: dot.x, y: dot.y, k: maxK });
-      } else {
-        g.moveTo(dot.x + radius, dot.y);
-        g.arc(dot.x, dot.y, radius, 0, twoPi);
-      }
-    }
-    g.fill();
-
-    for (let i = 0; i < active.length; i++) {
-      const dot = active[i];
-      g.fillStyle = `rgba(212,116,85,${0.2 + 0.8 * dot.k})`;
-      g.beginPath();
-      g.arc(dot.x, dot.y, (1 + 2.5 * dot.k) * D, 0, twoPi);
-      g.fill();
-    }
-
-    /* commit overlay */
-    if (commitDots.length) {
-      let animating = false;
-      for (const dot of commitDots) {
         const cm = dot.cm;
-        const a = clamp((now - commStart - cm.t) / 420);
-        if (a < 1) animating = true;
+        const a = clamp((now - commStart - cm.t) / 380);
+        if (a < 1) hasMotion = true;
         const k = a * hf;
-        if (!cm.count) {
-          g.fillStyle = `rgba(255,255,255,${0.1 * k})`;
-          g.beginPath();
-          g.arc(dot.x, dot.y, 1.3 * D, 0, twoPi);
-          g.fill();
-          continue;
+
+        if (cm.count > 0) {
+          const boxAlpha = (0.2 + cm.level * 0.16 + maxK * 0.28) * k;
+          g.fillStyle = `rgba(212, 116, 85, ${boxAlpha})`;
+          g.fillRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+
+          if (cm.level >= 3 || maxK > 0.35) {
+            g.strokeStyle = `rgba(212, 116, 85, ${0.45 * k})`;
+            g.lineWidth = D;
+            g.strokeRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+          }
+
+          g.fillStyle = cm.level >= 3 ? "#edece8" : `rgba(237, 236, 232, ${(0.68 + cm.level * 0.08) * k})`;
+          g.fillText(cm.hexVal, dot.x, dot.y);
+        } else {
+          g.fillStyle = `rgba(237, 236, 232, ${(0.05 + 0.22 * maxK) * k})`;
+          g.fillText("..", dot.x, dot.y);
         }
-        const lv = cm.count <= 2 ? 1 : cm.count <= 5 ? 2 : cm.count <= 9 ? 3 : 4;
-        g.fillStyle = `rgba(212,116,85,${(0.3 + 0.7 * (lv / 4)) * k})`;
-        g.beginPath();
-        g.arc(dot.x, dot.y, (1.4 + lv * 0.55) * D, 0, twoPi);
-        g.fill();
+        continue;
       }
-      if (animating) hasMotion = true;
-      if (commMeta && hf > 0.05) {
-        g.font = `${10.5 * D}px "JetBrains Mono", monospace`;
-        g.textAlign = "right";
-        g.fillStyle = `rgba(140,138,133,${0.9 * hf})`;
-        g.fillText(
-          `${commMeta.total} commits · last ${commMeta.cols} weeks${commits && commits.cached ? " · cached" : ""}`,
-          commMeta.capX + 4 * D,
-          commMeta.capY,
-        );
-      }
-      if (hover) {
-        const cm = hover.cm;
-        const txt = `${cm.count} commit${cm.count === 1 ? "" : "s"} · ${fmtDate(cm.date)}`;
-        g.font = `${11 * D}px "JetBrains Mono", monospace`;
-        const tw = g.measureText(txt).width + 16 * D;
-        const th = 24 * D;
-        let bx = hover.x - tw / 2;
-        bx = Math.min(W - tw - 8 * D, Math.max(8 * D, bx));
-        const by = hover.y + 16 * D;
-        g.fillStyle = "#141417";
-        g.strokeStyle = "rgba(255,255,255,.14)";
-        g.lineWidth = D;
-        g.beginPath();
-        if (g.roundRect) g.roundRect(bx, by, tw, th, 6 * D);
-        else g.rect(bx, by, tw, th);
-        g.fill();
-        g.stroke();
-        g.fillStyle = "#edece8";
-        g.textAlign = "left";
-        g.fillText(txt, bx + 8 * D, by + 16 * D);
+
+      // Ambient Memory Cells
+      if (maxK > 0.38) {
+        g.fillStyle = `rgba(212, 116, 85, ${0.12 * maxK})`;
+        g.fillRect(dot.x - 10 * D, dot.y - 7 * D, 20 * D, 14 * D);
+        g.fillStyle = `rgba(212, 116, 85, ${0.3 + 0.7 * maxK})`;
+        g.fillText(dot.val, dot.x, dot.y);
+      } else if (maxK > 0) {
+        g.fillStyle = `rgba(237, 236, 232, ${0.05 + 0.45 * maxK})`;
+        g.fillText(dot.val, dot.x, dot.y);
+      } else {
+        g.fillStyle = "rgba(237, 236, 232, 0.045)";
+        g.fillText(dot.val, dot.x, dot.y);
       }
     }
 
-    /* intro: the grid becomes the name */
+    // 3. Memory Inspector HUD (Hover Tooltip)
+    if (hover) {
+      const isCm = Boolean(hover.cm);
+      const txt1 = isCm
+        ? `PTR ${hover.addr} · ${hover.cm.count} commit${hover.cm.count === 1 ? "" : "s"}${hover.cm.count ? " [0x" + hover.cm.hexVal + "]" : ""}`
+        : `PTR ${hover.addr}`;
+      const txt2 = isCm
+        ? `${fmtDate(hover.cm.date)} · BUFFER ALLOC`
+        : `VAL 0x${hover.val} · READ OK`;
+
+      g.font = `500 ${10.5 * D}px "JetBrains Mono", monospace`;
+      const w1 = g.measureText(txt1).width;
+      g.font = `${9 * D}px "JetBrains Mono", monospace`;
+      const w2 = g.measureText(txt2).width;
+      const tw = Math.max(w1, w2) + 20 * D;
+      const th = 34 * D;
+
+      let bx = hover.x - tw / 2;
+      bx = Math.min(W - tw - 12 * D, Math.max(12 * D, bx));
+      const by = hover.y - th - 12 * D > 10 * D ? hover.y - th - 12 * D : hover.y + 16 * D;
+
+      g.fillStyle = "rgba(16, 16, 20, 0.94)";
+      g.strokeStyle = isCm && hover.cm.count ? "rgba(212, 116, 85, 0.55)" : "rgba(255, 255, 255, 0.16)";
+      g.lineWidth = D;
+      g.beginPath();
+      if (g.roundRect) g.roundRect(bx, by, tw, th, 4 * D);
+      else g.rect(bx, by, tw, th);
+      g.fill();
+      g.stroke();
+
+      g.textAlign = "left";
+      g.textBaseline = "alphabetic";
+      g.font = `500 ${10 * D}px "JetBrains Mono", monospace`;
+      g.fillStyle = "#edece8";
+      g.fillText(txt1, bx + 10 * D, by + 14 * D);
+
+      g.font = `${8.5 * D}px "JetBrains Mono", monospace`;
+      g.fillStyle = isCm && hover.cm.count ? "rgba(212, 116, 85, 0.85)" : "rgba(140, 138, 133, 0.85)";
+      g.fillText(txt2, bx + 10 * D, by + 26 * D);
+    }
+
+    // 5. Intro: Memory bits assemble the name
     if (intro.on) {
       const t = now - intro.t0;
       if (t > 1900 && !intro.revealed) {

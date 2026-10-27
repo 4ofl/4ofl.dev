@@ -1,7 +1,7 @@
 /* 4ofl.dev service worker: the site keeps working offline.
    html: network first (4s), then cache. assets: cache first, refreshed in the background.
    bump V when you want every visitor's cache dropped. */
-const V = "4ofl-v1";
+const V = "4ofl-v3";
 const CORE = [
   "/",
   "/work/citecamp/",
