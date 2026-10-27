@@ -1,7 +1,7 @@
 /* 4ofl.dev service worker: the site keeps working offline.
    html: network first (4s), then cache. assets: cache first, refreshed in the background.
    bump V when you want every visitor's cache dropped. */
-const V = "4ofl-v8";
+const V = "4ofl-v11";
 const CORE = [
   "/",
   "/work/citecamp/",
@@ -47,6 +47,12 @@ self.addEventListener("fetch", (e) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return; // worker api etc. go straight to the network
+
+  const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  if (isLocal) {
+    e.respondWith(fetch(req).catch(() => caches.match(req)));
+    return;
+  }
 
   if (req.mode === "navigate") {
     e.respondWith(

@@ -339,18 +339,31 @@
     </main>
 
     <div class="pal" id="pal" hidden>
-      <div class="pbox" role="dialog" aria-modal="true" aria-label="Command palette">
-        <input
-          id="pin-input"
-          placeholder="jump to…"
-          autocomplete="off"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded="false"
-          aria-controls="plist"
-          aria-label="Search commands"
-        />
-        <ul id="plist" role="listbox" aria-label="Commands"></ul>
+      <div class="pal-backdrop" id="palBackdrop"></div>
+      <div class="pbox" role="dialog" aria-modal="true" aria-label="Spotlight search">
+        <div class="p-head">
+          <svg class="p-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            id="pin-input"
+            placeholder="Search commands, projects, sections…"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="plist"
+            aria-label="Spotlight search"
+          />
+          <kbd class="p-esc" id="palCloseKbd" aria-label="Close">esc</kbd>
+        </div>
+        <div class="p-body">
+          <ul id="plist" role="listbox" aria-label="Commands"></ul>
+          <div id="pEmpty" class="p-empty" hidden>
+            <span class="p-empty-text">no matching results</span>
+          </div>
+        </div>
       </div>
     </div>
     <script src="/js/lenis.min.js" defer></script>

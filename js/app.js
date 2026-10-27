@@ -1129,44 +1129,214 @@
   setInterval(tickClock, 2e4);
 
   /* =========================================================
-     command palette
+     spotlight command palette
      ========================================================= */
   const pal = $("#pal"),
+    palBackdrop = $("#palBackdrop"),
+    palCloseKbd = $("#palCloseKbd"),
     pin2 = $("#pin-input"),
-    pl = $("#plist");
+    pl = $("#plist"),
+    pEmpty = $("#pEmpty");
+
   const CMD = [
-    ["work", "#work"],
-    ["about", "#about"],
-    ["contact", "#contact"],
-    ["case study · citecamp", "/work/citecamp/"],
-    ["case study · johns fitness", "/work/johns-fitness/"],
-    ["case study · june", "/work/june/"],
-    ["june docs", "https://docs.june.4ofl.dev"],
-    ["github", "https://github.com/4ofl"],
-    ["linkedin", "https://linkedin.com/in/abyperhaps"],
-    ["discord", "https://discord.com/users/1310480351008657420"],
-    ["copy email", () => copyBtn.click()],
+    // SECTIONS
+    {
+      group: "Sections",
+      name: "work",
+      desc: "Selected engineering projects & interactive demos",
+      target: "#work",
+      tag: "section",
+      keywords: ["work", "projects", "portfolio", "demos", "01"],
+    },
+    {
+      group: "Sections",
+      name: "about",
+      desc: "Background, technical workbench, and focus areas",
+      target: "#about",
+      tag: "section",
+      keywords: ["about", "bio", "skills", "kerala", "undergrad", "workbench", "02"],
+    },
+    {
+      group: "Sections",
+      name: "contact",
+      desc: "Email address, availability, and social links",
+      target: "#contact",
+      tag: "section",
+      keywords: ["contact", "email", "reach", "hire", "talk", "03"],
+    },
+
+    // PROJECTS
+    {
+      group: "Projects",
+      name: "june",
+      desc: "Hardened Discord bot · node:sqlite · socket IP pinning",
+      target: "/work/june/",
+      tag: "case study",
+      keywords: ["june", "discord", "bot", "sqlite", "ssrf", "redos", "watchdog"],
+    },
+    {
+      group: "Projects",
+      name: "johns fitness",
+      desc: "Offline-first access control · BioMax DSP · 1,405 members",
+      target: "/work/johns-fitness/",
+      tag: "case study",
+      keywords: ["johns", "fitness", "gym", "biometric", "biomax", "sqlite", "wasm", "wal", "offline"],
+    },
+    {
+      group: "Projects",
+      name: "citecamp",
+      desc: "RAG assistant over watermarked academic circulars",
+      target: "/work/citecamp/",
+      tag: "case study",
+      keywords: ["citecamp", "rag", "academic", "ai", "chunker", "pdf", "retrieval"],
+    },
+
+    // ACTIONS
+    {
+      group: "Actions",
+      name: "copy email",
+      desc: "Copy aby@4ofl.dev directly to clipboard",
+      target: () => copyBtn.click(),
+      tag: "action",
+      keywords: ["email", "copy", "mail", "contact", "address", "aby@4ofl.dev"],
+    },
+    {
+      group: "Actions",
+      name: "simulate biometric scan",
+      desc: "Trigger simulated fingerprint scan in Johns Fitness demo",
+      target: () => {
+        const row = document.querySelector('.row[data-slug="johns-fitness"]');
+        if (row && !row.classList.contains("open")) {
+          const btn = $(".rh", row);
+          btn && btn.click();
+        }
+        setTimeout(() => {
+          const fp = $("#fp");
+          fp && fp.click();
+        }, 280);
+        if (F.lenis) F.lenis.scrollTo("#work", { duration: 1.0 });
+        else document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
+      },
+      tag: "action",
+      keywords: ["scan", "biometric", "fingerprint", "johns", "demo", "simulate", "relay"],
+    },
+    {
+      group: "Actions",
+      name: "ping edge worker",
+      desc: "Test round-trip latency to Cloudflare worker",
+      target: async () => {
+        const t0 = performance.now();
+        const ok = await F.up("https://worker-round-credit-5733.abyperhaps.workers.dev/ping", 2500);
+        const ms = (performance.now() - t0) | 0;
+        F.toast(ok ? `<b>pong.</b> edge worker latency: ${ms}ms` : "worker ping timed out", 3500);
+      },
+      tag: "action",
+      keywords: ["ping", "latency", "edge", "worker", "status", "api", "health"],
+    },
+
+    // CONNECT
+    {
+      group: "Links",
+      name: "github",
+      desc: "github.com/4ofl",
+      target: "https://github.com/4ofl",
+      tag: "external",
+      keywords: ["github", "source", "code", "repos", "4ofl"],
+    },
+    {
+      group: "Links",
+      name: "june docs",
+      desc: "docs.june.4ofl.dev",
+      target: "https://docs.june.4ofl.dev",
+      tag: "external",
+      keywords: ["june docs", "documentation", "guide", "manual"],
+    },
+    {
+      group: "Links",
+      name: "linkedin",
+      desc: "linkedin.com/in/abyperhaps",
+      target: "https://linkedin.com/in/abyperhaps",
+      tag: "external",
+      keywords: ["linkedin", "profile", "connect", "abyperhaps"],
+    },
+    {
+      group: "Links",
+      name: "discord",
+      desc: "discord.com/users/1310480351008657420",
+      target: "https://discord.com/users/1310480351008657420",
+      tag: "external",
+      keywords: ["discord", "chat", "message", "dm"],
+    },
   ];
+
   let sel = 0,
     list = CMD,
+    currentQuery = "",
     lastFocus = null;
+
+  function highlightMatch(text, query) {
+    if (!query) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    const before = text.slice(0, idx);
+    const match = text.slice(idx, idx + query.length);
+    const after = text.slice(idx + query.length);
+    return `${before}<mark>${match}</mark>${after}`;
+  }
+
   function paint() {
     pl.innerHTML = "";
-    list.forEach(([n, t], i) => {
+    if (!list.length) {
+      pl.hidden = true;
+      pEmpty.hidden = false;
+      pin2.removeAttribute("aria-activedescendant");
+      return;
+    }
+    pl.hidden = false;
+    pEmpty.hidden = true;
+
+    let lastGroup = null;
+    list.forEach((item, i) => {
+      if (item.group && item.group !== lastGroup) {
+        lastGroup = item.group;
+        const gh = document.createElement("li");
+        gh.className = "p-group-title";
+        gh.setAttribute("role", "presentation");
+        gh.textContent = item.group;
+        pl.append(gh);
+      }
+
       const li = document.createElement("li");
       li.id = "p-opt-" + i;
       li.setAttribute("role", "option");
       li.setAttribute("aria-selected", i === sel ? "true" : "false");
       li.className = i === sel ? "on" : "";
-      const tag = typeof t === "function" ? "action" : t[0] === "#" ? "jump" : t[0] === "/" ? "page" : "open ↗";
-      li.textContent = n;
-      const sp = document.createElement("span");
-      sp.textContent = tag;
-      li.append(sp);
+
+      const left = document.createElement("div");
+      left.className = "p-left";
+
+      const title = document.createElement("span");
+      title.className = "p-title";
+      title.innerHTML = highlightMatch(item.name, currentQuery);
+      left.append(title);
+
+      if (item.desc) {
+        const desc = document.createElement("span");
+        desc.className = "p-desc";
+        desc.textContent = item.desc;
+        left.append(desc);
+      }
+
+      const type = document.createElement("span");
+      type.className = "p-type";
+      type.textContent = item.tag || "";
+
+      li.append(left, type);
       li.onclick = () => go(i);
       pl.append(li);
     });
-    if (list.length && list[sel]) {
+
+    if (list[sel]) {
       pin2.setAttribute("aria-activedescendant", "p-opt-" + sel);
       const activeEl = document.getElementById("p-opt-" + sel);
       if (activeEl && typeof activeEl.scrollIntoView === "function") {
@@ -1176,63 +1346,92 @@
       pin2.removeAttribute("aria-activedescendant");
     }
   }
+
   function go(i) {
-    const t = list[i] && list[i][1];
-    if (!t) return;
+    const item = list[i];
+    if (!item || !item.target) return;
     shut();
-    if (typeof t === "function") t();
-    else if (t[0] === "#") {
+    const t = item.target;
+    if (typeof t === "function") {
+      t();
+    } else if (t[0] === "#") {
       if (F.lenis) F.lenis.scrollTo(t, { duration: 1.15 });
-      else $(t).scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
+      else $(t)?.scrollIntoView({ behavior: reduce ? "auto" : "smooth" });
       history.pushState(null, "", t);
-    } else if (t[0] === "/") location.href = t;
-    else open(t, "_blank", "noopener");
+    } else if (t[0] === "/") {
+      location.href = t;
+    } else {
+      open(t, "_blank", "noopener");
+    }
   }
+
   function openP() {
     lastFocus = document.activeElement;
     pal.hidden = false;
     pin2.setAttribute("aria-expanded", "true");
     pin2.value = "";
+    currentQuery = "";
     list = CMD;
     sel = 0;
     paint();
     pin2.focus();
     F.lenis && F.lenis.stop();
   }
+
   function shut() {
+    if (pal.hidden) return;
     pal.hidden = true;
     pin2.setAttribute("aria-expanded", "false");
     pin2.removeAttribute("aria-activedescendant");
     F.lenis && F.lenis.start();
     lastFocus && lastFocus.focus && lastFocus.focus();
   }
+
   $("#kBtn").onclick = openP;
-  pal.onclick = (e) => {
-    if (e.target === pal) shut();
-  };
+  palBackdrop && (palBackdrop.onclick = shut);
+  palCloseKbd && (palCloseKbd.onclick = shut);
+
   pin2.oninput = () => {
-    const v = pin2.value.toLowerCase();
-    list = CMD.filter((c) => c[0].includes(v));
+    currentQuery = pin2.value.trim().toLowerCase();
+    if (!currentQuery) {
+      list = CMD;
+    } else {
+      list = CMD.filter((c) => {
+        const nameMatch = c.name.toLowerCase().includes(currentQuery);
+        const descMatch = c.desc && c.desc.toLowerCase().includes(currentQuery);
+        const kwMatch = c.keywords && c.keywords.some((kw) => kw.toLowerCase().includes(currentQuery));
+        return nameMatch || descMatch || kwMatch;
+      });
+    }
     sel = 0;
     paint();
   };
+
   addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
       e.preventDefault();
       pal.hidden ? openP() : shut();
       return;
     }
-    if (pal.hidden || !list.length) return;
-    if (e.key === "Escape") shut();
-    else if (e.key === "ArrowDown") {
+    if (pal.hidden) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      shut();
+    } else if (e.key === "ArrowDown") {
+      if (!list.length) return;
       e.preventDefault();
       sel = (sel + 1) % list.length;
       paint();
     } else if (e.key === "ArrowUp") {
+      if (!list.length) return;
       e.preventDefault();
       sel = (sel - 1 + list.length) % list.length;
       paint();
-    } else if (e.key === "Enter") go(sel);
+    } else if (e.key === "Enter") {
+      if (!list.length) return;
+      e.preventDefault();
+      go(sel);
+    }
   });
 
   /* =========================================================
