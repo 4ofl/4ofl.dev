@@ -63,13 +63,19 @@
   }
 
   /* ---------- api helper: network first, last-known value as fallback ---------- */
-  F.api = async (path, key, timeout = 5000) => {
+  F.api = async (path, key, timeout = 4000) => {
     try {
       const c = new AbortController();
       const t = setTimeout(() => c.abort(), timeout);
-      const r = await fetch(API + path, { signal: c.signal });
+      let r;
+      try {
+        r = await fetch(API + path, { signal: c.signal });
+        if (!r.ok) throw 0;
+      } catch {
+        r = await fetch("https://worker-round-credit-5733.abyperhaps.workers.dev" + path, { signal: c.signal });
+        if (!r.ok) throw 0;
+      }
       clearTimeout(t);
-      if (!r.ok) throw 0;
       const data = await r.json();
       try {
         localStorage.setItem("c:" + key, JSON.stringify({ at: Date.now(), data }));
