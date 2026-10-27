@@ -305,7 +305,8 @@
     const targetMy = my * D;
     let hasMotion = false;
     const sy = scrollY;
-    const hf = clamp(1 - sy / (innerHeight * 0.6));
+    const heroProgress = clamp(sy / (innerHeight * 0.75));
+    const hf = 0.5 * (1 + Math.cos(heroProgress * Math.PI));
 
     for (let i = ripples.length - 1; i >= 0; i--) {
       const rip = ripples[i];
@@ -398,29 +399,44 @@
         }
       }
 
-      // Commit Buffer Cell (Hero top-right)
-      if (dot.cm && hf > 0.02) {
+      // Commit Buffer Cell (Hero top-right) with seamless cross-fade to ambient memory cell
+      if (dot.cm && hf > 0.001) {
         const cm = dot.cm;
         const a = clamp((now - commStart - cm.t) / 380);
         if (a < 1) hasMotion = true;
         const k = a * hf;
 
+        // Base ambient memory cell softly fades in as commits dissolve out:
+        const ambAlpha = (1 - k) * (maxK > 0 ? (0.05 + 0.45 * maxK) : 0.045);
+        if (ambAlpha > 0.003) {
+          g.fillStyle = maxK > 0.38
+            ? `rgba(212, 116, 85, ${0.3 + 0.7 * maxK})`
+            : `rgba(237, 236, 232, ${ambAlpha})`;
+          g.fillText(dot.val, dot.x, dot.y);
+        }
+
+        // Commit overlay visuals (fade out with k)
         if (cm.count > 0) {
           const boxAlpha = (0.2 + cm.level * 0.16 + maxK * 0.28) * k;
-          g.fillStyle = `rgba(212, 116, 85, ${boxAlpha})`;
-          g.fillRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+          if (boxAlpha > 0.005) {
+            g.fillStyle = `rgba(212, 116, 85, ${boxAlpha})`;
+            g.fillRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
 
-          if (cm.level >= 3 || maxK > 0.35) {
-            g.strokeStyle = `rgba(212, 116, 85, ${0.45 * k})`;
-            g.lineWidth = D;
-            g.strokeRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+            if (cm.level >= 3 || maxK > 0.35) {
+              g.strokeStyle = `rgba(212, 116, 85, ${0.45 * k})`;
+              g.lineWidth = D;
+              g.strokeRect(dot.x - 11 * D, dot.y - 7.5 * D, 22 * D, 15 * D);
+            }
+
+            g.fillStyle = cm.level >= 3 ? "#edece8" : `rgba(237, 236, 232, ${(0.68 + cm.level * 0.08) * k})`;
+            g.fillText(cm.hexVal, dot.x, dot.y);
           }
-
-          g.fillStyle = cm.level >= 3 ? "#edece8" : `rgba(237, 236, 232, ${(0.68 + cm.level * 0.08) * k})`;
-          g.fillText(cm.hexVal, dot.x, dot.y);
         } else {
-          g.fillStyle = `rgba(237, 236, 232, ${(0.05 + 0.22 * maxK) * k})`;
-          g.fillText("..", dot.x, dot.y);
+          const dotAlpha = (0.05 + 0.22 * maxK) * k;
+          if (dotAlpha > 0.005) {
+            g.fillStyle = `rgba(237, 236, 232, ${dotAlpha})`;
+            g.fillText("..", dot.x, dot.y);
+          }
         }
         continue;
       }
@@ -440,8 +456,8 @@
       }
     }
 
-    // Commit buffer caption in hero
-    if (commMeta && hf > 0.04) {
+    // Commit buffer caption in hero (fades smoothly in harmony with hf)
+    if (commMeta && hf > 0.01) {
       const label = `${commMeta.total ? commMeta.total.toLocaleString() + " " : ""}commits · last ${commMeta.cols}w`;
       g.font = `500 ${9.5 * D}px "JetBrains Mono", monospace`;
       g.textAlign = "right";
@@ -452,7 +468,7 @@
 
     // 3. Memory Inspector HUD (Hover Tooltip)
     if (hover) {
-      const isCm = Boolean(hover.cm);
+      const isCm = Boolean(hover.cm && hf > 0.2);
       const txt1 = isCm
         ? `PTR ${hover.addr} · ${hover.cm.count} commit${hover.cm.count === 1 ? "" : "s"}${hover.cm.count ? " [0x" + hover.cm.hexVal + "]" : ""}`
         : `PTR ${hover.addr}`;
