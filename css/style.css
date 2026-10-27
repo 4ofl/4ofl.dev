@@ -182,16 +182,7 @@ nav a:hover,
 nav a.active {
   color: var(--bone);
 }
-#kBtn {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.25rem 0.5rem;
-  color: var(--mist);
-}
-#kBtn:hover {
-  border-color: var(--accent);
-  color: var(--bone);
-}
+
 .menu-btn {
   display: none;
   border: 1px solid var(--line);

@@ -1124,7 +1124,10 @@
     }, 1600);
   };
   const f = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Kolkata" });
-  const tickClock = () => ($("#clock").textContent = "kerala " + f.format(new Date()) + " IST");
+  const tickClock = () => {
+    const el = $("#clock");
+    if (el) el.textContent = f.format(new Date()) + " IST";
+  };
   tickClock();
   setInterval(tickClock, 2e4);
 
@@ -1387,7 +1390,8 @@
     lastFocus && lastFocus.focus && lastFocus.focus();
   }
 
-  $("#kBtn").onclick = openP;
+  const kBtn = $("#kBtn");
+  if (kBtn) kBtn.onclick = openP;
   palBackdrop && (palBackdrop.onclick = shut);
   palCloseKbd && (palCloseKbd.onclick = shut);
 
