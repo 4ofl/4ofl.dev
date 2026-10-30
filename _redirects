@@ -12,6 +12,10 @@
 /resume     /resume.pdf  302
 /cv/        /resume.pdf  302
 /cv         /resume.pdf  302
+/writing    /writing/    301
+/ssrf       /writing/ssrf-socket-pinning/  302
+/zombies    /writing/zombie-sockets/       302
+/mdb        /writing/mdb-to-sqlite-wal/    302
 
 # static asset backward compatibility
 /style.css            /css/style.css            301

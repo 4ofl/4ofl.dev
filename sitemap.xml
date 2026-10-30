@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://4ofl.dev/</loc></url>
+  <url><loc>https://4ofl.dev/writing/</loc></url>
+  <url><loc>https://4ofl.dev/writing/ssrf-socket-pinning/</loc></url>
+  <url><loc>https://4ofl.dev/writing/zombie-sockets/</loc></url>
+  <url><loc>https://4ofl.dev/writing/mdb-to-sqlite-wal/</loc></url>
   <url><loc>https://4ofl.dev/work/citecamp/</loc></url>
   <url><loc>https://4ofl.dev/work/johns-fitness/</loc></url>
   <url><loc>https://4ofl.dev/work/june/</loc></url>

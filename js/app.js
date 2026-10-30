@@ -1208,6 +1208,40 @@
       keywords: ["citecamp", "rag", "academic", "ai", "chunker", "pdf", "retrieval"],
     },
 
+    // WRITING
+    {
+      group: "Writing",
+      name: "writing",
+      desc: "All engineering write-ups & architectural notes",
+      target: "/writing/",
+      tag: "index",
+      keywords: ["writing", "essays", "articles", "blog", "posts", "read"],
+    },
+    {
+      group: "Writing",
+      name: "anti-ssrf & socket pinning",
+      desc: "Defeating DNS rebinding & TOCTOU in Node.js",
+      target: "/writing/ssrf-socket-pinning/",
+      tag: "essay",
+      keywords: ["ssrf", "socket", "pinning", "dns", "rebinding", "toctou", "security", "node"],
+    },
+    {
+      group: "Writing",
+      name: "zombie websockets",
+      desc: "Recovering from half-open TCP gateway connections",
+      target: "/writing/zombie-sockets/",
+      tag: "essay",
+      keywords: ["zombie", "websocket", "discord", "gateway", "tcp", "heartbeat", "sockets"],
+    },
+    {
+      group: "Writing",
+      name: "mdb to sqlite wal",
+      desc: "Migrating 1,405 members from Access 2013 to SQLite in .NET 8",
+      target: "/writing/mdb-to-sqlite-wal/",
+      tag: "essay",
+      keywords: ["mdb", "sqlite", "wal", "access", "database", "migration", ".net", "jet"],
+    },
+
     // ACTIONS
     {
       group: "Actions",

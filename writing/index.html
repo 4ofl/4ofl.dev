@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>writing · aby mathew · 4ofl</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="Technical deep-dives on local-first runtimes, socket-level anti-SSRF, and systems reverse-engineering by Aby Mathew." />
+    <link rel="canonical" href="https://4ofl.dev/writing/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://4ofl.dev/writing/" />
+    <meta property="og:title" content="writing · 4ofl" />
+    <meta property="og:description" content="Systems engineering deep-dives, reverse-engineering notes, and battle-tested local-first runtimes." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/writing/" aria-current="page">writing</a>
+          <a href="/#about">about</a>
+          <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/">← home</a>
+        <h1 class="pj-title">writing</h1>
+        <p class="sub">Systems architecture, network security, and local-first runtime design notes.</p>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>essays &amp; deep-dives</span></h2>
+        
+        <ul class="post-list">
+          <li class="post-item">
+            <div class="post-meta">
+              <span>2026-10</span>
+              <span>·</span>
+              <span>systems &amp; network security</span>
+              <span>·</span>
+              <span>7 min read</span>
+            </div>
+            <h3 class="post-title">
+              <a href="/writing/ssrf-socket-pinning/">Socket-Level IP Pinning &amp; Anti-SSRF in Node.js</a>
+            </h3>
+            <p class="post-desc">
+              Why high-level URL validation checks and fetch wrappers fail against DNS rebinding (TOCTOU attacks), and how overriding Node’s native agent lookup hook guarantees TCP handshake integrity.
+            </p>
+          </li>
+
+          <li class="post-item">
+            <div class="post-meta">
+              <span>2026-10</span>
+              <span>·</span>
+              <span>distributed systems &amp; tcp</span>
+              <span>·</span>
+              <span>6 min read</span>
+            </div>
+            <h3 class="post-title">
+              <a href="/writing/zombie-sockets/">Handling Zombie WebSockets Without TCP Close Frames</a>
+            </h3>
+            <p class="post-desc">
+              Discord gateway connections silently drop into dead half-open states without transmitting a TCP FIN or RST frame. How custom jittered heartbeat state machines eliminate phantom downtime.
+            </p>
+          </li>
+
+          <li class="post-item">
+            <div class="post-meta">
+              <span>2026-10</span>
+              <span>·</span>
+              <span>database internals &amp; .net</span>
+              <span>·</span>
+              <span>8 min read</span>
+            </div>
+            <h3 class="post-title">
+              <a href="/writing/mdb-to-sqlite-wal/">Reverse-Engineering 2013 MS Access MDBs to SQLite WAL in .NET 8</a>
+            </h3>
+            <p class="post-desc">
+              Recovering 1,405 member records from a corrupt legacy JET engine database, solving Windows-1252 encoding issues, and achieving lock-free offline concurrency via SQLite WAL mode.
+            </p>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew · <span class="avail">summer/fall '26</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>

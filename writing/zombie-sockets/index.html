@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Handling Zombie WebSockets Without TCP Close Frames · aby mathew</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="Recovering from half-open TCP connections on Discord gateway using jittered heartbeat state machines and fast session resumption." />
+    <link rel="canonical" href="https://4ofl.dev/writing/zombie-sockets/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://4ofl.dev/writing/zombie-sockets/" />
+    <meta property="og:title" content="Handling Zombie WebSockets Without TCP Close Frames" />
+    <meta property="og:description" content="Diagnosing and solving dead WebSocket connections that drop without transmitting TCP FIN or RST frames." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/writing/">writing</a>
+          <a href="/#about">about</a>
+          <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/writing/">← all writing</a>
+        <h1 class="pj-title" style="font-size: clamp(2.4rem, 7vw, 4.8rem);">zombie websockets</h1>
+        <p class="sub">How to detect and recover from half-open TCP connections on real-time gateways when no FIN or RST frames are transmitted.</p>
+        <p class="k dim">2026-10-25 · 6 min read · distributed systems &amp; tcp</p>
+      </section>
+
+      <section class="pj-sec">
+        <article class="prose">
+          <p>
+            In distributed real-time systems—such as Discord bot runtimes, financial ticker feeds, and IoT telemetry pipelines—the most deceptive failure mode is not a crash or a broken connection. It is the <b>Zombie Connection</b>: a socket that is completely dead, yet the operating system believes is in state <code>ESTABLISHED</code>.
+          </p>
+          <p>
+            When an intermediate NAT router drops state, an ISP drops routing tables, or a server experiences sudden power loss, <b>no TCP <code>FIN</code> or <code>RST</code> packet is ever sent</b>. From the perspective of Node.js:
+          </p>
+          <ul>
+            <li>No <code>'error'</code> event fires.</li>
+            <li>No <code>'close'</code> event fires.</li>
+            <li>The WebSocket readyState remains <code>1 (OPEN)</code>.</li>
+            <li>Zero inbound messages arrive, leaving your application stranded in silence.</li>
+          </ul>
+
+          <h2>Why OS TCP Keepalives Are Ineffective</h2>
+          <p>
+            Developers often assume the operating system’s built-in TCP keepalive will resolve this issue. In practice, default Linux kernel settings render OS keepalives useless for real-time services:
+          </p>
+          <pre><code># Default Linux kernel TCP keepalive settings
+cat /proc/sys/net/ipv4/tcp_keepalive_time   # 7200 seconds (2 hours!)
+cat /proc/sys/net/ipv4/tcp_keepalive_intvl  # 75 seconds
+cat /proc/sys/net/ipv4/tcp_keepalive_probes # 9 probes</code></pre>
+          <p>
+            By default, your process will wait <b>over 2 hours</b> before the OS detects a dead socket. Even when tuned via <code>socket.setKeepAlive(true, 15000)</code>, transport-level TCP probes only verify that the remote kernel is reachable; they cannot verify whether the remote application process or gateway event loop is responsive.
+          </p>
+
+          <h2>The Heartbeat State Machine Pattern</h2>
+          <p>
+            In the <b>June</b> runtime architecture, connection liveness is guaranteed at the application protocol layer using a hardened Heartbeat State Machine:
+          </p>
+
+          <pre><code>// Finite State Machine transitions for Gateway Heartbeat
+// [CONNECTED] --(Send Heartbeat)--> [AWAITING_ACK] --(Receive ACK)--> [HEALTHY]
+//                                         |
+//                                (Timeout / No ACK)
+//                                         v
+//                                 [FORCE_DESTROY] --> [RESUME]</code></pre>
+
+          <h3>1. Initial Handshake &amp; Jitter Calculation</h3>
+          <p>
+            Upon establishing the raw WebSocket handshake, Discord’s gateway immediately sends Opcode 10 (<code>HELLO</code>) containing the required <code>heartbeat_interval</code> (typically 41,250 ms).
+          </p>
+          <p>
+            If thousands of clustered bot shards reboot simultaneously after a data center blip, transmitting heartbeats at exact intervals would cause a synchronized thundering herd. We introduce a uniform random jitter on the first tick:
+          </p>
+          <pre><code>// Randomize the initial heartbeat timing
+const initialDelay = heartbeatInterval * Math.random();
+setTimeout(() => {
+  sendHeartbeat();
+  // Subsequent heartbeats run on fixed interval
+  heartbeatTimer = setInterval(sendHeartbeat, heartbeatInterval);
+}, initialDelay);</code></pre>
+
+          <h3>2. Detecting the Zombie State (ACK Deadlines)</h3>
+          <p>
+            The core invariant of the state machine is that every outbound Opcode 1 (<code>HEARTBEAT</code>) must be answered by an inbound Opcode 11 (<code>HEARTBEAT_ACK</code>) before the next interval elapses.
+          </p>
+          <p>
+            If a new interval arrives and the previous heartbeat was never acknowledged, <b>the socket is dead</b>:
+          </p>
+
+          <pre><code>let hasAcked = true;
+let lastHeartbeatSentAt = 0;
+
+function sendHeartbeat() {
+  if (!hasAcked) {
+    // ZOMBIE DETECTED: Remote peer failed to acknowledge prior heartbeat
+    console.warn("[gateway] Heartbeat ACK missing. Forcing hard socket destruction...");
+    
+    // CRITICAL: Call socket.destroy(), NOT ws.close()
+    // ws.close() attempts a 2-way TCP close handshake that will hang indefinitely!
+    ws.terminate(); 
+    return;
+  }
+
+  hasAcked = false;
+  lastHeartbeatSentAt = Date.now();
+  
+  // Transmit Opcode 1 with the last acknowledged sequence number
+  ws.send(JSON.stringify({
+    op: 1,
+    d: lastSequenceNumber // null or integer (e.g. 14205)
+  }));
+}
+
+function handleMessage(raw) {
+  const payload = JSON.parse(raw);
+  
+  // Opcode 11: Heartbeat Acknowledgment
+  if (payload.op === 11) {
+    hasAcked = true;
+    latencyMs = Date.now() - lastHeartbeatSentAt;
+    return;
+  }
+  
+  // Update rolling sequence number for reliable replay
+  if (payload.s !== null) {
+    lastSequenceNumber = payload.s;
+  }
+}</code></pre>
+
+          <div class="callout">
+            <b>Why ws.terminate() instead of ws.close()?</b>
+            <code>ws.close()</code> initiates the standard WebSocket closing handshake by sending a close frame (0x8) and waiting for a matching close frame from the server. On a dead TCP connection, the response frame will never arrive. <code>ws.terminate()</code> or <code>socket.destroy()</code> instantly drops the kernel file descriptor, bypassing the network stack and triggering immediate reconnect routines.
+          </div>
+
+          <h2>Fast Session Resumption (Opcode 6)</h2>
+          <p>
+            When a connection is terminated, a naive client initiates a brand new connection using Opcode 2 (<code>IDENTIFY</code>). This causes massive overhead: Discord must re-serialize and transmit thousands of guild state objects, role permissions, and channel structures.
+          </p>
+          <p>
+            Instead, we preserve the <code>session_id</code> and <code>lastSequenceNumber</code> across socket resets, and issue Opcode 6 (<code>RESUME</code>):
+          </p>
+
+          <pre><code>function onReconnected() {
+  if (sessionId &amp;&amp; lastSequenceNumber !== null) {
+    console.log(`[gateway] Attempting session resumption: ${sessionId} at seq ${lastSequenceNumber}`);
+    ws.send(JSON.stringify({
+      op: 6,
+      d: {
+        token: process.env.DISCORD_TOKEN,
+        session_id: sessionId,
+        seq: lastSequenceNumber
+      }
+    }));
+  } else {
+    sendFullIdentify();
+  }
+}</code></pre>
+
+          <p>
+            If the gateway successfully verifies the session, it responds with Opcode 0 (<code>RESUMED</code>) and replays only the exact event packets that were missed during the disconnect window. Downtime is measured in milliseconds, without any user-visible interruption.
+          </p>
+
+          <h2>Multi-Shard Boot Staggering</h2>
+          <p>
+            Discord limits clients to 1 identify attempt every 5 seconds per gateway rate-limit bucket. When scaling across multiple worker processes:
+          </p>
+          <ul>
+            <li>Shards must never connect concurrently on application boot.</li>
+            <li>Shard spawns are staggered using a <b>5,500ms safety delay</b> (5,000ms rate-limit + 500ms network jitter cushion).</li>
+            <li>This ensures 100% compliance with Discord API rate limits, avoiding account-level IP bans and <code>4004 (Authentication Failed)</code> disconnections.</li>
+          </ul>
+
+          <h2>Summary</h2>
+          <p>
+            Building high-availability real-time applications requires treating TCP connections as inherently fragile:
+          </p>
+          <ul>
+            <li>Never rely on the OS or basic socket events to discover disconnects.</li>
+            <li>Enforce application-level heartbeats with strict deadline enforcement.</li>
+            <li>Use hard socket destruction (<code>destroy()</code>) to guarantee instant cleanups.</li>
+            <li>Leverage protocol sequence numbers to achieve seamless session resumption.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>next write-up</span></h2>
+        <a class="pj-next" href="/writing/mdb-to-sqlite-wal/">mdb to sqlite wal →</a>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew · <span class="avail">summer/fall '26</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>

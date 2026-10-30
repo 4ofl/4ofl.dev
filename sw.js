@@ -1,10 +1,14 @@
 /* 4ofl.dev service worker: the site keeps working offline.
    html: network first (4s), then cache. assets: cache first, refreshed in the background.
    bump V when you want every visitor's cache dropped. */
-const V = "4ofl-v13";
+const V = "4ofl-v14";
 const CORE = [
   "/",
   "/resume.pdf",
+  "/writing/",
+  "/writing/ssrf-socket-pinning/",
+  "/writing/zombie-sockets/",
+  "/writing/mdb-to-sqlite-wal/",
   "/work/citecamp/",
   "/work/johns-fitness/",
   "/work/june/",

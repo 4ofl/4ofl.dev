@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Socket-Level IP Pinning &amp; Anti-SSRF in Node.js · aby mathew</title>
+    <meta name="theme-color" content="#0b0b0d" />
+    <meta name="description" content="Why naive URL validation fails against DNS rebinding (TOCTOU attacks), and how hooking Node.js agent lookup hooks pins TCP handshakes to validated IPs." />
+    <link rel="canonical" href="https://4ofl.dev/writing/ssrf-socket-pinning/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://4ofl.dev/writing/ssrf-socket-pinning/" />
+    <meta property="og:title" content="Socket-Level IP Pinning &amp; Anti-SSRF in Node.js" />
+    <meta property="og:description" content="Defeating DNS rebinding and TOCTOU vulnerabilities by enforcing IP verification at the TCP socket layer." />
+    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preload" href="/assets/fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="pj">
+    <a class="skip" href="#main">skip to content</a>
+    <header class="bar">
+      <div class="bar-inner">
+        <a class="logo" href="/">4ofl<i>.dev</i></a>
+        <nav class="pj-nav">
+          <a href="/#work">work</a>
+          <a href="/writing/">writing</a>
+          <a href="/#about">about</a>
+          <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
+          <a href="/#contact">contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="pj-top">
+        <a class="k dim" href="/writing/">← all writing</a>
+        <h1 class="pj-title" style="font-size: clamp(2.4rem, 7vw, 4.8rem);">socket-level anti-ssrf</h1>
+        <p class="sub">Defeating DNS rebinding and TOCTOU attacks in Node.js by validating and pinning remote IP addresses during the TCP handshake.</p>
+        <p class="k dim">2026-10-24 · 7 min read · systems &amp; network security</p>
+      </section>
+
+      <section class="pj-sec">
+        <article class="prose">
+          <p>
+            When building network-facing tools—like Discord link unfurlers, web sentinels, or automated screenshot daemons—your application must fetch arbitrary URLs supplied by untrusted users. If you simply pass that URL into <code>fetch()</code> or <code>axios.get()</code>, you introduce a catastrophic attack vector: <b>Server-Side Request Forgery (SSRF)</b>.
+          </p>
+          <p>
+            An attacker points your server at <code>http://169.254.169.254/latest/meta-data/</code> to steal cloud IAM credentials, or probes <code>http://127.0.0.1:6379</code> to access internal database sockets. But even when developers attempt to validate the URL, <b>almost all naive implementations are completely broken by design</b>.
+          </p>
+
+          <h2>The Flaw: Time-of-Check to Time-of-Use (TOCTOU)</h2>
+          <p>
+            The typical naive defense looks something like this:
+          </p>
+
+          <pre><code>// NAIVE IMPLEMENTATION (VULNERABLE TO DNS REBINDING)
+async function fetchSafeUrl(rawUrl) {
+  const parsed = new URL(rawUrl);
+  
+  // Step 1: Resolve DNS to verify IP
+  const { address } = await dns.promises.lookup(parsed.hostname);
+  if (isPrivateIP(address)) {
+    throw new Error("Access denied: Private IP range");
+  }
+
+  // Step 2: Fetch the URL
+  return await fetch(rawUrl); 
+}</code></pre>
+
+          <p>
+            This code creates a critical race condition known as <b>DNS Rebinding</b>:
+          </p>
+          <ol>
+            <li>The attacker controls an authoritative nameserver for <code>rebind.attacker.com</code> with a DNS TTL of <code>0</code> seconds.</li>
+            <li>In <b>Step 1</b>, your application resolves the domain. The attacker’s server returns a benign public IP (e.g. <code>93.184.216.34</code>). <code>isPrivateIP()</code> returns <code>false</code>. Validation passes.</li>
+            <li>In <b>Step 2</b>, <code>fetch()</code> initiates a connection. Because the TTL was 0 seconds (or expired), Node’s internal HTTP client queries DNS a <i>second time</i>.</li>
+            <li>The attacker’s nameserver now responds with <code>127.0.0.1</code> or <code>169.254.169.254</code>.</li>
+            <li>Node happily connects the TCP socket directly to your internal network or localhost loopback interface.</li>
+          </ol>
+
+          <div class="callout">
+            <b>Core Invariant</b>
+            Any architecture that separates the IP validation step from the socket connection step is fundamentally vulnerable to DNS rebinding. Validation and connection must be an atomic operation.
+          </div>
+
+          <h2>Why URL Rewriting Breaks TLS SNI</h2>
+          <p>
+            Some developers attempt to solve this by resolving the IP first, then rewriting the request URL:
+          </p>
+          <pre><code>// Rewriting hostname to raw IP: breaks TLS certificate verification
+fetch(`https://${resolvedIp}/path`, { headers: { Host: parsed.hostname } });</code></pre>
+          <p>
+            While this ensures the connection hits the checked IP, <b>it catastrophically breaks modern HTTPS</b>:
+          </p>
+          <ul>
+            <li><b>SNI Failure:</b> The TLS handshake passes <code>resolvedIp</code> instead of <code>example.com</code> in the Server Name Indication (SNI) extension. Cloudflare, AWS CloudFront, and multi-tenant servers will reject the connection or serve an invalid default certificate.</li>
+            <li><b>Certificate SAN Mismatch:</b> Node’s TLS engine compares the certificate against the IP address in the URL, throwing an <code>ERR_TLS_CERT_ALTNAME_INVALID</code> error.</li>
+          </ul>
+
+          <h2>The Solution: Overriding the Native Agent Lookup Hook</h2>
+          <p>
+            In Node.js, both <code>http.Agent</code> and <code>https.Agent</code> expose a low-level option: <code>lookup</code>. This option overrides the default <code>dns.lookup</code> function used by Node's internal <code>net.createConnection()</code> immediately prior to dialing the TCP socket.
+          </p>
+          <p>
+            By intercepting this hook, we can:
+          </p>
+          <ol>
+            <li>Resolve all IPv4 and IPv6 records for the hostname.</li>
+            <li>Inspect every returned IP against a strict blocklist (RFC 1918, CGNAT, loopback, link-local, AWS/GCP metadata).</li>
+            <li>Select the first safe IP and pass it directly to the socket connection routine.</li>
+            <li>Preserve the original hostname for HTTP headers, TLS SNI negotiation, and certificate verification.</li>
+          </ol>
+
+          <h3>Production Implementation</h3>
+          <pre><code>import http from "node:http";
+import https from "node:https";
+import dns from "node:dns";
+import net from "node:net";
+
+// Strict CIDR & Range verification
+function isRestrictedIP(ip) {
+  if (net.isIPv4(ip)) {
+    const parts = ip.split(".").map(Number);
+    // 0.0.0.0/8 (Current network)
+    if (parts[0] === 0) return true;
+    // 10.0.0.0/8 (Private)
+    if (parts[0] === 10) return true;
+    // 127.0.0.0/8 (Loopback)
+    if (parts[0] === 127) return true;
+    // 169.254.0.0/16 (Link-local & Cloud Metadata)
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    // 172.16.0.0/12 (Private)
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    // 192.168.0.0/16 (Private)
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    // 100.64.0.0/10 (Carrier-Grade NAT)
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true;
+    return false;
+  }
+
+  if (net.isIPv6(ip)) {
+    const normalized = ip.toLowerCase();
+    // ::1 (Loopback)
+    if (normalized === "::1" || normalized === "::") return true;
+    // fe80::/10 (Link-local)
+    if (normalized.startsWith("fe8") || normalized.startsWith("fe9") || 
+        normalized.startsWith("fea") || normalized.startsWith("feb")) return true;
+    // fc00::/7 & fd00::/8 (Unique Local Address)
+    if (normalized.startsWith("fc") || normalized.startsWith("fd")) return true;
+    // IPv4-mapped IPv6 (::ffff:127.0.0.1)
+    if (normalized.includes("::ffff:")) {
+      const v4Part = normalized.split("::ffff:")[1];
+      if (net.isIPv4(v4Part)) return isRestrictedIP(v4Part);
+    }
+    return false;
+  }
+
+  return true; // Reject unparseable address formats
+}
+
+function createSafeLookup() {
+  return function safeLookup(hostname, options, callback) {
+    dns.lookup(hostname, { all: true }, (err, addresses) => {
+      if (err) return callback(err);
+
+      // Verify EVERY resolved address. If an attacker's domain resolves to
+      // [1.1.1.1, 127.0.0.1], the query must be immediately aborted.
+      for (const { address } of addresses) {
+        if (isRestrictedIP(address)) {
+          return callback(new Error(`SSRF blocked: ${hostname} resolved to restricted IP ${address}`));
+        }
+      }
+
+      // Pin the connection to the first verified IP
+      const selected = addresses[0];
+      if (options.all) {
+        callback(null, [selected]);
+      } else {
+        callback(null, selected.address, selected.family);
+      }
+    });
+  };
+}
+
+// Configured HTTP/HTTPS agents with pinned socket lookup
+export const safeHttpAgent = new http.Agent({
+  lookup: createSafeLookup(),
+  keepAlive: false,
+  timeout: 5000,
+});
+
+export const safeHttpsAgent = new https.Agent({
+  lookup: createSafeLookup(),
+  keepAlive: false,
+  timeout: 5000,
+});</code></pre>
+
+          <h2>Defense in Depth: The 10MB Streaming Cap</h2>
+          <p>
+            Preventing SSRF is only half the battle. Once an attacker realizes internal network probing is blocked, they will attempt <b>denial of service through memory exhaustion</b>:
+          </p>
+          <ul>
+            <li>Streaming an infinite byte stream (e.g., <code>/dev/urandom</code> over HTTP).</li>
+            <li>Gzip decompression bombs (10MB compressed file expanding to 50GB in memory).</li>
+          </ul>
+          <p>
+            In the <b>June</b> production runtime, all outbound requests pipe through a strict byte-counting <code>Transform</code> stream that destroys the socket the instant response payloads exceed 10 MB:
+          </p>
+
+          <pre><code>import { Transform } from "node:stream";
+
+export function createSizeCapStream(maxBytes = 10 * 1024 * 1024) {
+  let bytesReceived = 0;
+  return new Transform({
+    transform(chunk, encoding, callback) {
+      bytesReceived += chunk.length;
+      if (bytesReceived > maxBytes) {
+        const err = new Error(`Payload exceeded security limit of ${maxBytes} bytes`);
+        this.destroy(err);
+        return callback(err);
+      }
+      callback(null, chunk);
+    },
+  });
+}</code></pre>
+
+          <h2>Summary</h2>
+          <p>
+            Reliable security software does not rely on regex filters or application-level string checks. By moving validation directly into the Node.js socket transport layer:
+          </p>
+          <ul>
+            <li>DNS rebinding TOCTOU attacks are mathematically impossible because the validated IP is the exact IP the socket connects to.</li>
+            <li>TLS SNI and certificate validation remain completely standard and unbroken.</li>
+            <li>IPv4-mapped IPv6 bypasses and CGNAT edge-cases are stopped before any bytes hit the wire.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="pj-sec">
+        <h2 class="k head"><span>next write-up</span></h2>
+        <a class="pj-next" href="/writing/zombie-sockets/">zombie websockets →</a>
+      </section>
+    </main>
+
+    <footer class="k dim">
+      <span>© 2026 aby mathew · <span class="avail">summer/fall '26</span></span>
+    </footer>
+    <script src="/js/lenis.min.js" defer></script>
+    <script src="/js/common.js" defer></script>
+  </body>
+</html>
