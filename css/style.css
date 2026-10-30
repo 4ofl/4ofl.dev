@@ -1486,6 +1486,9 @@ a.pj-next:hover {
   max-width: 62ch;
 }
 @media (max-width: 680px) {
+  #writing {
+    scroll-margin-top: 3.5rem;
+  }
   .w-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
