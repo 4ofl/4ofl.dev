@@ -242,7 +242,7 @@ h1 {
 h1 span {
   display: inline-block;
   text-align: center;
-  transition: color 0.2s;
+  transition: color 0.15s, font-variation-settings 0.15s;
 }
 .sub {
   max-width: 34ch;
@@ -974,7 +974,6 @@ footer {
 .hero-in > .k {
   transition: opacity 0.6s var(--ease);
 }
-html.intro #name,
 html.intro .hero .sub,
 html.intro .hero-in > .k {
   opacity: 0;

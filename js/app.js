@@ -162,7 +162,7 @@
   function triggerCommitsStart() {
     if (!commits) return;
     if (intro.on && intro.t0) {
-      commStart = intro.t0 + 1850;
+      commStart = intro.t0 + 500;
     } else {
       commStart = performance.now();
     }
@@ -216,10 +216,26 @@
   const fmtDate = (d) =>
     new Date(d + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 
-  /* intro: the grid breaks loose and becomes the name */
-  const intro = { on: false, t0: 0, n: 0, tx: null, ty: null, sx: null, sy: null, dl: null, revealed: false };
+  /* =========================================================
+     intro: terminal / memory-byte scramble decoder
+     ========================================================= */
+  const TARGET_NAME = "aby mathew";
+  const HEX_GLYPHS = "0123456789ABCDEFabcdef!<>-_/[]{}*#~+";
+  const intro = { on: false, raf: null, revealed: false, t0: 0 };
+
   function endIntro() {
     intro.on = false;
+    intro.revealed = true;
+    if (intro.raf) {
+      cancelAnimationFrame(intro.raf);
+      intro.raf = null;
+    }
+    const chars = [...TARGET_NAME].filter((c) => c !== " ");
+    L.forEach((s, idx) => {
+      s.textContent = chars[idx] || "";
+      s.style.color = "";
+      s.style.fontVariationSettings = '"wght" 300';
+    });
     root.classList.remove("intro");
     try {
       sessionStorage.setItem("intro", "1");
@@ -230,86 +246,88 @@
     gridDirty = true;
     requestFrame();
   }
+
   function startIntro() {
     if (!root.classList.contains("intro")) return;
     if (reduce || scrollY > 40) return endIntro();
-    try {
-      const m = document.createElement("canvas");
-      m.width = innerWidth;
-      m.height = innerHeight;
-      const mc = m.getContext("2d", { willReadFrequently: true });
-      const fs = parseFloat(getComputedStyle(name).fontSize);
-      mc.font = `800 ${fs}px "Bricolage Grotesque", sans-serif`;
-      mc.textAlign = "center";
-      mc.textBaseline = "alphabetic";
-      mc.fillStyle = "#fff";
-      const mt = mc.measureText("a");
-      const A = mt.fontBoundingBoxAscent ?? fs * 0.93,
-        Dd = mt.fontBoundingBoxDescent ?? fs * 0.25;
-      L.forEach((s) => {
-        const r = s.getBoundingClientRect();
-        mc.fillText(s.textContent, r.left + r.width / 2, r.top + (r.height - (A + Dd)) / 2 + A);
-      });
-      const data = mc.getImageData(0, 0, m.width, m.height).data;
-      let step = innerWidth < 600 ? 6 : innerWidth < 1100 ? 8 : 9;
-      let pts;
-      for (let tries = 0; tries < 4; tries++) {
-        pts = [];
-        for (let y = step / 2; y < m.height; y += step)
-          for (let x = step / 2; x < m.width; x += step)
-            if (data[(((y | 0) * m.width) + (x | 0)) * 4 + 3] > 128) pts.push(x, y);
-        if (pts.length / 2 <= 3200) break;
-        step += 2;
-      }
-      const n = pts.length / 2;
-      if (n < 20) return endIntro();
-      intro.n = n;
-      intro.tx = new Float32Array(n);
-      intro.ty = new Float32Array(n);
-      intro.sx = new Float32Array(n);
-      intro.sy = new Float32Array(n);
-      intro.dl = new Float32Array(n);
-      const gx0 = startX / D,
-        gy0 = startY / D;
+
+    const chars = [...TARGET_NAME].filter((c) => c !== " ");
+    const n = chars.length;
+    intro.on = true;
+    intro.revealed = false;
+    intro.t0 = performance.now();
+
+    // Staggered byte resolve timeline (total ~700ms)
+    const lockDelays = [
+      180, // a
+      240, // b
+      300, // y
+      380, // m
+      440, // a
+      500, // t
+      560, // h
+      620, // e
+      680, // w
+    ];
+    const locked = new Array(n).fill(false);
+
+    if (commits) {
+      commStart = intro.t0 + 500;
+    }
+
+    function stepScramble(now) {
+      if (!intro.on) return;
+      const elapsed = now - intro.t0;
+      let allLocked = true;
+
       for (let i = 0; i < n; i++) {
-        const tx = pts[i * 2],
-          ty = pts[i * 2 + 1];
-        intro.tx[i] = tx;
-        intro.ty[i] = ty;
-        intro.sx[i] = gx0 + Math.round((tx - gx0) / 34) * 34 + (Math.random() - 0.5) * 10;
-        intro.sy[i] = gy0 + Math.round((ty - gy0) / 34) * 34 + (Math.random() - 0.5) * 10;
-        intro.dl[i] = Math.random() * 600;
+        const s = L[i];
+        if (!s) continue;
+
+        if (elapsed >= lockDelays[i]) {
+          if (!locked[i]) {
+            locked[i] = true;
+            s.textContent = chars[i];
+            s.style.color = "var(--accent)";
+            s.style.fontVariationSettings = '"wght" 600';
+            setTimeout(() => {
+              if (s) {
+                s.style.color = "";
+                s.style.fontVariationSettings = '"wght" 300';
+              }
+            }, 120);
+          }
+        } else {
+          allLocked = false;
+          s.textContent = HEX_GLYPHS[(Math.random() * HEX_GLYPHS.length) | 0];
+          s.style.color = "var(--mist)";
+          s.style.fontVariationSettings = '"wght" 450';
+        }
       }
-      intro.on = true;
-      intro.t0 = performance.now();
-      intro.revealed = false;
-      if (commits) {
-        commStart = intro.t0 + 1850;
+
+      if (elapsed > 450 && !intro.revealed) {
+        intro.revealed = true;
+        root.classList.remove("intro");
       }
-      requestFrame();
-    } catch {
-      endIntro();
+
+      if (allLocked && elapsed >= 750) {
+        endIntro();
+      } else {
+        intro.raf = requestAnimationFrame(stepScramble);
+      }
     }
+
+    intro.raf = requestAnimationFrame(stepScramble);
   }
-  const skipIntro = () => {
-    if (!intro.on) return;
-    if (!intro.revealed) {
-      intro.revealed = true;
-      root.classList.remove("intro");
-    }
-    // Smoothly dissolve remaining particles over 250ms instead of a hard cut
-    intro.t0 = Math.min(intro.t0, performance.now() - 2350);
-    requestFrame();
-  };
+
+  const skipIntro = () => intro.on && endIntro();
   addEventListener("pointerdown", skipIntro, { passive: true });
   addEventListener("keydown", skipIntro);
 
   document.fonts.ready.then(() => {
-    const isIntro = root.classList.contains("intro");
     L.forEach((s) => {
-      s.style.fontVariationSettings = '"wght" 800';
+      s.style.fontVariationSettings = '"wght" 300';
       s.style.width = s.getBoundingClientRect().width + "px";
-      if (!isIntro) s.style.fontVariationSettings = '"wght" 300';
     });
     cacheLetters();
     startIntro();
@@ -600,33 +618,6 @@
       g.fillText(txt2, bx + 10 * D, by + 26 * D);
     }
 
-    // 5. Intro: Memory bits assemble the name
-    if (intro.on) {
-      const t = now - intro.t0;
-      if (t > 1900 && !intro.revealed) {
-        intro.revealed = true;
-        root.classList.remove("intro");
-      }
-      if (t > 2600) {
-        endIntro();
-      } else {
-        const fade = t > 1900 ? 1 - clamp((t - 1900) / 700) : 1;
-        const r = 1.35 * D;
-        const scrollOff = scrollY * D;
-        for (let pass = 0; pass < 2; pass++) {
-          g.fillStyle = pass ? `rgba(212,116,85,${0.95 * fade})` : `rgba(237,236,232,${0.85 * fade})`;
-          g.beginPath();
-          for (let i = pass; i < intro.n; i += 2) {
-            const e = 1 - Math.pow(1 - clamp((t - intro.dl[i]) / 1100), 3);
-            const wob = (1 - e) * Math.sin(i * 12.9898 + t * 0.004) * 14;
-            const x = (intro.sx[i] + (intro.tx[i] - intro.sx[i]) * e + wob) * D;
-            const y = (intro.sy[i] + (intro.ty[i] - intro.sy[i]) * e) * D - scrollOff;
-            g.rect(x - r, y - r, r * 2, r * 2);
-          }
-          g.fill();
-        }
-      }
-    }
     return hasMotion;
   }
 
@@ -634,21 +625,7 @@
     const sy = scrollY;
     if (sy > innerHeight || !centers.length) return;
 
-    if (intro.on) {
-      const t = now - intro.t0;
-      let introK = 1;
-      if (t >= 1900) {
-        const p = clamp((t - 1900) / 700);
-        introK = 1 - p;
-      }
-      for (let i = 0; i < centers.length; i++) {
-        const it = centers[i];
-        it.curK = introK;
-        it.el.style.fontVariationSettings = `"wght" ${(300 + 500 * introK) | 0}`;
-        it.el.style.color = "";
-      }
-      return;
-    }
+    if (intro.on) return;
 
     const isPointerActive = mx > -900 && now - lastMoveT < 3000;
     const fade = clamp(1 - sy / innerHeight);
