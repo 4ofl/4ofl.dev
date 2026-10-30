@@ -291,10 +291,18 @@
       endIntro();
     }
   }
-  const skipIntro = () => intro.on && endIntro();
+  const skipIntro = () => {
+    if (!intro.on) return;
+    if (!intro.revealed) {
+      intro.revealed = true;
+      root.classList.remove("intro");
+    }
+    // Smoothly dissolve remaining particles over 250ms instead of a hard cut
+    intro.t0 = Math.min(intro.t0, performance.now() - 2350);
+    requestFrame();
+  };
   addEventListener("pointerdown", skipIntro, { passive: true });
   addEventListener("keydown", skipIntro);
-  addEventListener("wheel", skipIntro, { passive: true });
 
   document.fonts.ready.then(() => {
     const isIntro = root.classList.contains("intro");
@@ -604,6 +612,7 @@
       } else {
         const fade = t > 1900 ? 1 - clamp((t - 1900) / 700) : 1;
         const r = 1.35 * D;
+        const scrollOff = scrollY * D;
         for (let pass = 0; pass < 2; pass++) {
           g.fillStyle = pass ? `rgba(212,116,85,${0.95 * fade})` : `rgba(237,236,232,${0.85 * fade})`;
           g.beginPath();
@@ -611,7 +620,7 @@
             const e = 1 - Math.pow(1 - clamp((t - intro.dl[i]) / 1100), 3);
             const wob = (1 - e) * Math.sin(i * 12.9898 + t * 0.004) * 14;
             const x = (intro.sx[i] + (intro.tx[i] - intro.sx[i]) * e + wob) * D;
-            const y = (intro.sy[i] + (intro.ty[i] - intro.sy[i]) * e) * D;
+            const y = (intro.sy[i] + (intro.ty[i] - intro.sy[i]) * e) * D - scrollOff;
             g.rect(x - r, y - r, r * 2, r * 2);
           }
           g.fill();
@@ -747,6 +756,9 @@
      scroll choreography: hero exit
      ========================================================= */
   F.onScroll((y) => {
+    if (intro.on && y > innerHeight * 0.45) {
+      endIntro();
+    }
     heroP = clamp(y / (innerHeight * 0.8));
     heroIn.style.setProperty("--p", heroP.toFixed(3));
     if (y < innerHeight) {

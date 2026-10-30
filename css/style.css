@@ -972,7 +972,7 @@ footer {
 #name,
 .hero .sub,
 .hero-in > .k {
-  transition: opacity 0.9s var(--ease) 0.1s;
+  transition: opacity 0.6s var(--ease);
 }
 html.intro #name,
 html.intro .hero .sub,
