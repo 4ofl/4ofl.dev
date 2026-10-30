@@ -1520,7 +1520,7 @@
      nav scroll-spy
      ========================================================= */
   const navLinks = $$("nav.desktop-nav a[href^='#']");
-  const spySections = ["work", "about", "contact"].map((id) => document.getElementById(id)).filter(Boolean);
+  const spySections = ["work", "writing", "about", "contact"].map((id) => document.getElementById(id)).filter(Boolean);
   if ("IntersectionObserver" in window && spySections.length) {
     const spy = new IntersectionObserver(
       (entries) =>

@@ -264,7 +264,8 @@ h1 span {
   font-weight: 400;
   font-size: 0.78rem;
 }
-#work .head {
+#work .head,
+#writing .head {
   margin-bottom: 0;
 }
 .row {
@@ -1428,5 +1429,69 @@ a.pj-next:hover {
     padding: 0.25rem 0.5rem;
     font-size: 0.72rem;
     margin-left: 0.15rem;
+  }
+}
+
+
+/* =========================================================
+   home page writing section
+   ========================================================= */
+#writing {
+  padding: 0 var(--pad);
+}
+.writing-list {
+  display: flex;
+  flex-direction: column;
+}
+.w-all-link {
+  color: var(--mist);
+  text-decoration: none;
+  font: 450 0.78rem "JetBrains Mono", monospace;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease;
+}
+.w-all-link:hover {
+  color: var(--accent);
+}
+.w-row {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 2rem;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.w-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font: 450 0.78rem "JetBrains Mono", monospace;
+}
+.w-title {
+  font: 600 clamp(1.15rem, 2.5vw, 1.45rem) / 1.2 "Bricolage Grotesque", sans-serif;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.45rem;
+}
+.w-title a {
+  color: var(--bone);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.w-title a:hover {
+  color: var(--accent);
+}
+.w-desc {
+  font: 400 0.96rem / 1.55 "Newsreader", Georgia, serif;
+  color: var(--mist);
+  max-width: 62ch;
+}
+@media (max-width: 680px) {
+  .w-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1.35rem 0;
+  }
+  .w-meta {
+    flex-direction: row;
+    gap: 0.75rem;
   }
 }

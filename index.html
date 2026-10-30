@@ -67,8 +67,9 @@
         <a class="logo" href="#top">4ofl<i>.dev</i></a>
         <nav class="desktop-nav">
           <a href="#work">work</a>
-          <a href="/writing/">writing</a>
+          <a href="#writing">writing</a>
           <a href="#about">about</a>
+          <a href="#contact">contact</a>
         </nav>
         <button
           id="menuBtn"
@@ -105,10 +106,9 @@
         </div>
         <nav class="mobile-nav-links">
           <a href="#work" class="m-link"><span class="k dim">01</span><b>work</b></a>
-          <a href="/writing/" class="m-link"><span class="k dim">02</span><b>writing</b></a>
+          <a href="#writing" class="m-link"><span class="k dim">02</span><b>writing</b></a>
           <a href="#about" class="m-link"><span class="k dim">03</span><b>about</b></a>
-          <a href="/resume.pdf" target="_blank" rel="noopener" class="m-link"><span class="k dim">04</span><b>resume ↗</b></a>
-          <a href="#contact" class="m-link"><span class="k dim">05</span><b>contact</b></a>
+          <a href="#contact" class="m-link"><span class="k dim">04</span><b>contact</b></a>
         </nav>
         <div class="mobile-nav-tools">
           <button id="mPalBtn" class="m-pal-btn">
@@ -281,9 +281,58 @@
           </div>
         </article>
       </section>
+      <section id="writing">
+        <h2 class="k head"><span>writing</span><a href="/writing/" class="w-all-link">all write-ups ↗</a></h2>
+        <div class="writing-list">
+          <article class="w-row">
+            <div class="w-meta">
+              <span class="k dim">2026-10</span>
+              <span class="k dim">7 min read</span>
+            </div>
+            <div class="w-body">
+              <h3 class="w-title">
+                <a href="/writing/ssrf-socket-pinning/">Socket-Level IP Pinning &amp; Anti-SSRF in Node.js ↗</a>
+              </h3>
+              <p class="w-desc">
+                Defeating DNS rebinding and TOCTOU attacks by overriding Node's native socket lookup hook to validate and pin remote IPs during the TCP handshake.
+              </p>
+            </div>
+          </article>
+
+          <article class="w-row">
+            <div class="w-meta">
+              <span class="k dim">2026-10</span>
+              <span class="k dim">6 min read</span>
+            </div>
+            <div class="w-body">
+              <h3 class="w-title">
+                <a href="/writing/zombie-sockets/">Handling Zombie WebSockets Without TCP Close Frames ↗</a>
+              </h3>
+              <p class="w-desc">
+                Detecting dead half-open TCP connections on Discord gateway using jittered heartbeat state machines, strict ACK deadlines, and Opcode 6 session replay.
+              </p>
+            </div>
+          </article>
+
+          <article class="w-row">
+            <div class="w-meta">
+              <span class="k dim">2026-10</span>
+              <span class="k dim">8 min read</span>
+            </div>
+            <div class="w-body">
+              <h3 class="w-title">
+                <a href="/writing/mdb-to-sqlite-wal/">Reverse-Engineering 2013 MS Access MDBs to SQLite WAL in .NET 8 ↗</a>
+              </h3>
+              <p class="w-desc">
+                Extracting 1,405 member records from a corrupt JET database, resolving Windows-1252 encoding corruption, and achieving lock-free concurrency via SQLite WAL mode.
+              </p>
+            </div>
+          </article>
+        </div>
+        </section>
 
       <section id="about">
-        <h2 class="k head"><span>about</span><span>02</span></h2>
+        <h2 class="k head"><span>about</span><span>03</span></h2>
         <div class="pin" id="pin">
           <div class="pin-in">
             <div class="ag">
@@ -308,7 +357,7 @@
       </section>
 
       <section id="contact">
-        <h2 class="k head"><span>contact</span><span>03</span></h2>
+        <h2 class="k head"><span>contact</span><span>04</span></h2>
         <p class="big">Got something worth building, or breaking?</p>
         <a href="mailto:aby@4ofl.dev" class="mail" id="mail">aby@4ofl.dev</a>
         <p class="k links">
