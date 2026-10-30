@@ -250,9 +250,15 @@ h1 span {
   line-height: 1.35;
 }
 
-/* work section */
-#work {
-  padding: 5rem var(--pad);
+/* main content sections - unified rhythm & anchor scroll landing */
+#work,
+#writing,
+#about,
+#contact {
+  padding: 5rem var(--pad) 0;
+}
+#contact {
+  padding-bottom: 5rem;
 }
 .head {
   display: flex;
@@ -484,7 +490,6 @@ h1 span {
 #about {
   display: block;
   min-height: 0;
-  padding: 4.5rem var(--pad) 2rem;
 }
 .ag {
   display: grid;
@@ -518,7 +523,6 @@ dl a:hover {
 #contact {
   display: flex;
   flex-direction: column;
-  padding: 5rem var(--pad) 2rem;
 }
 .mail {
   display: block;
@@ -898,8 +902,15 @@ footer {
   .menu-btn {
     display: block;
   }
-  section {
-    padding: 3.5rem var(--pad);
+  section,
+  #work,
+  #writing,
+  #about,
+  #contact {
+    padding: 3.5rem var(--pad) 0;
+  }
+  #contact {
+    padding-bottom: 3.5rem;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1436,10 +1447,6 @@ a.pj-next:hover {
 /* =========================================================
    home page writing section
    ========================================================= */
-#writing {
-  padding: 0 var(--pad);
-  scroll-margin-top: 5rem;
-}
 .writing-list {
   display: flex;
   flex-direction: column;
@@ -1486,9 +1493,6 @@ a.pj-next:hover {
   max-width: 62ch;
 }
 @media (max-width: 680px) {
-  #writing {
-    scroll-margin-top: 3.5rem;
-  }
   .w-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
