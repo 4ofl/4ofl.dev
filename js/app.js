@@ -333,8 +333,9 @@
 
   document.fonts.ready.then(() => {
     L.forEach((s) => {
-      s.style.fontVariationSettings = '"wght" 300';
+      s.style.fontVariationSettings = '"wght" 800';
       s.style.width = s.getBoundingClientRect().width + "px";
+      s.style.fontVariationSettings = '"wght" 300';
     });
     cacheLetters();
     startIntro();
