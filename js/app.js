@@ -221,11 +221,12 @@
      ========================================================= */
   const TARGET_NAME = "aby mathew";
   const HEX_GLYPHS = "0123456789ABCDEFabcdef!<>-_/[]{}*#~+";
-  const intro = { on: false, raf: null, revealed: false, t0: 0 };
+  const intro = { on: false, raf: null, revealed: false, t0: 0, endedAt: 0 };
 
   function endIntro() {
     intro.on = false;
     intro.revealed = true;
+    intro.endedAt = performance.now();
     if (intro.raf) {
       cancelAnimationFrame(intro.raf);
       intro.raf = null;
@@ -235,6 +236,9 @@
       s.textContent = chars[idx] || "";
       s.style.color = "";
       s.style.fontVariationSettings = '"wght" 300';
+    });
+    centers.forEach((it) => {
+      it.curK = 0;
     });
     root.classList.remove("intro");
     try {
@@ -635,6 +639,10 @@
 
     if (intro.on) return;
 
+    // Smooth ramp-up from 0 to 1 over 1.2s after scramble concludes
+    const timeSinceIntro = intro.endedAt ? now - intro.endedAt : 10000;
+    const waveRamp = clamp(timeSinceIntro / 1200);
+
     const isPointerActive = mx > -900 && now - lastMoveT < 3000;
     const fade = clamp(1 - sy / innerHeight);
     for (let i = 0; i < centers.length; i++) {
@@ -644,8 +652,10 @@
       const proxK = Math.max(0, 1 - mouseDist / 320);
 
       if (!reduce) {
-        const s = Math.max(0, Math.sin(now * 0.0014 - i * 0.55));
-        const idleK = s * s * s * 0.62 * fade;
+        // Wave phase starts at 0 from left to right when intro finishes
+        const waveT = intro.endedAt ? (now - intro.endedAt) * 0.0014 : now * 0.0014;
+        const s = Math.max(0, Math.sin(waveT - i * 0.55));
+        const idleK = s * s * s * 0.62 * fade * waveRamp;
         if (isPointerActive) {
           const proxBlend = clamp(1 - (mouseDist - 120) / 220);
           targetK = idleK * (1 - proxBlend) + proxK * proxBlend;
@@ -656,7 +666,7 @@
         targetK = proxK;
       }
 
-      it.curK = it.curK !== undefined ? it.curK + (targetK - it.curK) * 0.12 : targetK;
+      it.curK = it.curK !== undefined ? it.curK + (targetK - it.curK) * 0.09 : 0;
       it.el.style.fontVariationSettings = `"wght" ${(300 + 500 * it.curK) | 0}`;
       it.el.style.color = isPointerActive && it.curK > 0.55 && proxK > 0.4 ? "var(--accent)" : "";
     }
