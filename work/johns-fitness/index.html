@@ -11,8 +11,9 @@
     <meta property="og:url" content="https://4ofl.dev/work/johns-fitness/" />
     <meta property="og:title" content="johns fitness · 4ofl" />
     <meta property="og:description" content="johns fitness · offline-first access control with BioMax biometric terminal, Win32 P/Invoke, and local SQLite WAL." />
-    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta property="og:image" content="https://4ofl.dev/assets/og-johns-fitness.png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://4ofl.dev/assets/og-johns-fitness.png" />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -57,7 +58,8 @@
 
       <section class="pj-sec">
         <h2 class="k head"><span>architecture</span><span>on-device DSP fast-path &amp; async transactional outbox</span></h2>
-        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="johns fitness: biomax terminal to door relay, and tcp socket pool to .net 8 x86 daemon to local sqlite and sync outbox">
+        <div class="arch-wrap" tabindex="0" role="region" aria-label="architecture diagram (scrollable)">
+          <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="johns fitness: biomax terminal to door relay, and tcp socket pool to .net 8 x86 daemon to local sqlite and sync outbox">
           <!-- Top Row (Fast Path) -->
           <g class="n" style="--d:0ms">
             <rect x="30" y="40" width="180" height="72" rx="10"/>
@@ -112,6 +114,7 @@
 
           <text class="note n" x="490" y="132" text-anchor="start" style="--d:1500ms">biometrics quarantined on gym LAN · zero bytes leave premise</text>
         </svg>
+        </div>
       </section>
 
       <section class="pj-sec">

@@ -46,6 +46,25 @@
   --line: #ffffff1a;
   --accent: #d47455;
   --pad: clamp(1.25rem, 5vw, 4rem);
+
+  /* rigid spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* modular typographic clamp scale */
+  --step--1: 0.8rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.56rem;
+  --step-3: 1.95rem;
+  --step-4: 2.44rem;
+  --step-hero: clamp(4.5rem, 18vw, 16rem);
 }
 *,
 *::before,
@@ -57,6 +76,7 @@
 html {
   background: var(--ink);
   scroll-behavior: smooth;
+  overflow-x: hidden;
   overflow-x: clip;
 }
 html.lenis,
@@ -73,6 +93,8 @@ html.lenis body {
   overflow: hidden;
 }
 body {
+  overflow-x: hidden;
+  overflow-x: clip;
   color: var(--bone);
   font:
     400 1.05rem/1.6 "Newsreader",
@@ -110,7 +132,7 @@ footer,
 #plist,
 #pin-input {
   font-family: "JetBrains Mono", monospace;
-  font-size: 0.78rem;
+  font-size: var(--step--1);
   letter-spacing: 0.02em;
 }
 .dim {
@@ -230,12 +252,12 @@ nav a[aria-current="true"] {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 1.5rem;
+  gap: var(--space-6);
   padding-bottom: 3.5rem;
 }
 h1 {
   font:
-    300 clamp(4.5rem, 19vw, 17rem)/0.82 "Bricolage Grotesque",
+    300 var(--step-hero)/0.82 "Bricolage Grotesque",
     sans-serif;
   letter-spacing: -0.05em;
   user-select: none;
@@ -268,10 +290,10 @@ h1 span {
   justify-content: space-between;
   color: var(--mist);
   border-bottom: 1px solid var(--line);
-  padding-bottom: 0.8rem;
-  margin-bottom: 1.5rem;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-6);
   font-weight: 400;
-  font-size: 0.78rem;
+  font-size: var(--step--1);
 }
 #work .head,
 #writing .head {
@@ -388,18 +410,18 @@ h1 span {
 .demo {
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 1.2rem;
+  padding: var(--space-4);
   background: #121215;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
   display: grid;
-  gap: 0.9rem;
+  gap: var(--space-3);
   align-content: start;
   position: relative;
   z-index: 2;
 }
 .chat {
   display: grid;
-  gap: 0.8rem;
+  gap: var(--space-3);
   min-height: 6.5rem;
   font-size: 0.95rem;
   align-content: start;
@@ -424,7 +446,7 @@ h1 span {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .chips button {
   border: 1px solid var(--line);
@@ -438,6 +460,8 @@ h1 span {
 }
 .jtop {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   justify-content: space-between;
   align-items: center;
 }
@@ -488,12 +512,14 @@ h1 span {
 }
 .trow {
   display: flex;
-  gap: 0.6rem;
+  align-items: center;
+  gap: var(--space-2);
   border-top: 1px solid var(--line);
-  padding-top: 0.8rem;
+  padding-top: var(--space-3);
 }
 .trow input {
   flex: 1;
+  min-width: 0;
   outline: 0;
 }
 
@@ -505,7 +531,7 @@ h1 span {
 .ag {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
-  gap: 3rem;
+  gap: var(--space-12);
   align-items: start;
 }
 .big {
@@ -517,7 +543,7 @@ h1 span {
 dl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 0.9rem 1.5rem;
+  gap: var(--space-3) var(--space-6);
 }
 dt {
   color: var(--mist);
@@ -985,7 +1011,7 @@ footer {
 .hero-in {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--space-6);
   transform-origin: 0 100%;
   transform: translate3d(0, calc(var(--p, 0) * -7vh), 0)
     scale(calc(1 - var(--p, 0) * 0.16));
@@ -1223,12 +1249,29 @@ h1.pj-title {
   opacity: 1;
   transform: none;
 }
+.arch-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  margin-top: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
 .arch {
   width: 100%;
   max-width: 980px;
   height: auto;
   display: block;
   margin-top: 1rem;
+}
+.arch-wrap .arch {
+  margin-top: 0;
+}
+@media (max-width: 680px) {
+  .arch {
+    min-width: 620px;
+  }
 }
 .arch rect {
   fill: #121215;
@@ -1465,6 +1508,40 @@ a.pj-next:hover {
   }
 }
 
+@media (max-width: 420px) {
+  .pj-nav {
+    gap: 0.5rem;
+  }
+  .pj-nav a {
+    font-size: 0.8rem;
+    padding: 0.15rem 0;
+  }
+  .nav-pill {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .demo {
+    padding: var(--space-3);
+  }
+  .trow input {
+    font-size: 0.72rem;
+  }
+  .chips button {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.72rem;
+  }
+  .sw {
+    padding: 0.25rem 0.65rem;
+    font-size: 0.72rem;
+  }
+  .fp {
+    width: 68px;
+    height: 68px;
+  }
+}
+
 
 /* =========================================================
    home page writing section
@@ -1486,15 +1563,15 @@ a.pj-next:hover {
 .w-row {
   display: grid;
   grid-template-columns: 9.5rem 1fr;
-  gap: 2rem;
-  padding: 1.8rem 0;
+  gap: var(--space-8);
+  padding: var(--space-6) 0;
   border-bottom: 1px solid var(--line);
 }
 .w-meta {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  font: 450 0.78rem "JetBrains Mono", monospace;
+  font: 450 var(--step--1) "JetBrains Mono", monospace;
 }
 .w-title {
   font: 600 clamp(1.15rem, 2.5vw, 1.45rem) / 1.2 "Bricolage Grotesque", sans-serif;

@@ -74,7 +74,7 @@
         <button
           id="menuBtn"
           class="menu-btn"
-          aria-label="Open navigation menu"
+          aria-label="open navigation menu"
           aria-expanded="false"
           aria-controls="mobileNav"
         >
@@ -90,7 +90,7 @@
       aria-hidden="true"
       role="dialog"
       aria-modal="true"
-      aria-label="Navigation menu"
+      aria-label="navigation menu"
     >
       <div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
       <div class="mobile-nav-panel">
@@ -99,7 +99,7 @@
           <button
             id="menuCloseBtn"
             class="menu-close-btn"
-            aria-label="Close navigation menu"
+            aria-label="close navigation menu"
           >
             ✕
           </button>
@@ -195,7 +195,7 @@
                     placeholder="/help /ping /status /remind 5s stretch"
                     autocomplete="off"
                     spellcheck="false"
-                    aria-label="Command"
+                    aria-label="command input"
                   />
                 </div>
               </div>
@@ -245,7 +245,7 @@
                 <button
                   id="fp"
                   class="fp"
-                  aria-label="Scan fingerprint"
+                  aria-label="scan fingerprint"
                 ></button>
                 <p class="k" id="jres" aria-live="polite">tap to simulate biometric scan</p>
                 <ul class="log" id="jlog"></ul>
@@ -370,7 +370,7 @@
         <p class="big">Got something worth building, or breaking?</p>
         <a href="mailto:aby@4ofl.dev" class="mail" id="mail">aby@4ofl.dev</a>
         <p class="k links">
-          <button id="copyBtn" class="link-btn" aria-label="Copy email address to clipboard">copy email</button
+          <button id="copyBtn" class="link-btn" aria-label="copy email address to clipboard">copy email</button
           ><a href="https://github.com/4ofl" target="_blank" rel="noopener"
             >github ↗</a
           ><a
@@ -394,7 +394,7 @@
 
     <div class="pal" id="pal" hidden>
       <div class="pal-backdrop" id="palBackdrop"></div>
-      <div class="pbox" role="dialog" aria-modal="true" aria-label="Spotlight search">
+      <div class="pbox" role="dialog" aria-modal="true" aria-label="command palette search">
         <div class="p-head">
           <svg class="p-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"></circle>
@@ -402,18 +402,18 @@
           </svg>
           <input
             id="pin-input"
-            placeholder="Search commands, projects, sections…"
+            placeholder="search commands, projects, sections…"
             autocomplete="off"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="false"
             aria-controls="plist"
-            aria-label="Spotlight search"
+            aria-label="command palette search"
           />
-          <kbd class="p-esc" id="palCloseKbd" role="button" tabindex="0" aria-label="Close command palette">esc</kbd>
+          <kbd class="p-esc" id="palCloseKbd" role="button" tabindex="0" aria-label="close command palette">esc</kbd>
         </div>
         <div class="p-body">
-          <ul id="plist" role="listbox" aria-label="Commands"></ul>
+          <ul id="plist" role="listbox" aria-label="commands"></ul>
           <div id="pEmpty" class="p-empty" hidden>
             <span class="p-empty-text">no matching results</span>
           </div>

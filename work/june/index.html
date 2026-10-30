@@ -11,8 +11,9 @@
     <meta property="og:url" content="https://4ofl.dev/work/june/" />
     <meta property="og:title" content="june · 4ofl" />
     <meta property="og:description" content="june · hardened Discord bot with built-in node:sqlite, socket IP pinning, and ReDoS worker watchdog." />
-    <meta property="og:image" content="https://4ofl.dev/assets/social-card.png" />
+    <meta property="og:image" content="https://4ofl.dev/assets/og-june.png" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://4ofl.dev/assets/og-june.png" />
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
@@ -58,7 +59,8 @@
 
       <section class="pj-sec">
         <h2 class="k head"><span>architecture</span><span>gateway state machine, concurrency semaphores &amp; isolated runtimes</span></h2>
-        <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="june: discord gateway to heartbeat &amp; sharding to interaction guards to worker threads and node:sqlite">
+        <div class="arch-wrap" tabindex="0" role="region" aria-label="architecture diagram (scrollable)">
+          <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="june: discord gateway to heartbeat &amp; sharding to interaction guards to worker threads and node:sqlite">
           <!-- Top Row -->
           <g class="n" style="--d:0ms">
             <rect x="30" y="40" width="180" height="72" rx="10"/>
@@ -112,6 +114,7 @@
           <text class="note n" x="30" y="215" text-anchor="start" style="--d:1400ms">catches zombie connections</text>
           <text class="note n" x="770" y="215" text-anchor="start" style="--d:2200ms">0.1–0.4ms indexed queries</text>
         </svg>
+        </div>
       </section>
 
       <section class="pj-sec">

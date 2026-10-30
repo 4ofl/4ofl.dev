@@ -1201,105 +1201,105 @@
     pEmpty = $("#pEmpty");
 
   const CMD = [
-    // SECTIONS
+    // sections
     {
-      group: "Sections",
+      group: "sections",
       name: "work",
-      desc: "Selected engineering projects & interactive demos",
+      desc: "selected engineering projects & interactive demos",
       target: "#work",
       tag: "section",
       keywords: ["work", "projects", "portfolio", "demos", "01"],
     },
     {
-      group: "Sections",
+      group: "sections",
       name: "about",
-      desc: "Background, technical workbench, and focus areas",
+      desc: "background, technical workbench, and focus areas",
       target: "#about",
       tag: "section",
       keywords: ["about", "bio", "skills", "kerala", "undergrad", "workbench", "02"],
     },
     {
-      group: "Sections",
+      group: "sections",
       name: "contact",
-      desc: "Email address, availability, and social links",
+      desc: "email address, availability, and social links",
       target: "#contact",
       tag: "section",
       keywords: ["contact", "email", "reach", "hire", "talk", "03"],
     },
 
-    // PROJECTS
+    // projects
     {
-      group: "Projects",
+      group: "projects",
       name: "june",
-      desc: "Hardened Discord bot · node:sqlite · socket IP pinning",
+      desc: "hardened discord bot · node:sqlite · socket ip pinning",
       target: "/work/june/",
       tag: "case study",
       keywords: ["june", "discord", "bot", "sqlite", "ssrf", "redos", "watchdog"],
     },
     {
-      group: "Projects",
+      group: "projects",
       name: "johns fitness",
-      desc: "Offline-first access control · BioMax DSP · 1,405 members",
+      desc: "offline-first access control · biomax dsp · 1,405 members",
       target: "/work/johns-fitness/",
       tag: "case study",
       keywords: ["johns", "fitness", "gym", "biometric", "biomax", "sqlite", "wasm", "wal", "offline"],
     },
     {
-      group: "Projects",
+      group: "projects",
       name: "citecamp",
-      desc: "RAG assistant over watermarked academic circulars",
+      desc: "rag assistant over watermarked academic circulars",
       target: "/work/citecamp/",
       tag: "case study",
       keywords: ["citecamp", "rag", "academic", "ai", "chunker", "pdf", "retrieval"],
     },
 
-    // WRITING
+    // writing
     {
-      group: "Writing",
+      group: "writing",
       name: "writing",
-      desc: "All engineering write-ups & architectural notes",
+      desc: "all engineering write-ups & architectural notes",
       target: "/writing/",
       tag: "index",
       keywords: ["writing", "essays", "articles", "blog", "posts", "read"],
     },
     {
-      group: "Writing",
+      group: "writing",
       name: "anti-ssrf & socket pinning",
-      desc: "Defeating DNS rebinding & TOCTOU in Node.js",
+      desc: "defeating dns rebinding & toctou in node.js",
       target: "/writing/ssrf-socket-pinning/",
       tag: "essay",
       keywords: ["ssrf", "socket", "pinning", "dns", "rebinding", "toctou", "security", "node"],
     },
     {
-      group: "Writing",
+      group: "writing",
       name: "zombie websockets",
-      desc: "Recovering from half-open TCP gateway connections",
+      desc: "recovering from half-open tcp gateway connections",
       target: "/writing/zombie-sockets/",
       tag: "essay",
       keywords: ["zombie", "websocket", "discord", "gateway", "tcp", "heartbeat", "sockets"],
     },
     {
-      group: "Writing",
+      group: "writing",
       name: "mdb to sqlite wal",
-      desc: "Migrating 1,405 members from Access 2013 to SQLite in .NET 8",
+      desc: "migrating 1,405 members from access 2013 to sqlite in .net 8",
       target: "/writing/mdb-to-sqlite-wal/",
       tag: "essay",
       keywords: ["mdb", "sqlite", "wal", "access", "database", "migration", ".net", "jet"],
     },
 
-    // ACTIONS
+    // actions
     {
-      group: "Actions",
+      group: "actions",
       name: "resume",
-      desc: "Open official PDF resume (aby_mathew_resume.pdf)",
+      desc: "open official pdf resume (aby_mathew_resume.pdf)",
       target: () => window.open("/resume.pdf", "_blank", "noopener"),
       tag: "document",
       keywords: ["resume", "cv", "pdf", "experience", "education", "hire"],
     },
     {
-      group: "Actions",
+      group: "actions",
       name: "download resume",
-      desc: "Download aby_mathew_resume.pdf directly",
+      desc: "download aby_mathew_resume.pdf directly",
       target: () => {
         const a = document.createElement("a");
         a.href = "/resume.pdf";
@@ -1311,7 +1311,7 @@
       keywords: ["download", "resume", "cv", "pdf"],
     },
     {
-      group: "Actions",
+      group: "actions",
       name: "email aby",
       desc: "mailto:aby@4ofl.dev",
       target: () => (location.href = "mailto:aby@4ofl.dev"),
@@ -1319,17 +1319,17 @@
       keywords: ["mail", "email", "send", "contact", "message"],
     },
     {
-      group: "Actions",
+      group: "actions",
       name: "copy email",
-      desc: "Copy aby@4ofl.dev directly to clipboard",
+      desc: "copy aby@4ofl.dev directly to clipboard",
       target: () => copyBtn.click(),
       tag: "action",
       keywords: ["email", "copy", "mail", "contact", "address", "aby@4ofl.dev"],
     },
     {
-      group: "Actions",
+      group: "actions",
       name: "simulate biometric scan",
-      desc: "Trigger simulated fingerprint scan in Johns Fitness demo",
+      desc: "trigger simulated fingerprint scan in johns fitness demo",
       target: () => {
         const row = document.querySelector('.row[data-slug="johns-fitness"]');
         if (row && !row.classList.contains("open")) {
@@ -1347,9 +1347,9 @@
       keywords: ["scan", "biometric", "fingerprint", "johns", "demo", "simulate", "relay"],
     },
     {
-      group: "Actions",
+      group: "actions",
       name: "ping edge worker",
-      desc: "Test round-trip latency to Cloudflare worker",
+      desc: "test round-trip latency to cloudflare worker",
       target: async () => {
         const t0 = performance.now();
         const ok = await F.up("https://worker-round-credit-5733.abyperhaps.workers.dev/ping", 2500);
