@@ -1156,39 +1156,6 @@
   tickClock();
   setInterval(tickClock, 2e4);
 
-  /* =========================================================
-     june statistics loader (api placeholder & live polling)
-     ========================================================= */
-  async function loadJuneStats() {
-    const api = window.JUNE_STATS_API || "/status";
-    let servers = null;
-    let commands = null;
-    let uptime = null;
-
-    try {
-      const r = await F.api(api, "june-metrics", 60);
-      const d = r && r.data;
-      if (d && d.state !== "unknown") {
-        if (d.servers != null || d.guilds != null) servers = String(d.servers ?? d.guilds);
-        if (d.commands != null || d.commandsRun != null) commands = String(d.commands ?? d.commandsRun);
-        if (d.uptime != null || d.uptimePct != null) uptime = String(d.uptime ?? d.uptimePct);
-      }
-    } catch {}
-
-    const elS = $("#juneServers");
-    const elC = $("#juneCommands");
-    const elU = $("#juneUptime");
-    const elCS = $("#juneCaseServers");
-    const elCC = $("#juneCaseCommands");
-    const elCU = $("#juneCaseUptime");
-    if (elS && servers !== null) elS.textContent = servers;
-    if (elC && commands !== null) elC.textContent = commands;
-    if (elU && uptime !== null) elU.textContent = uptime;
-    if (elCS && servers !== null) elCS.textContent = servers;
-    if (elCC && commands !== null) elCC.textContent = commands;
-    if (elCU && uptime !== null) elCU.textContent = uptime;
-  }
-  loadJuneStats();
 
   /* =========================================================
      spotlight command palette

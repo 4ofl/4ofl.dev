@@ -1235,6 +1235,9 @@ h1.pj-title {
   view-transition-name: proj;
   user-select: auto;
 }
+h1.pj-title.writing-title {
+  font-size: clamp(2.4rem, 7vw, 4.8rem);
+}
 .pj-sec {
   padding: 3rem var(--pad);
 }
@@ -1319,6 +1322,32 @@ h1.pj-title {
 .arch.in .n {
   opacity: 1;
 }
+.arch [data-d="0"] { --d: 0ms; }
+.arch [data-d="200"] { --d: 200ms; }
+.arch [data-d="250"] { --d: 250ms; }
+.arch [data-d="300"] { --d: 300ms; }
+.arch [data-d="400"] { --d: 400ms; }
+.arch [data-d="500"] { --d: 500ms; }
+.arch [data-d="600"] { --d: 600ms; }
+.arch [data-d="700"] { --d: 700ms; }
+.arch [data-d="750"] { --d: 750ms; }
+.arch [data-d="800"] { --d: 800ms; }
+.arch [data-d="900"] { --d: 900ms; }
+.arch [data-d="1000"] { --d: 1000ms; }
+.arch [data-d="1100"] { --d: 1100ms; }
+.arch [data-d="1200"] { --d: 1200ms; }
+.arch [data-d="1250"] { --d: 1250ms; }
+.arch [data-d="1300"] { --d: 1300ms; }
+.arch [data-d="1400"] { --d: 1400ms; }
+.arch [data-d="1500"] { --d: 1500ms; }
+.arch [data-d="1700"] { --d: 1700ms; }
+.arch [data-d="1800"] { --d: 1800ms; }
+.arch [data-d="1900"] { --d: 1900ms; }
+.arch [data-d="2000"] { --d: 2000ms; }
+.arch [data-d="2100"] { --d: 2100ms; }
+.arch [data-d="2200"] { --d: 2200ms; }
+.arch [data-d="2300"] { --d: 2300ms; }
+.arch [data-d="2500"] { --d: 2500ms; }
 .pj .metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));

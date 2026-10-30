@@ -1,0 +1,27 @@
+{
+  "name": "4ofl-dev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal site for 4ofl. Static HTML/CSS/JS with Cloudflare Edge Worker.",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node tests/smoke.test.js",
+    "test:smoke": "node tests/smoke.test.js",
+    "build:resume": "node scripts/build-resume.js",
+    "build:og": "node scripts/build-og.js",
+    "dev": "wrangler pages dev .",
+    "deploy": "wrangler pages deploy ."
+  },
+  "devDependencies": {
+    "wrangler": "^3.100.0"
+  },
+  "keywords": [
+    "portfolio",
+    "static-site",
+    "cloudflare-pages",
+    "edge-worker"
+  ],
+  "author": "Aby Mathew <aby@4ofl.dev>",
+  "license": "MIT"
+}
+

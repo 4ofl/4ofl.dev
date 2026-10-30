@@ -61,58 +61,58 @@
         <div class="arch-wrap" tabindex="0" role="region" aria-label="architecture diagram (scrollable)">
           <svg class="arch " viewBox="0 0 960 280" role="img" aria-label="johns fitness: biomax terminal to door relay, and tcp socket pool to .net 8 x86 daemon to local sqlite and sync outbox">
           <!-- Top Row (Fast Path) -->
-          <g class="n" style="--d:0ms">
+          <g class="n" data-d="0">
             <rect x="30" y="40" width="180" height="72" rx="10"/>
             <text x="120" y="74" text-anchor="middle">biomax terminal</text>
             <text class="sub" x="120" y="90" text-anchor="middle">1:N DSP match (NVRAM)</text>
           </g>
-          <path d="M210 76 L272 76" pathLength="1" style="--d:200ms"/>
-          <polygon class="n ah" points="280,76 272,71.5 272,80.5" style="--d:600ms"/>
+          <path d="M210 76 L272 76" pathLength="1" data-d="200"/>
+          <polygon class="n ah" points="280,76 272,71.5 272,80.5" data-d="600"/>
 
-          <g class="n" style="--d:400ms">
+          <g class="n" data-d="400">
             <rect x="280" y="40" width="180" height="72" rx="10"/>
             <text x="370" y="74" text-anchor="middle">door relay</text>
             <text class="sub" x="370" y="90" text-anchor="middle">5000ms pulse (&lt; 15ms)</text>
           </g>
 
-          <text class="note n" x="490" y="74" text-anchor="start" style="--d:600ms">← &lt; 15ms autonomous fast-path</text>
-          <text class="sub note n" x="490" y="90" text-anchor="start" style="--d:700ms">the door is physically decoupled from host and cloud</text>
+          <text class="note n" x="490" y="74" text-anchor="start" data-d="600">← &lt; 15ms autonomous fast-path</text>
+          <text class="sub note n" x="490" y="90" text-anchor="start" data-d="700">the door is physically decoupled from host and cloud</text>
 
           <!-- Branch to Bottom Row (Audit & Outbox Path) -->
-          <path d="M120 112 L120 162" pathLength="1" style="--d:700ms"/>
-          <polygon class="n ah" points="120,170 115.5,162 124.5,162" style="--d:1100ms"/>
+          <path d="M120 112 L120 162" pathLength="1" data-d="700"/>
+          <polygon class="n ah" points="120,170 115.5,162 124.5,162" data-d="1100"/>
 
-          <g class="n" style="--d:900ms">
+          <g class="n" data-d="900">
             <rect x="30" y="170" width="180" height="72" rx="10"/>
             <text x="120" y="204" text-anchor="middle">tcp socket pool</text>
             <text class="sub" x="120" y="220" text-anchor="middle">port 5005 gym lan</text>
           </g>
-          <path d="M210 206 L272 206" pathLength="1" style="--d:1100ms"/>
-          <polygon class="n ah" points="280,206 272,201.5 272,210.5" style="--d:1500ms"/>
+          <path d="M210 206 L272 206" pathLength="1" data-d="1100"/>
+          <polygon class="n ah" points="280,206 272,201.5 272,210.5" data-d="1500"/>
 
-          <g class="n" style="--d:1300ms">
+          <g class="n" data-d="1300">
             <rect x="280" y="170" width="190" height="72" rx="10"/>
             <text x="375" y="204" text-anchor="middle">.net 8 x86 daemon</text>
             <text class="sub" x="375" y="220" text-anchor="middle">win32 P/Invoke interop</text>
           </g>
-          <path d="M470 206 L532 206" pathLength="1" style="--d:1500ms"/>
-          <polygon class="n ah" points="540,206 532,201.5 532,210.5" style="--d:1900ms"/>
+          <path d="M470 206 L532 206" pathLength="1" data-d="1500"/>
+          <polygon class="n ah" points="540,206 532,201.5 532,210.5" data-d="1900"/>
 
-          <g class="n" style="--d:1700ms">
+          <g class="n" data-d="1700">
             <rect x="540" y="170" width="180" height="72" rx="10"/>
             <text x="630" y="204" text-anchor="middle">local sqlite</text>
             <text class="sub" x="630" y="220" text-anchor="middle">wal · 1,405 members</text>
           </g>
-          <path d="M720 206 L772 206" pathLength="1" style="--d:1900ms"/>
-          <polygon class="n ah" points="780,206 772,201.5 772,210.5" style="--d:2300ms"/>
+          <path d="M720 206 L772 206" pathLength="1" data-d="1900"/>
+          <polygon class="n ah" points="780,206 772,201.5 772,210.5" data-d="2300"/>
 
-          <g class="n" style="--d:2100ms">
+          <g class="n" data-d="2100">
             <rect x="780" y="170" width="150" height="72" rx="10"/>
             <text x="855" y="204" text-anchor="middle">sync outbox</text>
             <text class="sub" x="855" y="220" text-anchor="middle">cloud sync</text>
           </g>
 
-          <text class="note n" x="490" y="132" text-anchor="start" style="--d:1500ms">biometrics quarantined on gym LAN · zero bytes leave premise</text>
+          <text class="note n" x="490" y="132" text-anchor="start" data-d="1500">biometrics quarantined on gym LAN · zero bytes leave premise</text>
         </svg>
         </div>
       </section>

@@ -5,9 +5,6 @@
 .env*
 !.env.example
 *.py
-worker.js
-worker/
-TODO.md
 
 # Build artifacts & temp files
 .resume_preview.html

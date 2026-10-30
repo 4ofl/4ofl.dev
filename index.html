@@ -19,6 +19,10 @@
       content="https://4ofl.dev/assets/social-card.png"
     />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://4ofl.dev/assets/social-card.png"
+    />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -42,21 +46,7 @@
       type="font/woff2"
       crossorigin
     />
-    <script>
-      /* intro plays once per session; the failsafe timer can never leave the name hidden */
-      try {
-        if (
-          !sessionStorage.getItem("intro") &&
-          !matchMedia("(prefers-reduced-motion:reduce)").matches &&
-          !location.hash
-        ) {
-          document.documentElement.classList.add("intro");
-          setTimeout(function () {
-            document.documentElement.classList.remove("intro");
-          }, 5000);
-        }
-      } catch (e) {}
-    </script>
+    <script src="/js/intro.js"></script>
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>

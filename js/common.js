@@ -217,10 +217,11 @@
     $$(".big, .arch").forEach((el) => el.classList.add("in"));
   }
 
-  /* ---------- live bits used by project pages ---------- */
+  /* ---------- live bits used by project pages and home ---------- */
   const mEl = $("#metrics");
   const caseServers = $("#juneCaseServers");
-  if (mEl || caseServers) {
+  const homeServers = $("#juneServers");
+  if (mEl || caseServers || homeServers) {
     const set = (k, v) => {
       const e = mEl && $(`[data-m="${k}"]`, mEl);
       if (e) e.textContent = v;
@@ -249,12 +250,18 @@
       const commands = d.commands != null || d.commandsRun != null ? String(d.commands ?? d.commandsRun) : null;
       const uptimePct = d.uptime != null || d.uptimePct != null ? String(d.uptime ?? d.uptimePct) : null;
 
-      const elS = $("#juneCaseServers");
-      const elC = $("#juneCaseCommands");
-      const elU = $("#juneCaseUptime");
+      const elS = $("#juneServers");
+      const elC = $("#juneCommands");
+      const elU = $("#juneUptime");
+      const elCS = $("#juneCaseServers");
+      const elCC = $("#juneCaseCommands");
+      const elCU = $("#juneCaseUptime");
       if (elS && servers !== null) elS.textContent = servers;
       if (elC && commands !== null) elC.textContent = commands;
       if (elU && uptimePct !== null) elU.textContent = uptimePct;
+      if (elCS && servers !== null) elCS.textContent = servers;
+      if (elCC && commands !== null) elCC.textContent = commands;
+      if (elCU && uptimePct !== null) elCU.textContent = uptimePct;
     });
   }
 })();
