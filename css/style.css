@@ -1438,6 +1438,7 @@ a.pj-next:hover {
    ========================================================= */
 #writing {
   padding: 0 var(--pad);
+  scroll-margin-top: 5rem;
 }
 .writing-list {
   display: flex;
