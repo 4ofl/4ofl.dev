@@ -38,6 +38,7 @@ Edge handler located at `worker/worker.js`:
 
 - `GET /`: returns timestamp and name of most recent pushed GitHub repository
 - `GET /commits`: returns cached last 30 weeks of GitHub contribution matrix
+- `GET /commit-activity.svg`: live dynamic animated 40-week contribution SVG rendered from GitHub GraphQL telemetry
 - `GET /status`: passthrough proxy to live June bot heartbeat, or `{ state: "unknown" }`
 - `GET /ping`: lightweight 204 response used for live round-trip latency measurements
 - **Secrets**:
