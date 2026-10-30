@@ -313,15 +313,39 @@ code {
 }
 
 function findBrowser() {
+  const envBrowser = process.env.CHROME_BIN || process.env.CHROMIUM_PATH || process.env.PUPPETEER_EXECUTABLE_PATH;
+  if (envBrowser && fs.existsSync(envBrowser)) return envBrowser;
+
   const candidates = [
+    // Windows
     "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
     "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+    // Linux / CI (GitHub Actions ubuntu-latest)
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    // macOS
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
   ];
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;
   }
+
+  // Fallback: check PATH using `where` (Windows) or `which` (POSIX)
+  try {
+    const cmd = process.platform === "win32" ? "where" : "which";
+    const binary = process.platform === "win32" ? "chrome" : "google-chrome";
+    const check = spawnSync(cmd, [binary], { encoding: "utf-8" });
+    if (check.status === 0 && check.stdout) {
+      const found = check.stdout.trim().split(/\r?\n/)[0];
+      if (fs.existsSync(found)) return found;
+    }
+  } catch {}
+
   return null;
 }
 
@@ -341,6 +365,8 @@ function compile() {
     const res = spawnSync(browser, [
       "--headless",
       "--disable-gpu",
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
       "--no-pdf-header-footer",
       `--print-to-pdf=${OUTPUT_PDF}`,
       HTML_TEMP,

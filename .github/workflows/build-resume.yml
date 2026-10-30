@@ -1,0 +1,46 @@
+name: Auto-Compile Resume PDF
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "resume/resume-data.json"
+      - "scripts/build-resume.js"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-commit-resume:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compile Resume PDF
+        run: node scripts/build-resume.js
+
+      - name: Commit and Push Updated PDF
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add resume.pdf assets/aby_mathew_resume.pdf
+          
+          if git diff --staged --quiet; then
+            echo "No changes in compiled PDF."
+          else
+            git commit -m "ci: auto-compile resume.pdf from resume-data.json [skip ci]"
+            git push origin main
+          fi
+
