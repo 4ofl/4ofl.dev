@@ -30,17 +30,11 @@ jobs:
       - name: Compile Resume PDF
         run: node scripts/build-resume.js
 
-      - name: Commit and Push Updated PDF
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          git add resume.pdf assets/aby_mathew_resume.pdf
-          
-          if git diff --staged --quiet; then
-            echo "No changes in compiled PDF."
-          else
-            git commit -m "ci: auto-compile resume.pdf from resume-data.json [skip ci]"
-            git push origin main
-          fi
+      - name: Upload Resume Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume-pdfs
+          path: |
+            resume.pdf
+            assets/aby_mathew_resume.pdf
 
