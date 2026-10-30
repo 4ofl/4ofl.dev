@@ -1,0 +1,41 @@
+{
+  "home": {
+    "filename": "social-card.png",
+    "brand": "4ofl.dev",
+    "badge": "systems developer · bca undergrad · kerala, in",
+    "title": "aby mathew",
+    "description": "Violently opposed to legacy software. Building local-first runtimes, hardened Discord infrastructure, and offline-first edge databases.",
+    "tags": ["Python", "C", "Node.js", "SQLite WAL", "Docker", "Linux"]
+  },
+  "june": {
+    "filename": "og-june.png",
+    "brand": "4ofl.dev · selected work",
+    "category": "infrastructure · bots",
+    "status": "live · production",
+    "statusType": "live",
+    "title": "june",
+    "description": "A hardened Discord application with zero C++ database dependencies, socket-level SSRF pinning, and isolated ReDoS watchdogs.",
+    "tags": ["node.js 22", "built-in node:sqlite (wal)", "socket ip pinning", "docker alpine"]
+  },
+  "johns-fitness": {
+    "filename": "og-johns-fitness.png",
+    "brand": "4ofl.dev · selected work",
+    "category": "offline-first · biometrics",
+    "status": "prototype",
+    "statusType": "prototype",
+    "title": "johns fitness",
+    "description": "A gym system that keeps working when the internet doesn't. 1,405 members migrated from a 2013 legacy Access MDB, BioMax DSP matching, local SQLite WAL, and a transactional sync outbox.",
+    "tags": ["intel n100", ".net 8 daemon", "biomax dsp (< 15ms)", "sqlite wal", "zero cloud lag"]
+  },
+  "citecamp": {
+    "filename": "og-citecamp.png",
+    "brand": "4ofl.dev · selected work",
+    "category": "rag · academic ai",
+    "status": "concept",
+    "statusType": "concept",
+    "title": "citecamp",
+    "description": "A RAG assistant over watermarked, scanned university circulars. The data pipeline comes first, the model second: every claim ships with its verified source.",
+    "tags": ["python", "pdf pipeline first", "clause-level chunker", "citation grounded"]
+  }
+}
+
