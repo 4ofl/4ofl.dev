@@ -1,7 +1,7 @@
 /* 4ofl.dev service worker: the site keeps working offline.
    html: network first (4s), then cache. assets: cache first, refreshed in the background.
    bump V when you want every visitor's cache dropped. */
-const V = "4ofl-v14";
+const V = "4ofl-v15";
 const CORE = [
   "/",
   "/resume.pdf",
@@ -16,6 +16,8 @@ const CORE = [
   "/js/lenis.min.js",
   "/js/common.js",
   "/js/app.js",
+  "/js/404.js",
+  "/js/resume.js",
   "/assets/fonts/bricolage-grotesque.woff2",
   "/assets/fonts/jetbrains-mono-400.woff2",
   "/assets/fonts/newsreader-400.woff2",

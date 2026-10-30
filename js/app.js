@@ -53,6 +53,9 @@
     gapY = 32,
     startX = 0,
     startY = 0;
+  let spacingMultiplier = 1.0;
+  let isThrottleTier1 = false;
+  let isStaticFallback = false;
   let gridDirty = true;
   let commits = null,
     commStart = 0,
@@ -81,8 +84,8 @@
 
   function initGrid() {
     dots = [];
-    gapX = (innerWidth > 768 ? 36 : 32) * D;
-    gapY = (innerWidth > 768 ? 32 : 28) * D;
+    gapX = (innerWidth > 768 ? 36 : 32) * D * spacingMultiplier;
+    gapY = (innerWidth > 768 ? 32 : 28) * D * spacingMultiplier;
     startX = (W % gapX) / 2 || gapX / 2;
     startY = (H % gapY) / 2 || gapY / 2;
     nCols = 0;
@@ -357,7 +360,7 @@
   );
 
   function addRipple(cx, cy) {
-    if (reduce) return;
+    if (reduce || isStaticFallback) return;
     ripples.push({
       x: cx * D,
       y: cy * D,
@@ -392,54 +395,62 @@
     const heroProgress = clamp(sy / (innerHeight * 0.75));
     const hf = 0.5 * (1 + Math.cos(heroProgress * Math.PI));
 
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      const rip = ripples[i];
-      rip.r += rip.speed;
-      rip.life -= 0.024;
-      if (rip.life <= 0 || rip.r >= rip.maxR) ripples.splice(i, 1);
-    }
+    if (!isStaticFallback) {
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const rip = ripples[i];
+        rip.r += rip.speed;
+        rip.life -= 0.024;
+        if (rip.life <= 0 || rip.r >= rip.maxR) ripples.splice(i, 1);
+      }
 
-    for (let i = 0; i < dots.length; i++) {
-      const dot = dots[i];
-      if (mx > -900) {
-        const dx = dot.x - targetMx;
-        const dy = dot.y - targetMy;
-        const dist = Math.hypot(dx, dy);
-        if (dist < cursorRadius && dist > 0.1) {
-          const force = (1 - dist / cursorRadius) * 4.4 * D;
-          dot.vx += (dx / dist) * force;
-          dot.vy += (dy / dist) * force;
-          dot.vx += curVx * 0.1 * (1 - dist / cursorRadius) * D;
-          dot.vy += curVy * 0.1 * (1 - dist / cursorRadius) * D;
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        if (mx > -900) {
+          const dx = dot.x - targetMx;
+          const dy = dot.y - targetMy;
+          const dist = Math.hypot(dx, dy);
+          if (dist < cursorRadius && dist > 0.1) {
+            const force = (1 - dist / cursorRadius) * 4.4 * D;
+            dot.vx += (dx / dist) * force;
+            dot.vy += (dy / dist) * force;
+            dot.vx += curVx * 0.1 * (1 - dist / cursorRadius) * D;
+            dot.vy += curVy * 0.1 * (1 - dist / cursorRadius) * D;
+          }
         }
-      }
-      for (let r = 0; r < ripples.length; r++) {
-        const rip = ripples[r];
-        const rdx = dot.x - rip.x;
-        const rdy = dot.y - rip.y;
-        const dDot = Math.hypot(rdx, rdy);
-        const waveDist = Math.abs(dDot - rip.r);
-        const waveWidth = 46 * D;
-        if (waveDist < waveWidth && dDot > 0.1) {
-          const push = (1 - waveDist / waveWidth) * rip.life * 2.8 * D;
-          dot.vx += (rdx / dDot) * push;
-          dot.vy += (rdy / dDot) * push;
+        for (let r = 0; r < ripples.length; r++) {
+          const rip = ripples[r];
+          const rdx = dot.x - rip.x;
+          const rdy = dot.y - rip.y;
+          const dDot = Math.hypot(rdx, rdy);
+          const waveDist = Math.abs(dDot - rip.r);
+          const waveWidth = 46 * D;
+          if (waveDist < waveWidth && dDot > 0.1) {
+            const push = (1 - waveDist / waveWidth) * rip.life * 2.8 * D;
+            dot.vx += (rdx / dDot) * push;
+            dot.vy += (rdy / dDot) * push;
+          }
         }
+        dot.vx = (dot.vx + (dot.ox - dot.x) * spring) * damping;
+        dot.vy = (dot.vy + (dot.oy - dot.y) * spring) * damping;
+        dot.x += dot.vx;
+        dot.y += dot.vy;
+        if (
+          Math.abs(dot.x - dot.ox) > 0.12 ||
+          Math.abs(dot.y - dot.oy) > 0.12 ||
+          Math.abs(dot.vx) > 0.08 ||
+          Math.abs(dot.vy) > 0.08
+        )
+          hasMotion = true;
       }
-      dot.vx = (dot.vx + (dot.ox - dot.x) * spring) * damping;
-      dot.vy = (dot.vy + (dot.oy - dot.y) * spring) * damping;
-      dot.x += dot.vx;
-      dot.y += dot.vy;
-      if (
-        Math.abs(dot.x - dot.ox) > 0.12 ||
-        Math.abs(dot.y - dot.oy) > 0.12 ||
-        Math.abs(dot.vx) > 0.08 ||
-        Math.abs(dot.vy) > 0.08
-      )
-        hasMotion = true;
+      curVx *= 0.65;
+      curVy *= 0.65;
+    } else {
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        dot.x = dot.ox;
+        dot.y = dot.oy;
+      }
     }
-    curVx *= 0.65;
-    curVy *= 0.65;
 
     // 1. Left-edge Memory Address Gutter
     if (dots.length > 0) {
@@ -673,15 +684,42 @@
   }
 
   let heroVisible = true;
+  let fpsSamples = [];
+  let lastFrameTime = 0;
+
   function frame(now) {
     animPending = false;
+
+    // Rolling FPS monitor over 60 active frames (adaptive throttle for low-tier hardware)
+    if (lastFrameTime) {
+      const dt = now - lastFrameTime;
+      if (dt > 0 && dt < 250) {
+        fpsSamples.push(1000 / dt);
+        if (fpsSamples.length > 60) fpsSamples.shift();
+        if (!intro.on && fpsSamples.length >= 60) {
+          const avgFps = fpsSamples.reduce((a, b) => a + b, 0) / fpsSamples.length;
+          if (!isThrottleTier1 && avgFps < 40) {
+            isThrottleTier1 = true;
+            spacingMultiplier = 1.6;
+            fpsSamples = [];
+            size();
+          } else if (isThrottleTier1 && !isStaticFallback && avgFps < 30) {
+            isStaticFallback = true;
+            fpsSamples = [];
+            gridDirty = true;
+          }
+        }
+      }
+    }
+    lastFrameTime = now;
+
     let busy = false;
     if (gridDirty || intro.on || ripples.length) {
       busy = stepGrid(now);
       gridDirty = busy || intro.on || ripples.length > 0 || Math.abs(curVx) > 0.05 || Math.abs(curVy) > 0.05;
     }
     if (heroVisible) updateLetters(now);
-    if (gridDirty || busy || (heroVisible && !reduce)) requestFrame();
+    if (gridDirty || busy || (heroVisible && !reduce && !isStaticFallback)) requestFrame();
   }
   new IntersectionObserver(
     (es) => {
@@ -1478,7 +1516,15 @@
   const kBtn = $("#kBtn");
   if (kBtn) kBtn.onclick = openP;
   palBackdrop && (palBackdrop.onclick = shut);
-  palCloseKbd && (palCloseKbd.onclick = shut);
+  if (palCloseKbd) {
+    palCloseKbd.onclick = shut;
+    palCloseKbd.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        shut();
+      }
+    };
+  }
 
   pin2.oninput = () => {
     currentQuery = pin2.value.trim().toLowerCase();
@@ -1506,6 +1552,13 @@
     if (e.key === "Escape") {
       e.preventDefault();
       shut();
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      if (document.activeElement === palCloseKbd) {
+        pin2.focus();
+      } else {
+        palCloseKbd ? palCloseKbd.focus() : pin2.focus();
+      }
     } else if (e.key === "ArrowDown") {
       if (!list.length) return;
       e.preventDefault();
@@ -1533,13 +1586,23 @@
       (entries) =>
         entries.forEach((entry) => {
           if (entry.isIntersecting)
-            navLinks.forEach((a) => a.classList.toggle("active", a.getAttribute("href") === "#" + entry.target.id));
+            navLinks.forEach((a) => {
+              const active = a.getAttribute("href") === "#" + entry.target.id;
+              a.classList.toggle("active", active);
+              if (active) a.setAttribute("aria-current", "true");
+              else a.removeAttribute("aria-current");
+            });
         }),
       { rootMargin: "-20% 0px -55% 0px" },
     );
     spySections.forEach((s) => spy.observe(s));
     F.onScroll((y) => {
-      if (y < 250) navLinks.forEach((a) => a.classList.remove("active"));
+      if (y < 250) {
+        navLinks.forEach((a) => {
+          a.classList.remove("active");
+          a.removeAttribute("aria-current");
+        });
+      }
     });
   }
 })();

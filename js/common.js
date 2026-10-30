@@ -136,6 +136,20 @@
     }
   }
   const onHome = location.pathname === "/" || location.pathname === "/index.html";
+  if (!onHome) {
+    const curPath = location.pathname;
+    $$("nav a").forEach((a) => {
+      const href = a.getAttribute("href");
+      if (!href) return;
+      if (
+        href === curPath ||
+        (href.startsWith("/writing/") && curPath.startsWith("/writing/")) ||
+        (href.includes("#work") && curPath.startsWith("/work/"))
+      ) {
+        a.setAttribute("aria-current", "page");
+      }
+    });
+  }
   $$('a[href^="#"], a[href^="/#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const href = a.getAttribute("href");

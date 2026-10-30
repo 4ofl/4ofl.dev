@@ -147,11 +147,13 @@
         <h2 class="k head"><span>selected work</span><span>01</span></h2>
 
         <article class="row open" data-slug="june">
-          <button class="rh" aria-expanded="true">
-            <b>june</b><span>infrastructure · bots</span><em class="st st-live">live</em>
-            <i></i>
-          </button>
-          <div class="rp">
+          <h3 class="rh-wrap">
+            <button class="rh" id="btn-june" aria-expanded="true" aria-controls="acc-june">
+              <b>june</b><span>infrastructure · bots</span><em class="st st-live">live</em>
+              <i></i>
+            </button>
+          </h3>
+          <div class="rp" id="acc-june" role="region" aria-labelledby="btn-june">
             <div class="pi">
               <div class="copy">
                 <p>
@@ -202,11 +204,13 @@
         </article>
 
         <article class="row" data-slug="johns-fitness">
-          <button class="rh" aria-expanded="false">
-            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">prototype</em>
-            <i></i>
-          </button>
-          <div class="rp">
+          <h3 class="rh-wrap">
+            <button class="rh" id="btn-johns-fitness" aria-expanded="false" aria-controls="acc-johns-fitness">
+              <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">prototype</em>
+              <i></i>
+            </button>
+          </h3>
+          <div class="rp" id="acc-johns-fitness" role="region" aria-labelledby="btn-johns-fitness">
             <div class="pi" inert>
               <div class="copy">
                 <p>
@@ -251,11 +255,13 @@
         </article>
 
         <article class="row" data-slug="citecamp">
-          <button class="rh" aria-expanded="false">
-            <b>citecamp</b><span>rag · academic ai</span><em class="st st-idea">concept</em>
-            <i></i>
-          </button>
-          <div class="rp">
+          <h3 class="rh-wrap">
+            <button class="rh" id="btn-citecamp" aria-expanded="false" aria-controls="acc-citecamp">
+              <b>citecamp</b><span>rag · academic ai</span><em class="st st-idea">concept</em>
+              <i></i>
+            </button>
+          </h3>
+          <div class="rp" id="acc-citecamp" role="region" aria-labelledby="btn-citecamp">
             <div class="pi" inert>
               <div class="copy">
                 <p>
@@ -404,7 +410,7 @@
             aria-controls="plist"
             aria-label="Spotlight search"
           />
-          <kbd class="p-esc" id="palCloseKbd" aria-label="Close">esc</kbd>
+          <kbd class="p-esc" id="palCloseKbd" role="button" tabindex="0" aria-label="Close command palette">esc</kbd>
         </div>
         <div class="p-body">
           <ul id="plist" role="listbox" aria-label="Commands"></ul>
