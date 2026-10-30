@@ -162,7 +162,7 @@
   function triggerCommitsStart() {
     if (!commits) return;
     if (intro.on && intro.t0) {
-      commStart = intro.t0 + 500;
+      commStart = intro.t0 + 900;
     } else {
       commStart = performance.now();
     }
@@ -257,28 +257,33 @@
     intro.revealed = false;
     intro.t0 = performance.now();
 
-    // Staggered byte resolve timeline (total ~700ms)
+    // Staggered byte resolve timeline (total ~1.5s, deliberate & readable)
     const lockDelays = [
-      180, // a
-      240, // b
-      300, // y
-      380, // m
-      440, // a
-      500, // t
-      560, // h
-      620, // e
-      680, // w
+      420,  // a (gives 420ms of full-word scramble)
+      540,  // b
+      660,  // y
+      840,  // m (slight breath between first and last name)
+      960,  // a
+      1070, // t
+      1180, // h
+      1290, // e
+      1400, // w
     ];
     const locked = new Array(n).fill(false);
+    let lastFlipT = 0;
 
     if (commits) {
-      commStart = intro.t0 + 500;
+      commStart = intro.t0 + 900;
     }
 
     function stepScramble(now) {
       if (!intro.on) return;
       const elapsed = now - intro.t0;
       let allLocked = true;
+
+      // Throttle character flipping to ~45ms so hex glyphs are clearly readable
+      const shouldFlip = now - lastFlipT > 45;
+      if (shouldFlip) lastFlipT = now;
 
       for (let i = 0; i < n; i++) {
         const s = L[i];
@@ -289,28 +294,30 @@
             locked[i] = true;
             s.textContent = chars[i];
             s.style.color = "var(--accent)";
-            s.style.fontVariationSettings = '"wght" 600';
+            s.style.fontVariationSettings = '"wght" 650';
             setTimeout(() => {
               if (s) {
                 s.style.color = "";
                 s.style.fontVariationSettings = '"wght" 300';
               }
-            }, 120);
+            }, 180);
           }
         } else {
           allLocked = false;
-          s.textContent = HEX_GLYPHS[(Math.random() * HEX_GLYPHS.length) | 0];
+          if (shouldFlip) {
+            s.textContent = HEX_GLYPHS[(Math.random() * HEX_GLYPHS.length) | 0];
+          }
           s.style.color = "var(--mist)";
           s.style.fontVariationSettings = '"wght" 450';
         }
       }
 
-      if (elapsed > 450 && !intro.revealed) {
+      if (elapsed > 1050 && !intro.revealed) {
         intro.revealed = true;
         root.classList.remove("intro");
       }
 
-      if (allLocked && elapsed >= 750) {
+      if (allLocked && elapsed >= 1550) {
         endIntro();
       } else {
         intro.raf = requestAnimationFrame(stepScramble);
