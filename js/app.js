@@ -849,13 +849,11 @@
             o.classList.remove("open");
             const ob = $(".rh", o);
             ob.setAttribute("aria-expanded", "false");
-            ob.dataset.cursor = "open";
             $(".pi", o).setAttribute("inert", "");
           }
         });
       row.classList.toggle("open", opening);
       b.setAttribute("aria-expanded", opening ? "true" : "false");
-      b.dataset.cursor = opening ? "close" : "open";
       const pi = $(".pi", row);
       opening ? pi.removeAttribute("inert") : pi.setAttribute("inert", "");
       if (opening && row.dataset.slug === "johns-fitness") warmSqlite().catch(() => {});
@@ -888,25 +886,7 @@
     } catch {}
   });
 
-  /* =========================================================
-     citecamp: honest pipeline (planned, not running)
-     ========================================================= */
-  const NOTES = [
-    "curated university documents only: regulations, circulars, manuals. no open web.",
-    "circulars are watermarked scans. strip the watermark, OCR, and check the text before it goes near a chunker.",
-    "split on clause and section boundaries, not fixed token windows, so a rule stays attached to its exception.",
-    "hybrid search over the chunks. every hit keeps its document id and clause number.",
-    "the model only sees what was retrieved. every claim ships with its source, or it doesn't ship.",
-  ];
-  const pipeBtns = $$("#ccPipe button");
-  const ccNote = $("#ccNote");
-  pipeBtns.forEach((b) =>
-    b.addEventListener("click", () => {
-      pipeBtns.forEach((o) => o.setAttribute("aria-pressed", o === b ? "true" : "false"));
-      ccNote.textContent = NOTES[+b.dataset.n];
-    }),
-  );
-  ccNote.textContent = NOTES[0];
+
 
   /* =========================================================
      johns fitness: real SQLite (sql.js / WASM) in the browser
@@ -1132,6 +1112,40 @@
   setInterval(tickClock, 2e4);
 
   /* =========================================================
+     june statistics loader (api placeholder & live polling)
+     ========================================================= */
+  async function loadJuneStats() {
+    const api = window.JUNE_STATS_API || "/status";
+    let servers = null;
+    let commands = null;
+    let uptime = null;
+
+    try {
+      const r = await F.api(api, "june-metrics", 60);
+      const d = r && r.data;
+      if (d && d.state !== "unknown") {
+        if (d.servers != null || d.guilds != null) servers = String(d.servers ?? d.guilds);
+        if (d.commands != null || d.commandsRun != null) commands = String(d.commands ?? d.commandsRun);
+        if (d.uptime != null || d.uptimePct != null) uptime = String(d.uptime ?? d.uptimePct);
+      }
+    } catch {}
+
+    const elS = $("#juneServers");
+    const elC = $("#juneCommands");
+    const elU = $("#juneUptime");
+    const elCS = $("#juneCaseServers");
+    const elCC = $("#juneCaseCommands");
+    const elCU = $("#juneCaseUptime");
+    if (elS && servers !== null) elS.textContent = servers;
+    if (elC && commands !== null) elC.textContent = commands;
+    if (elU && uptime !== null) elU.textContent = uptime;
+    if (elCS && servers !== null) elCS.textContent = servers;
+    if (elCC && commands !== null) elCC.textContent = commands;
+    if (elCU && uptime !== null) elCU.textContent = uptime;
+  }
+  loadJuneStats();
+
+  /* =========================================================
      spotlight command palette
      ========================================================= */
   const pal = $("#pal"),
@@ -1195,6 +1209,36 @@
     },
 
     // ACTIONS
+    {
+      group: "Actions",
+      name: "resume",
+      desc: "Open official PDF resume (aby_mathew_resume.pdf)",
+      target: () => window.open("/resume.pdf", "_blank", "noopener"),
+      tag: "document",
+      keywords: ["resume", "cv", "pdf", "experience", "education", "hire"],
+    },
+    {
+      group: "Actions",
+      name: "download resume",
+      desc: "Download aby_mathew_resume.pdf directly",
+      target: () => {
+        const a = document.createElement("a");
+        a.href = "/resume.pdf";
+        a.download = "aby_mathew_resume.pdf";
+        a.click();
+        F.toast("downloading aby_mathew_resume.pdf", 2500);
+      },
+      tag: "action",
+      keywords: ["download", "resume", "cv", "pdf"],
+    },
+    {
+      group: "Actions",
+      name: "email aby",
+      desc: "mailto:aby@4ofl.dev",
+      target: () => (location.href = "mailto:aby@4ofl.dev"),
+      tag: "action",
+      keywords: ["mail", "email", "send", "contact", "message"],
+    },
     {
       group: "Actions",
       name: "copy email",

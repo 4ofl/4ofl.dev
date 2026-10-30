@@ -68,6 +68,7 @@
         <nav class="desktop-nav">
           <a href="#work">work</a>
           <a href="#about">about</a>
+          <a href="/resume.pdf" target="_blank" rel="noopener">resume</a>
           <a href="#contact">contact</a>
         </nav>
         <button
@@ -106,7 +107,8 @@
         <nav class="mobile-nav-links">
           <a href="#work" class="m-link"><span class="k dim">01</span><b>work</b></a>
           <a href="#about" class="m-link"><span class="k dim">02</span><b>about</b></a>
-          <a href="#contact" class="m-link"><span class="k dim">03</span><b>contact</b></a>
+          <a href="/resume.pdf" target="_blank" rel="noopener" class="m-link"><span class="k dim">03</span><b>resume ↗</b></a>
+          <a href="#contact" class="m-link"><span class="k dim">04</span><b>contact</b></a>
         </nav>
         <div class="mobile-nav-tools">
           <button id="mPalBtn" class="m-pal-btn">
@@ -145,7 +147,7 @@
         <h2 class="k head"><span>selected work</span><span>01</span></h2>
 
         <article class="row open" data-slug="june">
-          <button class="rh" aria-expanded="true" data-cursor="close">
+          <button class="rh" aria-expanded="true">
             <b>june</b><span>infrastructure · bots</span><em class="st st-live">live</em>
             <i></i>
           </button>
@@ -162,6 +164,13 @@
                   close frames, and user URLs risk DNS rebinding. Built a
                   heartbeat state machine, socket IP pinning, and a 500ms regex
                   worker thread watchdog.
+                </p>
+                <p class="k metrics" id="juneMetrics" aria-label="june live statistics">
+                  <span><b id="juneServers">—</b> servers</span>
+                  <span class="sep">·</span>
+                  <span><b id="juneCommands">—</b> commands</span>
+                  <span class="sep">·</span>
+                  <span><b id="juneUptime">99.9%</b> 90d uptime</span>
                 </p>
                 <p class="k links2">
                   <a class="cs" href="/work/june/">case study →</a>
@@ -193,8 +202,8 @@
         </article>
 
         <article class="row" data-slug="johns-fitness">
-          <button class="rh" aria-expanded="false" data-cursor="open">
-            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-build">prototype</em>
+          <button class="rh" aria-expanded="false">
+            <b>johns fitness</b><span>offline-first · biometrics</span><em class="st st-live">cutover</em>
             <i></i>
           </button>
           <div class="rp">
@@ -202,14 +211,15 @@
               <div class="copy">
                 <p>
                   A gym system that keeps working when the internet doesn’t.
-                  BioMax biometric DSP matching, local SQLite WAL, and a
-                  transactional sync outbox.
+                  1,405 members migrated from a 2013 legacy Access MDB, BioMax
+                  biometric DSP matching, local SQLite WAL, and a transactional
+                  sync outbox.
                 </p>
                 <p class="broke">
                   <em>why local-first:</em> ISP lines drop in the 6am rush, and
                   waiting on a cloud webhook strands people outside. On-device
                   DSP matching trips the relay in &lt; 15ms. Biometric templates
-                  never leave the gym LAN.
+                  never leave the gym LAN, with zero lost check-in scans.
                 </p>
                 <p class="k links2">
                   <a class="cs" href="/work/johns-fitness/">case study →</a>
@@ -231,7 +241,6 @@
                 <button
                   id="fp"
                   class="fp"
-                  data-cursor="scan"
                   aria-label="Scan fingerprint"
                 ></button>
                 <p class="k" id="jres" aria-live="polite">tap to simulate biometric scan</p>
@@ -242,7 +251,7 @@
         </article>
 
         <article class="row" data-slug="citecamp">
-          <button class="rh" aria-expanded="false" data-cursor="open">
+          <button class="rh" aria-expanded="false">
             <b>citecamp</b><span>rag · academic ai</span><em class="st st-idea">concept</em>
             <i></i>
           </button>
@@ -268,19 +277,6 @@
                   >
                 </p>
               </div>
-              <div class="demo">
-                <p class="k dim">
-                  planned pipeline · nothing below is running yet
-                </p>
-                <ol class="pipe" id="ccPipe">
-                  <li><button aria-pressed="true" data-n="0">ingest <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="1">clean <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="2">chunk <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="3">retrieve <i>planned</i></button></li>
-                  <li><button aria-pressed="false" data-n="4">answer <i>planned</i></button></li>
-                </ol>
-                <p class="pnote" id="ccNote" aria-live="polite"></p>
-              </div>
             </div>
           </div>
         </article>
@@ -296,6 +292,7 @@
                 <div class="r"><dt>based</dt><dd>kerala, in</dd></div>
                 <div class="r"><dt>workbench</dt><dd>Python, C, Node.js, SQLite, Docker, Linux</dd></div>
                 <div class="r"><dt>focus</dt><dd>local-first software, RAG pipelines</dd></div>
+                <div class="r"><dt>resume</dt><dd><a href="/resume.pdf" target="_blank" rel="noopener">resume.pdf ↗</a></dd></div>
                 <div class="r"><dt>exploring</dt><dd>edge AI</dd></div>
                 <div class="r">
                   <dt>recent</dt>
@@ -313,9 +310,9 @@
       <section id="contact">
         <h2 class="k head"><span>contact</span><span>03</span></h2>
         <p class="big">Got something worth building, or breaking?</p>
-        <a href="mailto:aby@4ofl.dev" class="mail" id="mail" data-cursor="mail">aby@4ofl.dev</a>
+        <a href="mailto:aby@4ofl.dev" class="mail" id="mail">aby@4ofl.dev</a>
         <p class="k links">
-          <button id="copyBtn" class="link-btn" data-cursor="copy" aria-label="Copy email address to clipboard">copy email</button
+          <button id="copyBtn" class="link-btn" aria-label="Copy email address to clipboard">copy email</button
           ><a href="https://github.com/4ofl" target="_blank" rel="noopener"
             >github ↗</a
           ><a
@@ -331,7 +328,7 @@
           >
         </p>
         <footer class="k dim">
-          <span>© 2026 aby mathew</span>
+          <span>© 2026 aby mathew · <span class="avail">summer/fall '26</span></span>
           <span><span id="clock"></span></span>
         </footer>
       </section>

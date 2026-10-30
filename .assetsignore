@@ -19,3 +19,7 @@ README.md
 worker/**
 worker.js
 *.py
+scripts/**
+scripts
+TODO.md
+.resume_preview.html

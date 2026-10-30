@@ -1,0 +1,74 @@
+{
+  "name": "Aby Mathew",
+  "handle": "4ofl",
+  "title": "Systems & Local-First Software Developer",
+  "location": "Kerala, India",
+  "email": "aby@4ofl.dev",
+  "website": "https://4ofl.dev",
+  "github": "https://github.com/4ofl",
+  "linkedin": "https://linkedin.com/in/abyperhaps",
+  "availability": "Available for Internships & Systems Roles (Summer / Fall 2026)",
+  "summary": "Undergraduate systems builder focused on resilient offline-first software, hardened runtimes, and low-latency local compute. Track record of reverse-engineering legacy systems, eliminating cloud dependencies, and building rock-solid C#, Node.js, and C applications that do not break under network failure.",
+  "skills": [
+    {
+      "category": "Languages",
+      "items": "C, Python, C# (.NET 8), JavaScript / TypeScript, SQL, Bash"
+    },
+    {
+      "category": "Systems & Runtime",
+      "items": "Linux, POSIX Sockets, Win32 P/Invoke, SQLite (WAL mode), Docker, Cloudflare Workers"
+    },
+    {
+      "category": "Core Competencies",
+      "items": "Local-First Architecture, TCP Socket Management, Anti-SSRF / Network Security, RAG Pipelines"
+    }
+  ],
+  "experience": [
+    {
+      "name": "Johns Fitness — Edge & Access Control System",
+      "role": "Lead Architect & Developer",
+      "date": "2026 – Present",
+      "link": "https://github.com/4ofl/johnsfitness-edge",
+      "highlight": "Offline-first biometric access control daemon & reception PWA for 1,405 active gym members.",
+      "points": [
+        "Engineered .NET 8 x86 background service interfacing with BioMax optical & facial DSP terminals via Win32 P/Invoke over LAN TCP socket pool.",
+        "Decoupled door relay from host OS and cloud: on-device NVRAM DSP matching trips 5,000ms pulse in &lt; 15ms autonomous fast-path.",
+        "Designed transactional sync outbox backed by local SQLite WAL mode, guaranteeing 100% check-in continuity during ISP outages.",
+        "Reverse-engineered and migrated legacy 2013 Microsoft Access (.mdb) database containing 1,405 member records to SQLite with zero data corruption."
+      ]
+    },
+    {
+      "name": "June — Hardened Discord Application & Infrastructure",
+      "role": "Author & Maintainer",
+      "date": "2026 – Present",
+      "link": "https://docs.june.4ofl.dev",
+      "highlight": "High-reliability Discord application with zero C++ database dependencies.",
+      "points": [
+        "Built on Node.js 22 LTS utilizing built-in <code>node:sqlite</code> in WAL mode, eliminating native C++ toolchain dependencies.",
+        "Mitigated SSRF and DNS rebinding (TOCTOU) attacks at raw socket level by validating and pinning remote IP addresses prior to TCP handshake.",
+        "Engineered custom gateway heartbeat state machine recovering from silent half-open TCP connections dropped without close frames.",
+        "Isolated user-supplied regex execution in isolated Worker Thread watchdogs with 500ms hard deadlines to prevent ReDoS CPU starvation."
+      ]
+    },
+    {
+      "name": "Citecamp — Academic RAG Document Pipeline",
+      "role": "Developer",
+      "date": "2026",
+      "link": "https://4ofl.dev/work/citecamp/",
+      "highlight": "Specialized RAG pipeline for scanned, watermarked institutional circulars.",
+      "points": [
+        "Engineered pre-retrieval OCR cleaning and document layout pipeline tailored for low-quality scanned university PDFs.",
+        "Maintained deterministic institutional source citation hashes attached to every LLM retrieval step."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Undergrad College / University",
+      "degree": "Bachelor of Computer Applications (BCA)",
+      "date": "2026 – Present",
+      "location": "Kerala, India",
+      "notes": "Coursework: Data Structures & Algorithms, Operating Systems, Database Management Systems, Computer Networks."
+    }
+  ]
+}

@@ -57,6 +57,7 @@
 html {
   background: var(--ink);
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 html.lenis,
 html.lenis body {
@@ -493,11 +494,9 @@ dl a:hover {
 }
 
 #contact {
-  min-height: 70svh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 4.5rem var(--pad) 2rem;
+  padding: 5rem var(--pad) 2rem;
 }
 .mail {
   display: block;
@@ -536,8 +535,8 @@ dl a:hover {
 footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 3.5rem;
-  padding-top: 1.2rem;
+  margin-top: clamp(4rem, 12vh, 7rem);
+  padding-top: 1.5rem;
   border-top: 1px solid var(--line);
 }
 
@@ -982,6 +981,28 @@ html.intro .hero-in > .k {
   background: transparent;
   border: 1.2px solid var(--mist);
 }
+.metrics {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font: 450 0.78rem "JetBrains Mono", monospace;
+  color: var(--mist);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--line);
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  margin-top: 0.6rem;
+  margin-bottom: 0.2rem;
+  width: fit-content;
+}
+.metrics b {
+  color: var(--bone);
+  font-weight: 500;
+}
+.metrics .sep {
+  color: rgba(255, 255, 255, 0.2);
+}
 .links2 {
   display: flex;
   flex-wrap: wrap;
@@ -1017,38 +1038,8 @@ html.intro .hero-in > .k {
   color: #fff;
 }
 
-/* citecamp pipeline (honest: planned only) */
-.pipe {
-  list-style: none;
-  display: grid;
-  gap: 0.4rem;
-}
-.pipe button {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  border: 1px dashed var(--line);
-  border-radius: 8px;
-  padding: 0.55rem 0.8rem;
-  font: 0.78rem "JetBrains Mono", monospace;
-  text-align: left;
-  transition: border-color 0.2s, color 0.2s;
-}
-.pipe button:hover {
-  border-color: var(--mist);
-}
-.pipe button[aria-pressed="true"] {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-}
-.pipe i {
-  font-style: normal;
-  color: var(--mist);
-}
-.pnote {
-  min-height: 3.6em;
-  color: var(--bone);
-  font-size: 0.95rem;
+.row[data-slug="citecamp"] .pi {
+  grid-template-columns: minmax(0, 52ch);
 }
 
 /* about */
@@ -1087,31 +1078,7 @@ dl .r {
 }
 
 
-/* floating micro-pill next to native cursor */
-.cur-pill {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 300;
-  pointer-events: none;
-  font: 500 0.68rem "JetBrains Mono", monospace;
-  color: var(--bone);
-  background: rgba(20, 20, 24, 0.92);
-  border: 1px solid rgba(212, 116, 85, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 0.22rem 0.55rem;
-  border-radius: 99px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
-  white-space: nowrap;
-  opacity: 0;
-  transform: translate3d(-100px, -100px, 0);
-  margin: 14px 0 0 14px;
-  transition: opacity 0.15s ease;
-}
-.cur-pill.on {
-  opacity: 1;
-}
+
 
 /* toast + net indicator */
 .toast {
@@ -1254,7 +1221,7 @@ h1.pj-title {
 .arch.in .n {
   opacity: 1;
 }
-.metrics {
+.pj .metrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
   gap: 1px;
@@ -1264,16 +1231,16 @@ h1.pj-title {
   overflow: hidden;
   margin: 1rem 0;
 }
-.metrics div {
+.pj .metrics div {
   background: var(--ink);
   padding: 1.1rem 1.2rem;
 }
-.metrics b {
+.pj .metrics b {
   display: block;
   font: 600 1.9rem / 1.1 "Bricolage Grotesque", sans-serif;
   letter-spacing: -0.03em;
 }
-.metrics span {
+.pj .metrics span {
   font: 0.72rem "JetBrains Mono", monospace;
   color: var(--mist);
 }

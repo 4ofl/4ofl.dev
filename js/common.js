@@ -168,56 +168,7 @@
     { passive: true },
   );
 
-  /* ---------- native pointer + floating micro-pill (fine pointers only) ---------- */
-  if (fine && !reduce) {
-    const c = document.createElement("div");
-    c.className = "cur-pill";
-    c.setAttribute("aria-hidden", "true");
-    document.body.append(c);
 
-    let x = -100,
-      y = -100,
-      rx = -100,
-      ry = -100,
-      raf = 0,
-      labelText = "";
-
-    const loop = () => {
-      rx += (x - rx) * 0.28;
-      ry += (y - ry) * 0.28;
-      c.style.transform = `translate3d(${rx}px,${ry}px,0)`;
-      raf = Math.abs(x - rx) + Math.abs(y - ry) > 0.2 ? requestAnimationFrame(loop) : 0;
-    };
-
-    addEventListener(
-      "pointermove",
-      (e) => {
-        if (e.pointerType !== "mouse") return;
-        x = e.clientX;
-        y = e.clientY;
-        if (!raf) raf = requestAnimationFrame(loop);
-
-        const el = e.target.closest("[data-cursor], a[target='_blank']");
-        let next = "";
-        if (el && !el.matches("input, textarea")) {
-          const raw = el.dataset.cursor || (el.matches('a[target="_blank"]') ? "↗" : "");
-          next = raw === "open" ? "+ open" : raw === "close" ? "- close" : raw;
-        }
-
-        if (next !== labelText) {
-          labelText = next;
-          c.textContent = next;
-          c.classList.toggle("on", Boolean(next));
-        }
-      },
-      { passive: true },
-    );
-
-    document.documentElement.addEventListener("mouseleave", () => {
-      c.classList.remove("on");
-      labelText = "";
-    });
-  }
 
   /* ---------- reveals: word-by-word headlines, drawn diagrams ---------- */
   if (!reduce) {
@@ -254,13 +205,15 @@
 
   /* ---------- live bits used by project pages ---------- */
   const mEl = $("#metrics");
-  if (mEl) {
+  const caseServers = $("#juneCaseServers");
+  if (mEl || caseServers) {
     const set = (k, v) => {
-      const e = $(`[data-m="${k}"]`, mEl);
+      const e = mEl && $(`[data-m="${k}"]`, mEl);
       if (e) e.textContent = v;
     };
     const note = $("#metricsNote");
-    F.api("/status", "status").then((r) => {
+    const api = window.JUNE_STATS_API || "/status";
+    F.api(api, "status").then((r) => {
       const d = r && r.data;
       if (!d || d.state === "unknown" || (d.status === "error" && !d.discord)) {
         ["state", "shard", "hb", "up"].forEach((k) => set(k, "n/a"));
@@ -277,6 +230,17 @@
       set("hb", ping != null ? ping + " ms" : "n/a");
       set("up", up != null ? F.uptime(up) : "n/a");
       if (note) note.textContent = r.cached ? `last seen ${F.ago(r.at)} (cached, you may be offline).` : "live from the status feed.";
+
+      const servers = d.servers != null || d.guilds != null ? String(d.servers ?? d.guilds) : null;
+      const commands = d.commands != null || d.commandsRun != null ? String(d.commands ?? d.commandsRun) : null;
+      const uptimePct = d.uptime != null || d.uptimePct != null ? String(d.uptime ?? d.uptimePct) : null;
+
+      const elS = $("#juneCaseServers");
+      const elC = $("#juneCaseCommands");
+      const elU = $("#juneCaseUptime");
+      if (elS && servers !== null) elS.textContent = servers;
+      if (elC && commands !== null) elC.textContent = commands;
+      if (elU && uptimePct !== null) elU.textContent = uptimePct;
     });
   }
 })();
